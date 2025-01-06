@@ -1,0 +1,27 @@
+package sdk
+
+type RoomListener interface {
+	OnParticipantConnected()
+	OnParticipantDisconnected()
+	OnLocalTrackPublished()
+	OnLocalTrackUnpublished()
+	OnTrackPublished()
+	OnTrackUnpublished()
+	OnTrackSubscribed()
+	OnTrackUnsubscribed()
+	OnTrackSubscriptionFailed()
+	OnTrackMuted()
+	OnTrackUnmuted()
+	OnActiveSpeakersChanged()
+	OnRoomMetadataChanged()
+	OnParticipantMetadataChanged()
+	OnParticipantNameChanged()
+	OnConnectionQualityChanged()
+	OnConnectionStateChanged()
+	OnDisconnected()
+	OnReconnecting()
+	OnReconnected()
+	OnE2eeStateChanged()
+	OnRoomEOS()
+	OnDataPacketReceived()
+}
