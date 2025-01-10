@@ -37,8 +37,9 @@ func Disconnect(request *pb_room.DisconnectRequest) *pb_room.DisconnectResponse 
 	if val, ok := roomMap.Load(request.RoomHandle); ok {
 		if room, ok := val.(*lksdk.Room); ok {
 			room.Disconnect()
+			EmitDisconnectCallback()
 		} else {
-			EmitPanic(fmt.Sprintf("not a room"))
+			EmitPanic(fmt.Sprintf("not a room:%d", request.RoomHandle))
 		}
 	} else {
 		EmitPanic(fmt.Sprintf("not find room handle:%d", request.RoomHandle))
@@ -49,6 +50,7 @@ func Disconnect(request *pb_room.DisconnectRequest) *pb_room.DisconnectResponse 
 }
 
 func PublicTrack(request *pb_room.PublishTrackRequest) *pb_room.PublishTrackResponse {
+    
 	return nil
 }
 

@@ -4,14 +4,13 @@ go 1.23.4
 
 replace github.com/openimsdk/openim-rtc => ../
 
-require github.com/AllenDang/cimgui-go v1.1.0
+require (
+	github.com/gen2brain/malgo v0.11.23
+	github.com/hajimehoshi/go-mp3 v0.3.4
+	github.com/youpy/go-wav v0.3.2
+)
 
 require (
-	github.com/ebitengine/gomobile v0.0.0-20240911145611-4856209ac325 // indirect
-	github.com/ebitengine/hideconsole v1.0.0 // indirect
-	github.com/ebitengine/purego v0.8.0 // indirect
-	github.com/hajimehoshi/ebiten/v2 v2.8.2 // indirect
-	github.com/jezek/xgb v1.1.1 // indirect
-	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
+	github.com/youpy/go-riff v0.1.0 // indirect
+	github.com/zaf/g711 v0.0.0-20190814101024-76a4a538f52b // indirect
 )
