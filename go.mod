@@ -3,8 +3,10 @@ module github.com/openimsdk/openim-rtc
 go 1.23.4
 
 require (
+	github.com/livekit/protocol v1.30.0
 	github.com/livekit/server-sdk-go/v2 v2.4.1
 	github.com/openimsdk/tools v0.0.49
+	github.com/pion/webrtc/v4 v4.0.7
 	google.golang.org/protobuf v1.36.1
 )
 
@@ -35,7 +37,6 @@ require (
 	github.com/lithammer/shortuuid/v4 v4.0.0 // indirect
 	github.com/livekit/mageutil v0.0.0-20230125210925-54e8a70427c1 // indirect
 	github.com/livekit/mediatransportutil v0.0.0-20241220010243-a2bdee945564 // indirect
-	github.com/livekit/protocol v1.30.0 // indirect
 	github.com/livekit/psrpc v0.6.1-0.20241018124827-1efff3d113a8 // indirect
 	github.com/magefile/mage v1.15.0 // indirect
 	github.com/nats-io/nats.go v1.38.0 // indirect
@@ -57,7 +58,6 @@ require (
 	github.com/pion/stun/v3 v3.0.0 // indirect
 	github.com/pion/transport/v3 v3.0.7 // indirect
 	github.com/pion/turn/v4 v4.0.0 // indirect
-	github.com/pion/webrtc/v4 v4.0.7 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/puzpuzpuz/xsync/v3 v3.4.0 // indirect
 	github.com/redis/go-redis/v9 v9.7.0 // indirect
