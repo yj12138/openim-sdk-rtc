@@ -7,7 +7,10 @@ replace github.com/openimsdk/openim-rtc => ../
 require (
 	github.com/AllenDang/cimgui-go v1.1.0
 	github.com/gen2brain/malgo v0.11.23
+	github.com/livekit/protocol v1.30.0
+	github.com/livekit/server-sdk-go/v2 v2.4.1
 	github.com/openimsdk/openim-rtc v0.0.0-00010101000000-000000000000
+	github.com/pion/webrtc/v4 v4.0.7
 )
 
 require (
@@ -39,9 +42,7 @@ require (
 	github.com/lithammer/shortuuid/v4 v4.0.0 // indirect
 	github.com/livekit/mageutil v0.0.0-20230125210925-54e8a70427c1 // indirect
 	github.com/livekit/mediatransportutil v0.0.0-20241220010243-a2bdee945564 // indirect
-	github.com/livekit/protocol v1.30.0 // indirect
 	github.com/livekit/psrpc v0.6.1-0.20241018124827-1efff3d113a8 // indirect
-	github.com/livekit/server-sdk-go/v2 v2.4.1 // indirect
 	github.com/magefile/mage v1.15.0 // indirect
 	github.com/nats-io/nats.go v1.38.0 // indirect
 	github.com/nats-io/nkeys v0.4.9 // indirect
@@ -61,7 +62,6 @@ require (
 	github.com/pion/stun/v3 v3.0.0 // indirect
 	github.com/pion/transport/v3 v3.0.7 // indirect
 	github.com/pion/turn/v4 v4.0.0 // indirect
-	github.com/pion/webrtc/v4 v4.0.7 // indirect
 	github.com/puzpuzpuz/xsync/v3 v3.4.0 // indirect
 	github.com/redis/go-redis/v9 v9.7.0 // indirect
 	github.com/stoewer/go-strcase v1.3.0 // indirect

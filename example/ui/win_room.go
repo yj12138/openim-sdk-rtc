@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/AllenDang/cimgui-go/imgui"
+	"github.com/openimsdk/openim-rtc/example/io"
 	"github.com/openimsdk/openim-rtc/sdk"
 )
 
@@ -19,7 +20,9 @@ type WindowRoom struct {
 	roomName string
 	identify string
 
-	room *sdk.Room
+	room     *sdk.Room
+	micPhone *io.MicPhone
+	speaker  *io.Speaker
 }
 
 func (w *WindowRoom) Start() {
@@ -28,6 +31,8 @@ func (w *WindowRoom) Start() {
 	w.Open = true
 
 	w.room = sdk.NewRoom()
+	w.micPhone = io.NewMicPhone()
+	w.speaker = io.NewSpeaker()
 }
 
 func (w *WindowRoom) Update() {
@@ -65,12 +70,38 @@ func (w *WindowRoom) Update() {
 			}
 		} else {
 			imgui.Text(fmt.Sprintf("Identify:%s", w.room.GetLocalIdentify()))
-			if imgui.Button("MicPhone") {
+			imgui.Text("-------------------MicPhone----------------------")
+			if w.micPhone.CanUse() {
+				if imgui.Button("MicPhone") {
+					if w.micPhone.Using() {
+						if imgui.Button("Stop") {
+							w.micPhone.Start()
+						}
+					} else {
+						if imgui.Button("Start") {
+							w.micPhone.Start()
+						}
+					}
 
+				}
+			} else {
+				imgui.Text("No MicPhone")
 			}
-			if imgui.Button("Speaker") {
+			imgui.Text("-------------------Speaker----------------------")
+			if w.speaker.CanUse() {
+				if w.speaker.Using() {
+					if imgui.Button("Stop") {
 
+					}
+				} else {
+					if imgui.Button("Start") {
+
+					}
+				}
+			} else {
+				imgui.Text("No Speaker")
 			}
+
 			if imgui.Button("Send Data") {
 				w.room.PublishData("hello world")
 			}
