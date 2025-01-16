@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	"github.com/AllenDang/cimgui-go/backend"
 	ebitenbackend "github.com/AllenDang/cimgui-go/backend/ebiten-backend"
 	"github.com/AllenDang/cimgui-go/imgui"
@@ -10,6 +12,7 @@ import (
 var currentBackend backend.Backend[ebitenbackend.EbitenBackendFlags]
 
 func init() {
+	log.SetFlags(log.Llongfile)
 }
 
 func loop() {
