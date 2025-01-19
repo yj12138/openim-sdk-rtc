@@ -40,8 +40,19 @@ func showWindow(win IWindow) {
 	windowMap[win.GetId()] = win
 }
 
+func removeWin(win IWindow) {
+	win.Destroy()
+	delete(windowMap, win.GetId())
+}
+
 func DrawAllWindow() {
 	for _, win := range windowMap {
 		win.Update()
+	}
+}
+
+func DestroyAllWindow() {
+	for _, win := range windowMap {
+		win.Destroy()
 	}
 }

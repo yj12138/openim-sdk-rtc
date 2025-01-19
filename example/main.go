@@ -25,6 +25,7 @@ func main() {
 	currentBackend.SetBgColor(imgui.NewVec4(0.45, 0.55, 0.6, 1.0))
 	currentBackend.CreateWindow("OpenIM-RTC-Demo", 800, 500)
 	currentBackend.SetCloseCallback(func(b backend.Backend[ebitenbackend.EbitenBackendFlags]) {
+		ui.DestroyAllWindow()
 	})
 
 	currentBackend.Run(loop)

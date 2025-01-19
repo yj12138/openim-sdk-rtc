@@ -22,7 +22,9 @@ func (m *MicPhone) init() {
 	})
 	if err != nil {
 		log.Panic(err)
+		return
 	}
+
 	deviceConfig := malgo.DefaultDeviceConfig(malgo.Capture)
 	deviceConfig.Capture.Format = malgo.FormatS16
 	deviceConfig.Capture.Channels = 1
@@ -36,9 +38,11 @@ func (m *MicPhone) init() {
 	device, err := malgo.InitDevice(ctx.Context, deviceConfig, captureCallbacks)
 	if err != nil {
 		log.Panic(err)
+		return
 	}
 	m.canUse = true
 	m.device = device
+	m.context = ctx
 }
 
 func (m *MicPhone) CanUse() bool {
@@ -76,9 +80,12 @@ func (m *MicPhone) OnStop() {
 }
 
 func (m *MicPhone) Dispose() {
-	m.device.Uninit()
-	_ = m.context.Uninit()
-	m.context.Free()
+	if m.device != nil {
+		m.device.Uninit()
+		_ = m.context.Uninit()
+		m.context.Free()
+		m.device = nil
+	}
 }
 
 func NewMicPhone() *MicPhone {

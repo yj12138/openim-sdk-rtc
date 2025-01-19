@@ -23,6 +23,8 @@ type WindowRoom struct {
 	room     *sdk.Room
 	micPhone *io.MicPhone
 	speaker  *io.Speaker
+
+	send_input_test_data string
 }
 
 func (w *WindowRoom) Start() {
@@ -33,6 +35,8 @@ func (w *WindowRoom) Start() {
 	w.room = sdk.NewRoom()
 	w.micPhone = io.NewMicPhone()
 	w.speaker = io.NewSpeaker()
+
+	w.send_input_test_data = ""
 }
 
 func (w *WindowRoom) Update() {
@@ -69,20 +73,21 @@ func (w *WindowRoom) Update() {
 				}
 			}
 		} else {
-			imgui.Text(fmt.Sprintf("Identify:%s", w.room.GetLocalIdentify()))
+			imgui.Text(fmt.Sprintf("Owner:%s", w.room.GetOwner()))
 			imgui.Text("-------------------MicPhone----------------------")
 			if w.micPhone.CanUse() {
-				if imgui.Button("MicPhone") {
-					if w.micPhone.Using() {
-						if imgui.Button("Stop") {
-							w.micPhone.Start()
-						}
-					} else {
-						if imgui.Button("Start") {
-							w.micPhone.Start()
-						}
+				if w.micPhone.Using() {
+					imgui.PushIDStr("MicPhone_Stop")
+					if imgui.Button("Stop") {
+						w.micPhone.Stop()
 					}
-
+					imgui.PopID()
+				} else {
+					imgui.PushIDStr("MicPhone_Start")
+					if imgui.Button("Start") {
+						w.micPhone.Start()
+					}
+					imgui.PopID()
 				}
 			} else {
 				imgui.Text("No MicPhone")
@@ -90,29 +95,47 @@ func (w *WindowRoom) Update() {
 			imgui.Text("-------------------Speaker----------------------")
 			if w.speaker.CanUse() {
 				if w.speaker.Using() {
+					imgui.PushIDStr("Speaker_Stop")
 					if imgui.Button("Stop") {
-
+						w.speaker.Stop()
 					}
+					imgui.PopID()
 				} else {
+					imgui.PushIDStr("Speaker_Start")
 					if imgui.Button("Start") {
-
+						w.speaker.Start()
 					}
+					imgui.PopID()
 				}
 			} else {
 				imgui.Text("No Speaker")
 			}
-
-			if imgui.Button("Send Data") {
-				w.room.PublishData("hello world")
+			imgui.Text("-------------------Send TestData ----------------------")
+			imgui.InputTextWithHint("##send_input_test_data", "", &w.send_input_test_data, 0, func(data imgui.InputTextCallbackData) int {
+				return 0
+			})
+			if imgui.Button("Send") {
+				w.room.PublishData(w.send_input_test_data)
+				w.send_input_test_data = ""
 			}
 		}
 		imgui.End()
 	}
-
+	if !w.Open {
+		removeWin(w)
+	}
 }
 
 func (w *WindowRoom) Destroy() {
-
+	if w.speaker != nil {
+		w.speaker.Dispose()
+	}
+	if w.micPhone != nil {
+		w.speaker.Dispose()
+	}
+	if w.room != nil {
+		w.room.Disconnect()
+	}
 }
 
 func newRoomWindow() *WindowRoom {

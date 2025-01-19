@@ -22,8 +22,8 @@ func (m *Speaker) init() {
 	})
 	if err != nil {
 		log.Panic(err)
+		return
 	}
-
 	deviceConfig := malgo.DefaultDeviceConfig(malgo.Playback)
 	deviceConfig.DeviceType = malgo.Capture
 	deviceConfig.Playback.Format = malgo.FormatS16
@@ -38,14 +38,17 @@ func (m *Speaker) init() {
 	device, err := malgo.InitDevice(ctx.Context, deviceConfig, captureCallbacks)
 	if err != nil {
 		panic(err)
+		return
 	}
 	m.device = device
+	m.context = ctx
 	m.canUse = true
 }
 
 func (m *Speaker) CanUse() bool {
 	return m.canUse
 }
+
 func (m *Speaker) Using() bool {
 	return m.using
 }
@@ -60,6 +63,7 @@ func (m *Speaker) Start() error {
 	}
 	return fmt.Errorf("no init device")
 }
+
 func (m *Speaker) Stop() error {
 	if m.canUse {
 		err := m.device.Stop()
@@ -71,13 +75,18 @@ func (m *Speaker) Stop() error {
 func (m *Speaker) onSendFrames(outputSample, inputSample []byte, framecount uint32) {
 
 }
+
 func (m *Speaker) onStop() {
 	m.using = false
 }
+
 func (m *Speaker) Dispose() {
-	m.device.Uninit()
-	_ = m.context.Uninit()
-	m.context.Free()
+	if m.device != nil {
+		m.device.Uninit()
+		_ = m.context.Uninit()
+		m.context.Free()
+		m.device = nil
+	}
 }
 
 func NewSpeaker() *Speaker {

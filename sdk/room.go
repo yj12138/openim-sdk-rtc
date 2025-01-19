@@ -13,11 +13,14 @@ import (
 type Room struct {
 	host        string
 	token       string
+	roomName    string
+	owner       string
 	livekitRoom *lksdk.Room
 }
 
 // RoomCallback
 func (r *Room) onDisconnected() {
+	log.Println(r.GetRoomName())
 	listener.OnDisconnected(r)
 }
 func (r *Room) onDisconnectedWithReason(reason lksdk.DisconnectionReason) {
@@ -137,6 +140,8 @@ func (r *Room) ConnectByToken(host, token, roomName, identify string) {
 }
 
 func (r *Room) ConnectBySecret(host, apiKey, apiSecret, roomName, identify string) {
+	r.roomName = roomName
+	r.owner = identify
 	room, err := lksdk.ConnectToRoom(host, lksdk.ConnectInfo{
 		APIKey:              apiKey,
 		APISecret:           apiSecret,
@@ -187,17 +192,11 @@ func (r *Room) GetSessionStats() {
 }
 
 func (r *Room) GetRoomName() string {
-	if r.livekitRoom != nil {
-		return r.livekitRoom.Name()
-	}
-	return ""
+	return r.roomName
 }
 
-func (r *Room) GetLocalIdentify() string {
-	if r.livekitRoom != nil {
-		return r.livekitRoom.LocalParticipant.Identity()
-	}
-	return ""
+func (r *Room) GetOwner() string {
+	return r.owner
 }
 
 func NewRoom() *Room {
