@@ -147,7 +147,7 @@ func (r *Room) ConnectBySecret(host, apiKey, apiSecret, roomName, identify strin
 		APISecret:           apiSecret,
 		RoomName:            roomName,
 		ParticipantIdentity: identify,
-	}, r.createRoomCallBack())
+	}, r.createRoomCallBack(), lksdk.WithAutoSubscribe(true))
 	if err != nil {
 		panic(err)
 	}

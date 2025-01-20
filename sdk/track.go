@@ -39,7 +39,6 @@ func (t *Track) Open() {
 		}
 	})
 	t.liveKitTrack = liveKitTrack
-	log.Println("1111111111111111111")
 }
 
 func (t *Track) Close() {
