@@ -166,11 +166,16 @@ func (r *Room) IsConnSuc() bool {
 }
 
 func (r *Room) PublicTrack(track *Track) {
+	if track.liveKitTrack == nil {
+		log.Panic("track is nil")
+		return
+	}
 	if r.checkConn() {
-		_, err := r.livekitRoom.LocalParticipant.PublishTrack(track.liveKitTruck, &lksdk.TrackPublicationOptions{
-			VideoWidth:  100,
-			VideoHeight: 100,
-			Name:        "",
+		log.Println("public track-------------", track.name, track.mimeType)
+		_, err := r.livekitRoom.LocalParticipant.PublishTrack(track.liveKitTrack, &lksdk.TrackPublicationOptions{
+			VideoWidth:  track.videoWidth,
+			VideoHeight: track.videoHeight,
+			Name:        track.name,
 		})
 		if err != nil {
 			log.Panic(err)
@@ -178,7 +183,17 @@ func (r *Room) PublicTrack(track *Track) {
 	}
 }
 
-func (r *Room) UnpublishTrack() {
+func (r *Room) UnpublishTrack(track *Track) {
+	if track.liveKitTrack == nil {
+		log.Panic("track is nil")
+		return
+	}
+	if r.checkConn() {
+		err := r.livekitRoom.LocalParticipant.UnpublishTrack(track.liveKitTrack.StreamID())
+		if err != nil {
+			log.Panic(err)
+		}
+	}
 }
 
 func (r *Room) checkConn() bool {

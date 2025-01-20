@@ -78,6 +78,16 @@ func (r *RoomListenerImpl) OnConnectionQualityChanged(room *sdk.Room, update *li
 
 func (r *RoomListenerImpl) OnTrackSubscribed(room *sdk.Room, track *webrtc.TrackRemote, publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
 	log.Println("Track subscribed:", room.GetRoomName(), track.ID(), publication.Track().ID(), rp.Identity())
+	go func() {
+		log.Println(track.Codec().MimeType)
+		for {
+			pkt, _, err := track.ReadRTP()
+			if err != nil {
+				break
+			}
+			log.Println(len(pkt.Payload))
+		}
+	}()
 }
 
 func (r *RoomListenerImpl) OnTrackUnsubscribed(room *sdk.Room, track *webrtc.TrackRemote, publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
@@ -90,6 +100,7 @@ func (r *RoomListenerImpl) OnTrackSubscriptionFailed(room *sdk.Room, sid string,
 
 func (r *RoomListenerImpl) OnTrackPublished(room *sdk.Room, publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
 	log.Println("Track published:", room.GetRoomName(), publication.Track().ID(), rp.Identity())
+
 }
 
 func (r *RoomListenerImpl) OnTrackUnpublished(room *sdk.Room, publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {

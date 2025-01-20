@@ -1,63 +1,73 @@
 package sdk
 
 import (
-	// pb_track "github.com/openimsdk/openim-rtc/proto/go/track"
 	"log"
+	"time"
 
 	lksdk "github.com/livekit/server-sdk-go/v2"
 	"github.com/pion/webrtc/v4"
 )
 
+const (
+	MimeTypePCMU = "audio/PCMU"
+	MimeTypePCMA = "audio/PCMA"
+	MimeTypeOpus = "audio/opus"
+)
+
 type Track struct {
-	name         string
-	videoWidth   int
-	videoHeight  int
-	liveKitTrack *lksdk.LocalTrack
+	name           string
+	mimeType       string
+	videoWidth     int
+	videoHeight    int
+	sampleProvider *RealSampleProvider
+	liveKitTrack   *lksdk.LocalTrack
+	opened         bool
 }
 
-func newLivekitTrack(mine string) (*lksdk.LocalTrack, error) {
-	provider := &RealSampleProvider{
-		Mime: mine,
-	}
-
-	track, err := lksdk.NewLocalTrack(webrtc.RTPCodecCapability{
-		MimeType: provider.Mime,
+func (t *Track) Open() {
+	liveKitTrack, err := lksdk.NewLocalTrack(webrtc.RTPCodecCapability{
+		MimeType: t.sampleProvider.mime,
 	})
-
 	if err != nil {
-		return nil, err
+		log.Panic(err.Error())
 	}
-
-	track.OnBind(func() {
-		// write audio stream
-		if err := track.StartWrite(provider, provider.OnWriteComplete); err != nil {
-			log.Println(err.Error())
+	liveKitTrack.OnBind(func() {
+		t.opened = true
+		// write audio stream or video stream
+		if err := liveKitTrack.StartWrite(t.sampleProvider, t.sampleProvider.onWriteComplete); err != nil {
+			log.Panic(err.Error())
 		}
 	})
-
-	return track, nil
+	t.liveKitTrack = liveKitTrack
+	log.Println("1111111111111111111")
 }
 
-func NewAudioTrack() *Track {
-	track, err := newLivekitTrack(webrtc.MimeTypePCMA)
-	if err != nil {
-		log.Println(err.Error())
+func (t *Track) Close() {
+
+}
+
+func (t *Track) WriteData(data []byte, duration time.Duration) {
+	t.sampleProvider.WriteData(data)
+}
+
+func (t *Track) IsOpened() bool {
+	return t.opened
+}
+
+func NewAudioTrack(name string, mimeType string) *Track {
+	track := &Track{
+		name:        name,
+		mimeType:    mimeType,
+		videoWidth:  0,
+		videoHeight: 0,
+		opened:      false,
 	}
+	provider := NewRealSampleProvider(mimeType)
+	track.sampleProvider = provider
+
 	return track
 }
 
 func NewVideoTrack() *Track {
-
-}
-
-func CreateVideoTrack(name string) {
-
-}
-
-func CreateAudioTrack() *lksdk.LocalTrack {
-
-}
-
-func GetStats() {
-
+	return nil
 }

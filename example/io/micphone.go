@@ -13,6 +13,8 @@ type MicPhone struct {
 	canUse      bool
 	using       bool
 	sizeInBytes uint32
+
+	onRecvData func(data []byte, frameCount uint32)
 }
 
 func (m *MicPhone) init() {
@@ -73,7 +75,9 @@ func (m *MicPhone) Stop() error {
 }
 
 func (m *MicPhone) OnRecvFrames(outputSample, inputSample []byte, framecount uint32) {
-
+	if m.onRecvData != nil {
+		m.onRecvData(inputSample, framecount)
+	}
 }
 func (m *MicPhone) OnStop() {
 	m.using = false
@@ -88,8 +92,10 @@ func (m *MicPhone) Dispose() {
 	}
 }
 
-func NewMicPhone() *MicPhone {
-	micPhone := &MicPhone{}
+func NewMicPhone(onRecvData func(data []byte, frameCount uint32)) *MicPhone {
+	micPhone := &MicPhone{
+		onRecvData: onRecvData,
+	}
 	micPhone.init()
 	return micPhone
 }

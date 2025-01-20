@@ -10,37 +10,57 @@ import (
 )
 
 type RealSampleProvider struct {
-	Mime            string
-	FrameDuration   time.Duration
-	OnWriteComplete func()
+	mime            string
+	onWriteComplete func()
+	frameDuration   time.Duration
+	dataCache       chan []byte
 }
 
-func (p *RealSampleProvider) OnBind() error {
+func (s *RealSampleProvider) OnBind() error {
 	log.Println("RealSampleProvider OnBind")
 	return nil
 }
 
-func (p *RealSampleProvider) OnUnbind() error {
+func (s *RealSampleProvider) OnUnbind() error {
 	log.Println("RealSampleProvider OnUnbind")
 	return nil
 }
 
-func (p *RealSampleProvider) Close() error {
+func (s *RealSampleProvider) Close() error {
 	log.Println("RealSampleProvider Close")
+	close(s.dataCache)
 	return nil
 }
 
-func (p RealSampleProvider) CurrentAudioLevel() uint8 {
-	return 0
+func (s *RealSampleProvider) CurrentAudioLevel() uint8 {
+	// default audio level 15
+	return 15
 }
 
-func (p *RealSampleProvider) NextSample(c context.Context) (media.Sample, error) {
-	// log.Println("RealSampleProvider NextSample")
+func (s *RealSampleProvider) WriteData(data []byte) {
+	s.dataCache <- data
+}
+
+func (s *RealSampleProvider) NextSample(c context.Context) (media.Sample, error) {
 	sample := media.Sample{}
-	switch p.Mime {
+	switch s.mime {
 	case webrtc.MimeTypePCMA:
-		// sample.Data = pcmaData
-		// sample.Duration = duration
+		select {
+		case data := <-s.dataCache:
+			sample.Data = data
+			sample.Duration = s.frameDuration
+		default:
+			sample.Data = make([]byte, 0)
+			sample.Duration = s.frameDuration
+		}
 	}
 	return sample, nil
+}
+
+func NewRealSampleProvider(mimeType string) *RealSampleProvider {
+	provider := &RealSampleProvider{
+		mime:      mimeType,
+		dataCache: make(chan []byte, 100),
+	}
+	return provider
 }

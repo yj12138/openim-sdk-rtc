@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/AllenDang/cimgui-go/imgui"
 	"github.com/openimsdk/openim-rtc/example/io"
@@ -21,6 +22,7 @@ type WindowRoom struct {
 	identify string
 
 	room     *sdk.Room
+	track    *sdk.Track
 	micPhone *io.MicPhone
 	speaker  *io.Speaker
 
@@ -33,7 +35,13 @@ func (w *WindowRoom) Start() {
 	w.Open = true
 
 	w.room = sdk.NewRoom()
-	w.micPhone = io.NewMicPhone()
+	// 每帧时间 = 1 / 采样率（秒）
+	w.track = sdk.NewAudioTrack("micphone_track", sdk.MimeTypeOpus)
+	w.micPhone = io.NewMicPhone(func(data []byte, frameCount uint32) {
+		sampleRate := 44100
+		frameDuration := time.Duration(int64(time.Second)/int64(sampleRate)) * time.Duration(frameCount)
+		w.track.WriteData(data, frameDuration)
+	})
 	w.speaker = io.NewSpeaker()
 
 	w.send_input_test_data = ""
@@ -74,6 +82,21 @@ func (w *WindowRoom) Update() {
 			}
 		} else {
 			imgui.Text(fmt.Sprintf("Owner:%s", w.room.GetOwner()))
+			imgui.Text("-------------------Audio Track----------------------")
+			if w.track.IsOpened() {
+				imgui.PushIDStr("AudioTrack_Stop")
+				if imgui.Button("Stop") {
+					w.track.Close()
+				}
+				imgui.PopID()
+			} else {
+				imgui.PushIDStr("AudioTrack_Start")
+				if imgui.Button("Start") {
+					w.track.Open()
+					w.room.PublicTrack(w.track)
+				}
+				imgui.PopID()
+			}
 			imgui.Text("-------------------MicPhone----------------------")
 			if w.micPhone.CanUse() {
 				if w.micPhone.Using() {
