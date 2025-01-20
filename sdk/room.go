@@ -165,18 +165,35 @@ func (r *Room) IsConnSuc() bool {
 	return r.livekitRoom != nil
 }
 
-func (r *Room) PublicTrack() {
-
+func (r *Room) PublicTrack(track *Track) {
+	if r.checkConn() {
+		_, err := r.livekitRoom.LocalParticipant.PublishTrack(track.liveKitTruck, &lksdk.TrackPublicationOptions{
+			VideoWidth:  100,
+			VideoHeight: 100,
+			Name:        "",
+		})
+		if err != nil {
+			log.Panic(err)
+		}
+	}
 }
 
 func (r *Room) UnpublishTrack() {
 }
 
-func (r *Room) PublishData(data string) {
-	if !r.IsConnSuc() {
-		return
+func (r *Room) checkConn() bool {
+	if r.IsConnSuc() {
+		return true
+	} else {
+		log.Panic("not connect to room")
+		return false
 	}
-	r.livekitRoom.LocalParticipant.PublishDataPacket(lksdk.UserData([]byte(data)), lksdk.WithDataPublishReliable(true))
+}
+
+func (r *Room) PublishData(data string) {
+	if r.checkConn() {
+		r.livekitRoom.LocalParticipant.PublishDataPacket(lksdk.UserData([]byte(data)), lksdk.WithDataPublishReliable(true))
+	}
 }
 
 func (r *Room) SetSubscribed() {
