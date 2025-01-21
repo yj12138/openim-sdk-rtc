@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/AllenDang/cimgui-go/imgui"
@@ -34,7 +35,7 @@ func (w *WindowRoom) Start() {
 	w.identify = ""
 	w.Open = true
 
-	w.room = sdk.NewRoom()
+	w.room = sdk.NewRoom(NewRoomCallBack())
 	// 每帧时间 = 1 / 采样率（秒）
 	w.track = sdk.NewAudioTrack("micphone_track", sdk.MimeTypeOpus)
 	w.micPhone = io.NewMicPhone(func(data []byte, frameCount uint32) {
@@ -82,6 +83,10 @@ func (w *WindowRoom) Update() {
 			}
 		} else {
 			imgui.Text(fmt.Sprintf("Owner:%s", w.room.GetOwner()))
+			imgui.Text("-------------------Function----------------------")
+			if imgui.Button("GetAllParticipant") {
+				log.Println(w.room.GetAllParticipantId())
+			}
 			imgui.Text("-------------------Audio Track----------------------")
 			if w.track.IsOpened() {
 				imgui.PushIDStr("AudioTrack_Stop")

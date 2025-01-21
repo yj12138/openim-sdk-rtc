@@ -9,8 +9,6 @@ import (
 )
 
 const (
-	MimeTypePCMU = "audio/PCMU"
-	MimeTypePCMA = "audio/PCMA"
 	MimeTypeOpus = "audio/opus"
 )
 
@@ -31,9 +29,8 @@ func (t *Track) Open() {
 	if err != nil {
 		log.Panic(err.Error())
 	}
+	t.opened = true
 	liveKitTrack.OnBind(func() {
-		t.opened = true
-		// write audio stream or video stream
 		if err := liveKitTrack.StartWrite(t.sampleProvider, t.sampleProvider.onWriteComplete); err != nil {
 			log.Panic(err.Error())
 		}
@@ -46,7 +43,7 @@ func (t *Track) Close() {
 }
 
 func (t *Track) WriteData(data []byte, duration time.Duration) {
-	t.sampleProvider.WriteData(data)
+	t.sampleProvider.WriteData(data, duration)
 }
 
 func (t *Track) IsOpened() bool {
