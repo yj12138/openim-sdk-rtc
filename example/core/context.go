@@ -39,71 +39,99 @@ func ConnectRoom(roomName string, identify string) {
 	room.ConnectBySecret(livekitHost, livekitApiKey, livekitApiSecret, roomName, identify)
 }
 
-func OnDisconnected() {
+func OpenAudioTrack() {
+	room.PublicTrack(audioTrack)
+}
+
+func StopAudioTrack() {
+	room.UnpublishTrack(audioTrack)
+}
+
+func SendData(data string) {
+	room.PublishData(data)
+}
+
+func OpenMicPhone() {
+	micPhone.Start()
+}
+
+func StopMicPhone() {
+	micPhone.Stop()
+}
+
+func OpenSpeaker() {
+	speaker.Start()
+}
+
+func StopSpeakder() {
+	speaker.Stop()
+}
+
+func onDisconnected() {
 	log.Println("Room disconnected:")
 }
 
-func OnDisconnectedWithReason(reason lksdk.DisconnectionReason) {
+func onDisconnectedWithReason(reason lksdk.DisconnectionReason) {
 	log.Println("Room disconnected with reason:", string(reason))
 }
 
-func OnParticipantConnected(rp *lksdk.RemoteParticipant) {
+func onParticipantConnected(rp *lksdk.RemoteParticipant) {
 	log.Println("Participant connected:", rp.Identity())
 }
 
-func OnParticipantDisconnected(rp *lksdk.RemoteParticipant) {
+func onParticipantDisconnected(rp *lksdk.RemoteParticipant) {
 	log.Println("Participant disconnected:", rp.Identity())
 }
 
-func OnActiveSpeakersChanged(ps []lksdk.Participant) {
+func onActiveSpeakersChanged(ps []lksdk.Participant) {
 	log.Println("Active speakers changed:")
 }
 
-func OnRoomMetadataChanged(metaData string) {
+func onRoomMetadataChanged(metaData string) {
 	log.Println("Room metadata changed:", metaData)
 }
 
-func OnReconnecting() {
+func onReconnecting() {
 	log.Println("Reconnecting:")
 }
 
-func OnReconnected() {
+func onReconnected() {
 	log.Println("Room reconnected:")
 }
 
-func OnLocalTrackPublished(ltp *lksdk.LocalTrackPublication, lp *lksdk.LocalParticipant) {
+func onLocalTrackPublished(ltp *lksdk.LocalTrackPublication, lp *lksdk.LocalParticipant) {
 	log.Println(lp.Identity(), "Local track published:", ltp.Track().ID())
 }
 
-func OnLocalTrackUnpublished(ltp *lksdk.LocalTrackPublication, lp *lksdk.LocalParticipant) {
+func onLocalTrackUnpublished(ltp *lksdk.LocalTrackPublication, lp *lksdk.LocalParticipant) {
 	log.Println(lp.Identity(), "Local track unpublished:", ltp.Track().ID())
 }
 
-func OnTrackMuted(tp lksdk.TrackPublication, p lksdk.Participant) {
+func onTrackMuted(tp lksdk.TrackPublication, p lksdk.Participant) {
 	log.Println(p.Identity(), "Track muted:", tp.Track().ID())
 }
 
-func OnTrackUnmuted(tp lksdk.TrackPublication, p lksdk.Participant) {
+func onTrackUnmuted(tp lksdk.TrackPublication, p lksdk.Participant) {
 	log.Println(p.Identity(), "Track unmuted:", tp.Track().ID())
 }
 
-func OnMetadataChanged(oldMetaData string, p lksdk.Participant) {
+func onMetadataChanged(oldMetaData string, p lksdk.Participant) {
 	log.Println(p.Identity(), "Metadata changed:", oldMetaData)
 }
 
-func OnAttributesChanged(changed map[string]string, p lksdk.Participant) {
+func onAttributesChanged(changed map[string]string, p lksdk.Participant) {
 	log.Println(p.Identity(), "Attributes changed:", changed)
 }
 
-func OnIsSpeakingChanged(p lksdk.Participant) {
+func onIsSpeakingChanged(p lksdk.Participant) {
 	log.Println(p.Identity(), "Is speaking changed:")
 }
 
-func OnConnectionQualityChanged(update *livekit.ConnectionQualityInfo, p lksdk.Participant) {
+func onConnectionQualityChanged(update *livekit.ConnectionQualityInfo, p lksdk.Participant) {
 	log.Println(p.Identity(), "Connection quality changed:", update.String())
 }
 
-func OnTrackSubscribed(track *webrtc.TrackRemote, publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
+func onTrackSubscribed(track *webrtc.TrackRemote, publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
 	log.Println("Track subscribed:", track.ID(), publication.Track().ID(), rp.Identity())
 	go func() {
 		log.Println(track.Codec().MimeType)
@@ -118,62 +146,62 @@ func OnTrackSubscribed(track *webrtc.TrackRemote, publication *lksdk.RemoteTrack
 	}()
 }
 
-func OnTrackUnsubscribed(track *webrtc.TrackRemote, publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
+func onTrackUnsubscribed(track *webrtc.TrackRemote, publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
 	log.Println("Track unsubscribed:", track.ID(), publication.Track().ID(), rp.Identity())
 }
 
-func OnTrackSubscriptionFailed(sid string, rp *lksdk.RemoteParticipant) {
+func onTrackSubscriptionFailed(sid string, rp *lksdk.RemoteParticipant) {
 	log.Println("Track subscription failed:", sid, rp.Identity())
 }
 
-func OnTrackPublished(publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
+func onTrackPublished(publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
 	log.Println("OnTrackPublished", publication.MimeType(), rp.Identity())
 }
 
-func OnTrackUnpublished(publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
+func onTrackUnpublished(publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
 	log.Println("Track unpublished:", publication.Track().ID(), rp.Identity())
 }
 
-func OnDataPacket(data lksdk.DataPacket, params lksdk.DataReceiveParams) {
+func onDataPacket(data lksdk.DataPacket, params lksdk.DataReceiveParams) {
 	userDataPackage, ok := data.(*lksdk.UserDataPacket)
 	if ok {
 		log.Println("Data packet received:", params.SenderIdentity, string(userDataPackage.Payload))
 	}
 }
 
-func OnTranscriptionReceived(transcriptionSegments []*lksdk.TranscriptionSegment, p lksdk.Participant, publication lksdk.TrackPublication) {
+func onTranscriptionReceived(transcriptionSegments []*lksdk.TranscriptionSegment, p lksdk.Participant, publication lksdk.TrackPublication) {
 	log.Println("Transcription received:", transcriptionSegments, p, publication)
 }
 
 func NewRoomCallBack() *lksdk.RoomCallback {
 	return &lksdk.RoomCallback{
-		OnDisconnected:            OnDisconnected,
-		OnDisconnectedWithReason:  OnDisconnectedWithReason,
-		OnParticipantConnected:    OnParticipantConnected,
-		OnParticipantDisconnected: OnParticipantDisconnected,
-		OnActiveSpeakersChanged:   OnActiveSpeakersChanged,
-		OnRoomMetadataChanged:     OnRoomMetadataChanged,
-		OnReconnecting:            OnReconnecting,
-		OnReconnected:             OnReconnected,
+		OnDisconnected:            onDisconnected,
+		OnDisconnectedWithReason:  onDisconnectedWithReason,
+		OnParticipantConnected:    onParticipantConnected,
+		OnParticipantDisconnected: onParticipantDisconnected,
+		OnActiveSpeakersChanged:   onActiveSpeakersChanged,
+		OnRoomMetadataChanged:     onRoomMetadataChanged,
+		OnReconnecting:            onReconnecting,
+		OnReconnected:             onReconnected,
 		ParticipantCallback: lksdk.ParticipantCallback{
-			OnLocalTrackPublished:   OnLocalTrackPublished,
-			OnLocalTrackUnpublished: OnLocalTrackUnpublished,
+			OnLocalTrackPublished:   onLocalTrackPublished,
+			OnLocalTrackUnpublished: onLocalTrackUnpublished,
 			// for all participants
-			OnTrackMuted:               OnTrackMuted,
-			OnTrackUnmuted:             OnTrackUnmuted,
-			OnMetadataChanged:          OnMetadataChanged,
-			OnAttributesChanged:        OnAttributesChanged,
-			OnIsSpeakingChanged:        OnIsSpeakingChanged,
-			OnConnectionQualityChanged: OnConnectionQualityChanged,
+			OnTrackMuted:               onTrackMuted,
+			OnTrackUnmuted:             onTrackUnmuted,
+			OnMetadataChanged:          onMetadataChanged,
+			OnAttributesChanged:        onAttributesChanged,
+			OnIsSpeakingChanged:        onIsSpeakingChanged,
+			OnConnectionQualityChanged: onConnectionQualityChanged,
 
 			// for remote participants
-			OnTrackSubscribed:         OnTrackSubscribed,
-			OnTrackUnsubscribed:       OnTrackUnsubscribed,
-			OnTrackSubscriptionFailed: OnTrackSubscriptionFailed,
-			OnTrackPublished:          OnTrackPublished,
-			OnTrackUnpublished:        OnTrackUnpublished,
-			OnDataPacket:              OnDataPacket,
-			OnTranscriptionReceived:   OnTranscriptionReceived,
+			OnTrackSubscribed:         onTrackSubscribed,
+			OnTrackUnsubscribed:       onTrackUnsubscribed,
+			OnTrackSubscriptionFailed: onTrackSubscriptionFailed,
+			OnTrackPublished:          onTrackPublished,
+			OnTrackUnpublished:        onTrackUnpublished,
+			OnDataPacket:              onDataPacket,
+			OnTranscriptionReceived:   onTranscriptionReceived,
 		},
 	}
 }

@@ -52,6 +52,7 @@ func (s *RealSampleProvider) NextSample(c context.Context) (media.Sample, error)
 	case MimeTypeOpus:
 		select {
 		case sampleData := <-s.dataCache:
+			log.Println("Send Audio Data ", len(sample.Data), sampleData.Duration,)
 			sample.Data = sampleData.Data
 			sample.Duration = sampleData.Duration
 		default:

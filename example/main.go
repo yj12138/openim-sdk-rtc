@@ -37,7 +37,7 @@ func main() {
 
 	currentBackend, _ = backend.CreateBackend(ebitenbackend.NewEbitenBackend())
 	currentBackend.SetBgColor(imgui.NewVec4(0.45, 0.55, 0.6, 1.0))
-	currentBackend.CreateWindow(fmt.Sprintf("RoomName:%s - Identify:%s", *roomName, *idenfify), 800, 500)
+	currentBackend.CreateWindow(fmt.Sprintf("%s:%s", *roomName, *idenfify), 800, 500)
 	currentBackend.SetCloseCallback(func(b backend.Backend[ebitenbackend.EbitenBackendFlags]) {
 		ui.Destory()
 	})

@@ -27,7 +27,6 @@ func (m *Speaker) init() {
 		return
 	}
 	deviceConfig := malgo.DefaultDeviceConfig(malgo.Playback)
-	deviceConfig.DeviceType = malgo.Capture
 	deviceConfig.Playback.Format = malgo.FormatS16
 	deviceConfig.Playback.Channels = 1
 	deviceConfig.SampleRate = 44100
@@ -93,6 +92,7 @@ func (m *Speaker) Dispose() {
 }
 
 func (m *Speaker) WriteData(data []byte) {
+	log.Println("write audio frame", len(data))
 	m.audioData <- data
 }
 

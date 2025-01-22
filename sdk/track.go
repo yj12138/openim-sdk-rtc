@@ -22,22 +22,6 @@ type Track struct {
 	opened         bool
 }
 
-func (t *Track) Open() {
-	liveKitTrack, err := lksdk.NewLocalTrack(webrtc.RTPCodecCapability{
-		MimeType: t.sampleProvider.mime,
-	})
-	if err != nil {
-		log.Panic(err.Error())
-	}
-	t.opened = true
-	liveKitTrack.OnBind(func() {
-		if err := liveKitTrack.StartWrite(t.sampleProvider, t.sampleProvider.onWriteComplete); err != nil {
-			log.Panic(err.Error())
-		}
-	})
-	t.liveKitTrack = liveKitTrack
-}
-
 func (t *Track) Close() {
 
 }
@@ -51,16 +35,27 @@ func (t *Track) IsOpened() bool {
 }
 
 func NewAudioTrack(name string, mimeType string) *Track {
-	track := &Track{
-		name:        name,
-		mimeType:    mimeType,
-		videoWidth:  0,
-		videoHeight: 0,
-		opened:      false,
-	}
 	provider := NewRealSampleProvider(mimeType)
-	track.sampleProvider = provider
-
+	liveKitTrack, err := lksdk.NewLocalTrack(webrtc.RTPCodecCapability{
+		MimeType: provider.mime,
+	})
+	if err != nil {
+		log.Panic(err.Error())
+	}
+	liveKitTrack.OnBind(func() {
+		if err := liveKitTrack.StartWrite(provider, provider.onWriteComplete); err != nil {
+			log.Panic(err.Error())
+		}
+	})
+	track := &Track{
+		name:           name,
+		mimeType:       mimeType,
+		opened:         false,
+		liveKitTrack:   liveKitTrack,
+		videoWidth:     0,
+		videoHeight:    0,
+		sampleProvider: provider,
+	}
 	return track
 }
 
