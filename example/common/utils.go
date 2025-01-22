@@ -7,11 +7,6 @@ import (
 	"time"
 )
 
-func generateUniqueID() string {
-	timestamp := time.Now().UnixNano()
-	return fmt.Sprintf("%d", timestamp)
-}
-
 func TimeStampToStr(timestampSec int64) string {
 	t := time.Unix(timestampSec, 0)
 	return t.Format(time.DateTime)

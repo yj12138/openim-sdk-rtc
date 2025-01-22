@@ -13,6 +13,8 @@ type Speaker struct {
 	canUse      bool
 	using       bool
 	sizeInBytes uint32
+
+	audioData chan []byte
 }
 
 func (m *Speaker) init() {
@@ -37,7 +39,7 @@ func (m *Speaker) init() {
 	}
 	device, err := malgo.InitDevice(ctx.Context, deviceConfig, captureCallbacks)
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 		return
 	}
 	m.device = device
@@ -73,7 +75,8 @@ func (m *Speaker) Stop() error {
 }
 
 func (m *Speaker) onSendFrames(outputSample, inputSample []byte, framecount uint32) {
-
+	data := <-m.audioData
+	copy(outputSample, data)
 }
 
 func (m *Speaker) onStop() {
@@ -89,8 +92,14 @@ func (m *Speaker) Dispose() {
 	}
 }
 
+func (m *Speaker) WriteData(data []byte) {
+	m.audioData <- data
+}
+
 func NewSpeaker() *Speaker {
-	speaker := &Speaker{}
+	speaker := &Speaker{
+		audioData: make(chan []byte, 10),
+	}
 	speaker.init()
 	return speaker
 }

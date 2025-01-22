@@ -45,13 +45,13 @@ func removeWin(win IWindow) {
 	delete(windowMap, win.GetId())
 }
 
-func DrawAllWindow() {
+func drawAllWindow() {
 	for _, win := range windowMap {
 		win.Update()
 	}
 }
 
-func DestroyAllWindow() {
+func destroyAllWindow() {
 	for _, win := range windowMap {
 		win.Destroy()
 	}
