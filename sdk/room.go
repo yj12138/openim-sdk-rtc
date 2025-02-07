@@ -3,7 +3,6 @@ package sdk
 import (
 	lksdk "github.com/livekit/server-sdk-go/v2"
 	"log"
-	// pb_room "github.com/openimsdk/openim-rtc/proto/go/room"
 )
 
 type Room struct {
@@ -61,7 +60,6 @@ func (r *Room) PublicTrack(track *Track) {
 		return
 	}
 	if r.checkConn() {
-		log.Println("public track-------------", track.name, track.mimeType)
 		_, err := r.livekitRoom.LocalParticipant.PublishTrack(track.liveKitTrack, &lksdk.TrackPublicationOptions{
 			VideoWidth:  track.videoWidth,
 			VideoHeight: track.videoHeight,

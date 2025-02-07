@@ -5,28 +5,32 @@ import (
 	"github.com/openimsdk/openim-rtc/example/core"
 )
 
-func drawMainWin() {
+func drawAudioWin() {
 	imgui.Begin("Audio")
-	if imgui.Button("Publish Audio Track") {
-		core.OpenAudioTrack()
+	if core.HasPublishAudioTrack() {
+		if imgui.Button("Close Audio Track") {
+			core.StopAudioTrack()
+		}
+	} else {
+		if imgui.Button("Open Audio Track") {
+			core.OpenAudioTrack()
+		}
 	}
-	if imgui.Button("UnPublish Audio Track") {
-		core.StopAudioTrack()
-	}
-	if imgui.Button("Send Test Data") {
+	if imgui.Button("Send Hello World") {
 		core.SendData("hello world")
 	}
-	if imgui.Button("Open Micphone") {
-		core.OpenMicPhone()
+
+	if imgui.Button("Input:Micphone") {
+
 	}
-	if imgui.Button("Stop Micphone") {
-		core.StopMicPhone()
+
+	if imgui.Button("Output:Speaker") {
+
 	}
-	if imgui.Button("Open Speaker") {
-		core.OpenSpeaker()
-	}
-	if imgui.Button("Stop Speaker") {
-		core.StopSpeakder()
-	}
+
 	imgui.End()
+}
+
+func drawMainWin() {
+	drawAudioWin()
 }

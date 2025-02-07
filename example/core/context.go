@@ -20,15 +20,17 @@ var audioTrack *sdk.Track
 var micPhone *io.MicPhone
 var speaker *io.Speaker
 
+var hasPublishAudioTrack = false
+
+const sampleRate int = 44100
+
 func Init(host string, apiKey string, apiSecret string) {
 	livekitHost = host
 	livekitApiKey = apiKey
 	livekitApiSecret = apiSecret
 	room = sdk.NewRoom(NewRoomCallBack())
-	// 每帧时间 = 1 / 采样率（秒）
 	audioTrack = sdk.NewAudioTrack("micphone_track", sdk.MimeTypeOpus)
 	micPhone = io.NewMicPhone(func(data []byte, frameCount uint32) {
-		sampleRate := 44100
 		frameDuration := time.Duration(int64(time.Second)/int64(sampleRate)) * time.Duration(frameCount)
 		audioTrack.WriteData(data, frameDuration)
 	})
@@ -39,12 +41,20 @@ func ConnectRoom(roomName string, identify string) {
 	room.ConnectBySecret(livekitHost, livekitApiKey, livekitApiSecret, roomName, identify)
 }
 
+func HasPublishAudioTrack() bool {
+	return hasPublishAudioTrack
+}
+
 func OpenAudioTrack() {
-	room.PublicTrack(audioTrack)
+	if !hasPublishAudioTrack {
+		room.PublicTrack(audioTrack)
+	}
 }
 
 func StopAudioTrack() {
-	room.UnpublishTrack(audioTrack)
+	if hasPublishAudioTrack {
+		room.UnpublishTrack(audioTrack)
+	}
 }
 
 func SendData(data string) {

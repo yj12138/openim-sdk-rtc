@@ -92,7 +92,6 @@ func (m *Speaker) Dispose() {
 }
 
 func (m *Speaker) WriteData(data []byte) {
-	log.Println("write audio frame", len(data))
 	m.audioData <- data
 }
 
