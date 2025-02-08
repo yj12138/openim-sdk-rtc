@@ -30,7 +30,8 @@ func Init(host string, apiKey string, apiSecret string) {
 	livekitApiSecret = apiSecret
 	room = sdk.NewRoom(NewRoomCallBack())
 	audioTrack = sdk.NewAudioTrack("micphone_track", sdk.MimeTypeOpus)
-	micPhone = io.NewMicPhone(func(data []byte, frameCount uint32) {
+	micPhone = io.NewMicPhone()
+	micPhone.AddCallBack(func(data []byte, frameCount uint32) {
 		frameDuration := time.Duration(int64(time.Second)/int64(sampleRate)) * time.Duration(frameCount)
 		audioTrack.WriteData(data, frameDuration)
 	})
@@ -47,12 +48,14 @@ func HasPublishAudioTrack() bool {
 
 func OpenAudioTrack() {
 	if !hasPublishAudioTrack {
+		hasPublishAudioTrack = true
 		room.PublicTrack(audioTrack)
 	}
 }
 
 func StopAudioTrack() {
 	if hasPublishAudioTrack {
+		hasPublishAudioTrack = false
 		room.UnpublishTrack(audioTrack)
 	}
 }
@@ -61,20 +64,12 @@ func SendData(data string) {
 	room.PublishData(data)
 }
 
-func OpenMicPhone() {
-	micPhone.Start()
+func GetMicPhone() *io.MicPhone {
+	return micPhone
 }
 
-func StopMicPhone() {
-	micPhone.Stop()
-}
-
-func OpenSpeaker() {
-	speaker.Start()
-}
-
-func StopSpeakder() {
-	speaker.Stop()
+func GetSpeaker() *io.Speaker {
+	return speaker
 }
 
 func onDisconnected() {

@@ -7,6 +7,35 @@ import (
 	"github.com/gen2brain/malgo"
 )
 
+type CallbackFunc func(data []byte, frameCount uint32)
+
+type CallbackList struct {
+	callbacks []CallbackFunc
+	exists    map[string]bool
+}
+
+func NewCallbackList() *CallbackList {
+	return &CallbackList{
+		callbacks: []CallbackFunc{},
+		exists:    make(map[string]bool),
+	}
+}
+func (cl *CallbackList) Add(callback CallbackFunc) {
+	callbackID := fmt.Sprintf("%p", callback)
+	if !cl.exists[callbackID] {
+		cl.callbacks = append(cl.callbacks, callback)
+		cl.exists[callbackID] = true
+	} else {
+		fmt.Println("回调函数已经存在")
+	}
+}
+
+func (cl *CallbackList) Execute(data []byte, frameCount uint32) {
+	for _, callback := range cl.callbacks {
+		callback(data, frameCount)
+	}
+}
+
 type MicPhone struct {
 	context     *malgo.AllocatedContext
 	device      *malgo.Device
@@ -14,7 +43,7 @@ type MicPhone struct {
 	using       bool
 	sizeInBytes uint32
 
-	onRecvData func(data []byte, frameCount uint32)
+	callbacks *CallbackList
 }
 
 func (m *MicPhone) init() {
@@ -75,10 +104,9 @@ func (m *MicPhone) Stop() error {
 }
 
 func (m *MicPhone) OnRecvFrames(outputSample, inputSample []byte, framecount uint32) {
-	if m.onRecvData != nil {
-		m.onRecvData(inputSample, framecount)
-	}
+	m.callbacks.Execute(inputSample, framecount)
 }
+
 func (m *MicPhone) OnStop() {
 	m.using = false
 }
@@ -92,9 +120,13 @@ func (m *MicPhone) Dispose() {
 	}
 }
 
-func NewMicPhone(onRecvData func(data []byte, frameCount uint32)) *MicPhone {
+func (m *MicPhone) AddCallBack(cb func(data []byte, frameCount uint32)) {
+	m.callbacks.Add(cb)
+}
+
+func NewMicPhone() *MicPhone {
 	micPhone := &MicPhone{
-		onRecvData: onRecvData,
+		callbacks: NewCallbackList(),
 	}
 	micPhone.init()
 	return micPhone

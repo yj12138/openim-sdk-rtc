@@ -8,6 +8,7 @@ import (
 	"github.com/AllenDang/cimgui-go/backend"
 	ebitenbackend "github.com/AllenDang/cimgui-go/backend/ebiten-backend"
 	"github.com/AllenDang/cimgui-go/imgui"
+	"github.com/AllenDang/cimgui-go/implot"
 	"github.com/openimsdk/openim-rtc/example/ui"
 
 	"github.com/openimsdk/openim-rtc/example/core"
@@ -17,6 +18,14 @@ var currentBackend backend.Backend[ebitenbackend.EbitenBackendFlags]
 
 func init() {
 	log.SetFlags(log.Llongfile)
+}
+
+func AfterCreateContext() {
+	implot.PlotCreateContext()
+}
+
+func BeforeDestroyContext() {
+	implot.PlotDestroyContext()
 }
 
 func main() {
@@ -36,10 +45,14 @@ func main() {
 	core.ConnectRoom(*roomName, *idenfify)
 
 	currentBackend, _ = backend.CreateBackend(ebitenbackend.NewEbitenBackend())
+	currentBackend.SetAfterCreateContextHook(AfterCreateContext)
+	currentBackend.SetBeforeDestroyContextHook(BeforeDestroyContext)
 	currentBackend.SetBgColor(imgui.NewVec4(0.45, 0.55, 0.6, 1.0))
-	currentBackend.CreateWindow(fmt.Sprintf("%s:%s", *roomName, *idenfify), 800, 500)
+	currentBackend.CreateWindow(fmt.Sprintf("%s:%s", *roomName, *idenfify), 1000, 1000)
 	currentBackend.SetCloseCallback(func(b backend.Backend[ebitenbackend.EbitenBackendFlags]) {
 		ui.Destory()
 	})
-	currentBackend.Run(ui.GUILoop)
+	currentBackend.Run(func() {
+		ui.GUILoop()
+	})
 }
