@@ -7,14 +7,43 @@ import (
 	"github.com/gen2brain/malgo"
 )
 
+type SpeakerCallBackFunc func(data []byte)
+
+type SpeakerCallBackList struct {
+	callbacks []SpeakerCallBackFunc
+	exists    map[string]bool
+}
+
+func (cl *SpeakerCallBackList) Add(callback SpeakerCallBackFunc) {
+	callbackID := fmt.Sprintf("%p", callback)
+	if !cl.exists[callbackID] {
+		cl.callbacks = append(cl.callbacks, callback)
+		cl.exists[callbackID] = true
+	} else {
+		log.Println("回调函数已经存在")
+	}
+}
+
+func (cl *SpeakerCallBackList) Execute(data []byte) {
+	for _, callback := range cl.callbacks {
+		callback(data)
+	}
+}
+func newSpeakerCallbackList() *SpeakerCallBackList {
+	return &SpeakerCallBackList{
+		callbacks: []SpeakerCallBackFunc{},
+		exists:    make(map[string]bool),
+	}
+}
+
 type Speaker struct {
-	context     *malgo.AllocatedContext
-	device      *malgo.Device
-	canUse      bool
-	using       bool
-	sizeInBytes uint32
+	context *malgo.AllocatedContext
+	device  *malgo.Device
+	canUse  bool
+	using   bool
 
 	audioData chan []byte
+	callbacks *SpeakerCallBackList
 }
 
 func (m *Speaker) init() {
@@ -31,12 +60,11 @@ func (m *Speaker) init() {
 	deviceConfig.Playback.Channels = 1
 	deviceConfig.SampleRate = 44100
 	deviceConfig.Alsa.NoMMap = 1
-	m.sizeInBytes = uint32(malgo.SampleSizeInBytes(deviceConfig.Capture.Format))
-	captureCallbacks := malgo.DeviceCallbacks{
+	playbackCallbacks := malgo.DeviceCallbacks{
 		Data: m.onSendFrames,
 		Stop: m.onStop,
 	}
-	device, err := malgo.InitDevice(ctx.Context, deviceConfig, captureCallbacks)
+	device, err := malgo.InitDevice(ctx.Context, deviceConfig, playbackCallbacks)
 	if err != nil {
 		log.Panic(err)
 		return
@@ -61,16 +89,19 @@ func (m *Speaker) Start() error {
 			return err
 		}
 		m.using = true
+		return nil
+	} else {
+		return fmt.Errorf("device not can use")
 	}
-	return fmt.Errorf("no init device")
 }
 
 func (m *Speaker) Stop() error {
 	if m.canUse {
 		err := m.device.Stop()
 		return err
+	} else {
+		return fmt.Errorf("device not can use")
 	}
-	return fmt.Errorf("no init device")
 }
 
 func (m *Speaker) onSendFrames(outputSample, inputSample []byte, framecount uint32) {
@@ -79,6 +110,7 @@ func (m *Speaker) onSendFrames(outputSample, inputSample []byte, framecount uint
 }
 
 func (m *Speaker) onStop() {
+	log.Println("Speaker OnStop")
 	m.using = false
 }
 
@@ -92,12 +124,18 @@ func (m *Speaker) Dispose() {
 }
 
 func (m *Speaker) WriteData(data []byte) {
+	m.callbacks.Execute(data)
 	m.audioData <- data
+}
+
+func (m *Speaker) AddCallBack(cb func(data []byte)) {
+	m.callbacks.Add(cb)
 }
 
 func NewSpeaker() *Speaker {
 	speaker := &Speaker{
 		audioData: make(chan []byte, 10),
+		callbacks: newSpeakerCallbackList(),
 	}
 	speaker.init()
 	return speaker

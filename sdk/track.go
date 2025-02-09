@@ -19,7 +19,6 @@ type Track struct {
 	videoHeight    int
 	sampleProvider *RealSampleProvider
 	liveKitTrack   *lksdk.LocalTrack
-	opened         bool
 }
 
 func (t *Track) Close() {
@@ -28,10 +27,6 @@ func (t *Track) Close() {
 
 func (t *Track) WriteData(data []byte, duration time.Duration) {
 	t.sampleProvider.WriteData(data, duration)
-}
-
-func (t *Track) IsOpened() bool {
-	return t.opened
 }
 
 func NewAudioTrack(name string, mimeType string) *Track {
@@ -50,7 +45,6 @@ func NewAudioTrack(name string, mimeType string) *Track {
 	track := &Track{
 		name:           name,
 		mimeType:       mimeType,
-		opened:         false,
 		liveKitTrack:   liveKitTrack,
 		videoWidth:     0,
 		videoHeight:    0,

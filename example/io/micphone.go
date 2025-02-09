@@ -7,30 +7,30 @@ import (
 	"github.com/gen2brain/malgo"
 )
 
-type CallbackFunc func(data []byte, frameCount uint32)
+type MicPhoneCallbackFunc func(data []byte, frameCount uint32)
 
-type CallbackList struct {
-	callbacks []CallbackFunc
+type MicPhoneCallbackList struct {
+	callbacks []MicPhoneCallbackFunc
 	exists    map[string]bool
 }
 
-func NewCallbackList() *CallbackList {
-	return &CallbackList{
-		callbacks: []CallbackFunc{},
+func newMicPhoneCallbackList() *MicPhoneCallbackList {
+	return &MicPhoneCallbackList{
+		callbacks: []MicPhoneCallbackFunc{},
 		exists:    make(map[string]bool),
 	}
 }
-func (cl *CallbackList) Add(callback CallbackFunc) {
+func (cl *MicPhoneCallbackList) Add(callback MicPhoneCallbackFunc) {
 	callbackID := fmt.Sprintf("%p", callback)
 	if !cl.exists[callbackID] {
 		cl.callbacks = append(cl.callbacks, callback)
 		cl.exists[callbackID] = true
 	} else {
-		fmt.Println("回调函数已经存在")
+		log.Println("回调函数已经存在")
 	}
 }
 
-func (cl *CallbackList) Execute(data []byte, frameCount uint32) {
+func (cl *MicPhoneCallbackList) Execute(data []byte, frameCount uint32) {
 	for _, callback := range cl.callbacks {
 		callback(data, frameCount)
 	}
@@ -43,7 +43,7 @@ type MicPhone struct {
 	using       bool
 	sizeInBytes uint32
 
-	callbacks *CallbackList
+	callbacks *MicPhoneCallbackList
 }
 
 func (m *MicPhone) init() {
@@ -91,16 +91,19 @@ func (m *MicPhone) Start() error {
 			return err
 		}
 		m.using = true
+		return nil
+	} else {
+		return fmt.Errorf("device not can use")
 	}
-	return fmt.Errorf("no init device")
 }
 
 func (m *MicPhone) Stop() error {
 	if m.canUse {
 		err := m.device.Stop()
 		return err
+	} else {
+		return fmt.Errorf("device not can use")
 	}
-	return fmt.Errorf("no init device")
 }
 
 func (m *MicPhone) OnRecvFrames(outputSample, inputSample []byte, framecount uint32) {
@@ -108,6 +111,7 @@ func (m *MicPhone) OnRecvFrames(outputSample, inputSample []byte, framecount uin
 }
 
 func (m *MicPhone) OnStop() {
+	log.Println("MicPhone OnStop")
 	m.using = false
 }
 
@@ -126,7 +130,7 @@ func (m *MicPhone) AddCallBack(cb func(data []byte, frameCount uint32)) {
 
 func NewMicPhone() *MicPhone {
 	micPhone := &MicPhone{
-		callbacks: NewCallbackList(),
+		callbacks: newMicPhoneCallbackList(),
 	}
 	micPhone.init()
 	return micPhone

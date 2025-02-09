@@ -32,8 +32,10 @@ func Init(host string, apiKey string, apiSecret string) {
 	audioTrack = sdk.NewAudioTrack("micphone_track", sdk.MimeTypeOpus)
 	micPhone = io.NewMicPhone()
 	micPhone.AddCallBack(func(data []byte, frameCount uint32) {
-		frameDuration := time.Duration(int64(time.Second)/int64(sampleRate)) * time.Duration(frameCount)
-		audioTrack.WriteData(data, frameDuration)
+		if hasPublishAudioTrack {
+			frameDuration := time.Duration(int64(time.Second)/int64(sampleRate)) * time.Duration(frameCount)
+			audioTrack.WriteData(data, frameDuration)
+		}
 	})
 	speaker = io.NewSpeaker()
 }
@@ -136,6 +138,11 @@ func onConnectionQualityChanged(update *livekit.ConnectionQualityInfo, p lksdk.P
 	log.Println(p.Identity(), "Connection quality changed:", update.String())
 }
 
+func isRealTimeData(timestamp int64, threshold int64) bool {
+	currentTime := time.Now().Unix()
+	return currentTime-timestamp <= threshold
+}
+
 func onTrackSubscribed(track *webrtc.TrackRemote, publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
 	log.Println("Track subscribed:", track.ID(), publication.Track().ID(), rp.Identity())
 	go func() {
@@ -145,8 +152,10 @@ func onTrackSubscribed(track *webrtc.TrackRemote, publication *lksdk.RemoteTrack
 			if err != nil {
 				break
 			}
-			data := pkt.Payload
-			speaker.WriteData(data)
+			if isRealTimeData(int64(pkt.Timestamp), 100) {
+				data := pkt.Payload
+				speaker.WriteData(data)
+			}
 		}
 	}()
 }
