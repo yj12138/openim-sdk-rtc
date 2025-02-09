@@ -77,7 +77,6 @@ func (r *Room) UnpublishTrack(track *Track) {
 		return
 	}
 	if r.checkConn() {
-		log.Println("Unpublictrack:", track.liveKitTrack.StreamID())
 		err := r.livekitRoom.LocalParticipant.UnpublishTrack(track.liveKitTrack.ID())
 		if err != nil {
 			log.Println(err)
