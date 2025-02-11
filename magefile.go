@@ -53,15 +53,7 @@ const (
 
 // protoModules lists all the protobuf modules to be processed for code generation.
 var protoModules = []string{
-	"audio_frame",
-	"e2ee",
 	"ffi",
-	"handle",
-	"participant",
-	"room",
-	"stats",
-	"track",
-	"video_frame",
 }
 
 // proto files directory path
@@ -70,8 +62,8 @@ var protoModules = []string{
 var protoDir = filepath.Join(".", "proto") // "./proto"
 
 /*
-protoc --go_out=:./ --go_opt=module=github.com/openimsdk/openim-sdk-core/v3/proto *.proto
-protoc --go_out=./${name} --go_opt=module=github.com/openimsdk/openim-sdk-core/v3/proto/go/${name} proto/${name}.proto
+protoc --go_out=:./ --go_opt=module=github.com/openimsdk/openim-rtc/proto *.proto
+protoc --go_out=./${name} --go_opt=module=github.com/openimsdk/openim-rtc/proto/go/${name} proto/${name}.proto
 */
 
 /*
@@ -160,7 +152,7 @@ func GenGo() error {
 			"--go_out=" + filepath.Join(goOutDir, module),
 			//"--go-grpc_out=" + filepath.Join(goOutDir, module),
 			"--go_opt=module=github.com/openimsdk/openim-rtc/proto/" + strings.Join([]string{GO, module}, "/"),
-			//"--go-grpc_opt=module=github.com/openimsdk/openim-sdk-core/v3/proto/" + strings.Join([]string{GO, module}, "/"),
+			//"--go-grpc_opt=module=github.com/openimsdk/openim-rtc/proto/" + strings.Join([]string{GO, module}, "/"),
 			filepath.Join("proto", module) + ".proto",
 		}
 		//log.Println(protoc, args)
@@ -395,7 +387,7 @@ func GenTS() error {
 		args := []string{
 			"--proto_path=" + protoDir,
 			"--plugin=protoc-gen-ts_proto=" + tsProto,
-			"--ts_proto_opt=esModuleInterop=true,messages=true,outputJsonMethods=false,outputPartialMethods=false,outputClientImpl=false,outputEncodeMethods=false,uses=messages",
+			"--ts_proto_opt=esModuleInterop=true,messages=true,outputJsonMethods=false,outputPartialMethods=false,outputClientImpl=false,outputEncodeMethods=false,useOptionals=messages",
 			"--ts_proto_out=" + filepath.Join(tsOutDir, module),
 			filepath.Join("proto", module) + ".proto",
 		}
@@ -604,7 +596,16 @@ func BuildiOS() error {
 
 	log.Println(filepath.Join(goSrc, iosOut))
 
-	cmd := exec.Command("go", "build", "-buildmode=c-archive", "-o", filepath.Join(iosOut, strings.Join([]string{soName, "a"}, ".")), ".")
+	buildTags := "darwin,!macos"
+
+	cmd := exec.Command(
+		"go",
+		"build",
+		"-buildmode=c-archive",
+		"-trimpath",
+		"-ldflags=-s -w",
+		"-tags", buildTags,
+		"-o", filepath.Join(iosOut, strings.Join([]string{soName, "a"}, ".")), ".")
 	cmd.Dir = goSrc
 	cmd.Env = os.Environ()
 	cmd.Stderr = os.Stderr
@@ -733,7 +734,6 @@ func BuildWindows() error {
 	if err := os.MkdirAll(filepath.Join(goSrc, windowsOut), 0755); err != nil {
 		return err
 	}
-	soName := "openimsdk"
 	cmd := exec.Command("go", "build", "-buildmode=c-shared", "-trimpath", "-ldflags=-s -w", "-o", filepath.Join(windowsOut, strings.Join([]string{soName, "dll"}, ".")), ".")
 	cmd.Dir = goSrc
 	cmd.Env = os.Environ()
@@ -780,7 +780,15 @@ func buildAndroid(aOutPath, goArch, apiLevel, archName string) error {
 		"GOARCH=" + goArch,
 		"CC=" + cc,
 	}
-	cmd := exec.Command("go", "build", "-buildmode=c-shared", "-trimpath", "-ldflags=-s -w", "-o", filepath.Join(aOutPath, archName, strings.Join([]string{soName, "so"}, ".")), ".")
+	buildTags := "android"
+	cmd := exec.Command(
+		"go",
+		"build",
+		"-buildmode=c-shared",
+		"-trimpath",
+		"-ldflags=-s -w",
+		"-tags", buildTags,
+		"-o", filepath.Join(aOutPath, archName, strings.Join([]string{soName, "so"}, ".")), ".")
 
 	cmd.Dir = goSrc
 	cmd.Env = append(os.Environ(), env...)
@@ -820,7 +828,15 @@ func BuildHarmanyOS_API9() error {
 			fmt.Sprintf("LD=%s/llvm/bin/ld.lld", ndkPath),
 			fmt.Sprintf("CC=%s", cc),
 		}
-		cmd := exec.Command("go", "build", "-buildmode=c-shared", "-trimpath", "-ldflags=-s -w", "-o", filepath.Join(outPath, archName, strings.Join([]string{soName, "so"}, ".")), ".")
+		buildTags := "harmony"
+		cmd := exec.Command(
+			"go",
+			"build",
+			"-buildmode=c-shared",
+			"-trimpath",
+			"-ldflags=-s -w",
+			"-tags", buildTags,
+			"-o", filepath.Join(outPath, archName, strings.Join([]string{soName, "so"}, ".")), ".")
 
 		cmd.Dir = goSrc
 		cmd.Env = append(os.Environ(), env...)
@@ -865,6 +881,7 @@ func BuildHarmanyOS_API12() error {
 		var cc string
 		var cFlag string
 		var cmd *exec.Cmd
+		buildTags := "harmony"
 		switch arch {
 		case "arm64":
 			GOOS = "linux"
@@ -873,7 +890,14 @@ func BuildHarmanyOS_API12() error {
 		case "amd64":
 			GOOS = "android"
 			cFlag = fmt.Sprintf("--target=x86_64-linux-ohos %s", baseFlag)
-			cmd = exec.Command("go", "build", "-buildmode=c-shared", "-trimpath", "-ldflags=-s -w", "-o", filepath.Join(outPath, archName, strings.Join([]string{soName, "so"}, ".")), ".")
+			cmd = exec.Command(
+				"go",
+				"build",
+				"-buildmode=c-shared",
+				"-trimpath",
+				"-ldflags=-s -w",
+				"-tags", buildTags,
+				"-o", filepath.Join(outPath, archName, strings.Join([]string{soName, "so"}, ".")), ".")
 		}
 		cc = fmt.Sprintf("%s/llvm/bin/clang %s", ndkPath, cFlag)
 		env := []string{
