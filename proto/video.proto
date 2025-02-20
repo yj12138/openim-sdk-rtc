@@ -1,0 +1,22 @@
+syntax = "proto3";
+package openim.rtc.video;
+
+option csharp_namespace = "OpenIM.RTC.Proto";
+option go_package = "github.com/openimsdk/openim-rtc/proto/go/video";
+
+// Video
+
+message NewVideoStreamReq {}
+message NewVideoStreamRes {}
+
+message NewVideoSourceReq {}
+message NewVideoSourceRes {}
+
+message CaptureVideoFrameReq {}
+message CaptureVideoFrameRes {}
+
+message VideoConvertReq {}
+message VideoConvertRes {}
+
+message VideoStreamFromParticipanReq {};
+message VideoStreamFromParticipanRes {};

@@ -14,11 +14,13 @@ import "C"
 import (
 	"context"
 	"fmt"
-	"github.com/openimsdk/tools/errs"
-	"github.com/openimsdk/tools/log"
 	"sync"
 	"time"
 	"unsafe"
+
+	"github.com/openimsdk/openim-rtc/bindings/base"
+	"github.com/openimsdk/tools/errs"
+	"github.com/openimsdk/tools/log"
 )
 
 type ResultData struct {
@@ -36,6 +38,7 @@ const (
 )
 
 func init() {
+	base.SetDispatchFfiResultFunc(dispatchResultForC)
 	go monitorResultMapSize()
 }
 
@@ -77,18 +80,20 @@ func monitorResultMapSize() {
 
 // ffi_init initializes the callback and a selected serialization protocol
 // event: The callback function to be invoked.
+// protocolType : The serialization protocol type (1 for JSON, 2 for Protocol Buffers, 3 for Thrift, 4 for FlatBuffers e.g.,or others)
 //
 //export ffi_init
-func ffi_init(event C.CallBack) int64 {
+func ffi_init(event C.CallBack, protocolType C.int) int64 {
 	C.eventCallBack = event
+	base.SetProtocolType(int(protocolType))
 	return 1
 }
 
 //export ffi_request
 func ffi_request(data *C.void, length C.int) {
 	//Synchronously copy data to prevent memory from being released prematurely after calling the Go function.
-	// goData := C.GoBytes(unsafe.Pointer(data), length)
-	// base.FfiRequest(goData)
+	goData := C.GoBytes(unsafe.Pointer(data), length)
+	base.FfiRequest(goData)
 }
 
 //export ffi_drop_handle

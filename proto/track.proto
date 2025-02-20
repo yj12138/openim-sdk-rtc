@@ -1,0 +1,96 @@
+syntax = "proto3";
+package openim.rtc.track;
+
+option csharp_namespace = "OpenIM.RTC.Proto";
+option go_package = "github.com/openimsdk/openim-rtc/proto/go/track";
+
+message TrackEvent {}
+
+enum TrackKind {
+  KIND_UNKNOWN = 0;
+  KIND_AUDIO = 1;
+  KIND_VIDEO = 2;
+}
+
+enum TrackSource {
+  SOURCE_UNKNOWN = 0;
+  SOURCE_CAMERA = 1;
+  SOURCE_MICROPHONE = 2;
+  SOURCE_SCREENSHARE = 3;
+  SOURCE_SCREENSHARE_AUDIO = 4;
+}
+
+enum StreamState {
+  STATE_UNKNOWN = 0;
+  STATE_ACTIVE = 1;
+  STATE_PAUSED = 2;
+}
+
+message TrackPublicationInfo {
+  string sid = 1;
+  string name = 2;
+  TrackKind kind = 3;
+  TrackSource source = 4;
+  bool simulcasted = 5;
+  uint32 width = 6;
+  uint32 height = 7;
+  string mime_type = 8;
+  bool muted = 9;
+  bool remote = 10;
+}
+
+message OwnedTrackPublication {
+  uint64 handle = 1;
+  TrackPublicationInfo info = 2;
+}
+
+message TrackInfo {
+  string sid = 1;
+  string name = 2;
+  TrackKind kind = 3;
+  StreamState stream_state = 4;
+  bool muted = 5;
+  bool remote = 6;
+}
+
+message OwnedTrack {
+  uint64 handle = 1;
+  TrackInfo info = 2;
+}
+
+message ParticipantTrackPermission {
+  string participant_identity = 1;
+  bool allow_all = 2;
+  string allowed_track_sids = 3;
+}
+
+message CreateVideoTrackReq {
+  string name = 1;
+  uint64 source_handle = 2;
+}
+message CreateVideoTrackRes { OwnedTrack track = 1; }
+
+message CreateAudioTrackReq {
+  string name = 1;
+  uint64 source_handle = 2;
+}
+message CreateAudioTrackRes { OwnedTrack track = 1; }
+
+message LocalTrackMuteReq {
+  uint64 track_handle = 1;
+  bool mute = 2;
+}
+message LocalTrackMuteRes { bool muted = 1; }
+
+message EnableRemoteTrackReq {
+  uint64 track_handle = 1;
+  bool enabled = 2;
+}
+message EnableRemoteTrackRes { bool enabled = 1; }
+
+message SetTrackSubscriptionPermissionsReq {
+  uint64 local_participant_handle = 1;
+  bool all_participants_allowed = 2;
+  ParticipantTrackPermission permissions = 3;
+}
+message SetTrackSubscriptionPermissionsRes {}

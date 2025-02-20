@@ -53,7 +53,12 @@ const (
 
 // protoModules lists all the protobuf modules to be processed for code generation.
 var protoModules = []string{
-	"ffi",
+	"audio",
+	"event",
+	"room",
+	"track",
+	"video",
+	"error",
 }
 
 // proto files directory path

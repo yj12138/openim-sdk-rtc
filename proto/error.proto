@@ -1,0 +1,9 @@
+syntax = "proto3";
+package openim.rtc.error;
+
+option csharp_namespace = "OpenIM.RTC.Proto";
+option go_package = "github.com/openimsdk/openim-rtc/proto/go/error";
+
+enum ErrCode {
+  NoError = 0;
+}
