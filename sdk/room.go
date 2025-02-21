@@ -5,6 +5,17 @@ import (
 	"log"
 )
 
+type OnRoomListener interface {
+	OnDisconnected()
+	OnDisconnectedWithReason(reason lksdk.DisconnectionReason)
+	OnParticipantConnected(*lksdk.RemoteParticipant)
+	OnParticipantDisconnected(*lksdk.RemoteParticipant)
+	OnActiveSpeakersChanged([]lksdk.Participant)
+	OnRoomMetadataChanged(metadata string)
+	OnReconnecting()
+	OnReconnected()
+}
+
 type Room struct {
 	host        string
 	token       string

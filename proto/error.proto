@@ -5,5 +5,9 @@ option csharp_namespace = "OpenIM.RTC.Proto";
 option go_package = "github.com/openimsdk/openim-rtc/proto/go/error";
 
 enum ErrCode {
-  NoError = 0;
+  Err_None = 0;
+  Err_Proto_Marshal = 1;
+  Err_Proto_Unmarshal = 2;
+
+  Err_Sdk_Internal = 10000;
 }
