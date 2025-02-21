@@ -41,11 +41,6 @@ enum FuncRequestEventName {
   NewAudioResampler = 205;
   RemixAndResample = 206;
   AudioStreamFromParticipant = 207;
-  NewSoxResampler = 208;
-  PushSoxResampler = 209;
-  FlushSoxResampler = 210;
-  SendChatMessage = 211;
-  EditChatMessage = 212;
   // Video
   NewVideoStream = 301;
   NewVideoSource = 302;

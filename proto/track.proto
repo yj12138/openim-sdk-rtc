@@ -88,6 +88,9 @@ message EnableRemoteTrackReq {
 }
 message EnableRemoteTrackRes { bool enabled = 1; }
 
+message GetStatsReq{}
+message GetStatsRes{}
+
 message SetTrackSubscriptionPermissionsReq {
   uint64 local_participant_handle = 1;
   bool all_participants_allowed = 2;

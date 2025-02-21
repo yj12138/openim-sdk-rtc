@@ -81,7 +81,7 @@ message ConnectReq {
   string token = 2;
   RoomOptions options = 3;
 }
-message ConectRes {}
+message ConnectRes {}
 
 message DisconnectReq { uint64 room_handler = 1; }
 message DisconnectRes {}

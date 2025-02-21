@@ -44,16 +44,12 @@ func GenerateHandleID() int64 {
 func dispatchEventResp(eventName event.FuncRequestEventName, data proto.Message) {
 	var res event.FfiResult
 	var err error
-
 	res.Data, err = proto.Marshal(data)
 	if err != nil {
-		// TODO
-		res.ErrCode = 0
-		res.ErrMsg = "data marshal error"
+		e := Err_Proto_Marshal.New(err.Error())
+		res.ErrCode = e.Code
+		res.ErrMsg = e.ErrMsg
 	}
-
-	log.Printf("PassiveEventRes")
-
 	res.EventName = eventName
 	res.HandleId = GenerateHandleID()
 	dispatchFfiResult(res.HandleId, &res)
