@@ -2,64 +2,7 @@ package base
 
 import (
 	"github.com/openimsdk/openim-rtc/proto/go/event"
-	"google.golang.org/protobuf/proto"
-	// "log"
-	"time"
 )
-
-var (
-	api *API
-)
-
-func init() {
-	api = NewAPI()
-}
-
-func wrapFunc[A, B proto.Message](fn func(req A) (B, error)) callFunc {
-	return func(handleId int64, name event.FuncRequestEventName, reqData []byte) (resData []byte, err error) {
-		start := time.Now()
-		var req A
-		var res B
-
-		if err := proto.Unmarshal(reqData, req); err != nil {
-			return nil, err
-		}
-
-		defer func(start time.Time) {
-			if r := recover(); r != nil {
-				// err = sdkerrs.ErrPanic(r)
-				// log.ZPanic(ctx, "wrapFunc recover", err)
-			}
-			// if _, ignored := ignoredLogFuncMap[name]; ignored {
-			// 	return
-			// }
-			// elapsed := time.Since(start)
-			// if err == nil {
-			// 	log.ZInfo(ctx, fmt.Sprintf("[%s -> Go SDK] Response Success - %s", sdkcommon.AppFramework_name[int32(open_im_sdk.IMUserContext.Info().AppFramework)],
-			// 		sdkevent.FuncRequestEventName_name[int32(name)]), "duration", elapsed, "resp", pbResp)
-			// } else {
-			// 	log.ZError(ctx, fmt.Sprintf("[%s -> Go SDK] Response Error - %s", sdkcommon.AppFramework_name[int32(open_im_sdk.IMUserContext.Info().AppFramework)],
-			// 		sdkevent.FuncRequestEventName_name[int32(name)]), err, "duration", elapsed)
-
-			// }
-		}(start)
-
-		// if _, ignored := ignoredLogFuncMap[name]; !ignored {
-		// 	log.ZInfo(ctx, fmt.Sprintf("[%s -> Go SDK]  Request - %s", sdkcommon.AppFramework_name[int32(open_im_sdk.IMUserContext.Info().AppFramework)],
-		// 		sdkevent.FuncRequestEventName_name[int32(name)]), "req", pbReq)
-		// }
-
-		// if err := checker.Validate(&pbReq); err != nil {
-		// 	return nil, err
-		// }
-
-		res, err = fn(req)
-		if err != nil {
-			return nil, err
-		}
-		return proto.Marshal(res)
-	}
-}
 
 var funcMap = map[event.FuncRequestEventName]callFunc{
 	// room

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"sync/atomic"
+	"time"
 
 	"github.com/openimsdk/openim-rtc/proto/go/event"
 	"google.golang.org/protobuf/proto"
@@ -70,6 +71,39 @@ func dispatchFfiResult(handleId int64, result *event.FfiResult) {
 
 func SetProtocolType(protocolType int) {
 	// TODO
+}
+
+func wrapFunc[A, B proto.Message](fn func(req A) (B, error)) callFunc {
+	return func(handleId int64, name event.FuncRequestEventName, reqData []byte) (resData []byte, err error) {
+		start := time.Now()
+		var req A
+		var res B
+
+		if err := proto.Unmarshal(reqData, req); err != nil {
+			return nil, err
+		}
+
+		defer func(start time.Time) {
+			if r := recover(); r != nil {
+				log.Print("wrapFunc recover", r)
+			}
+			elapsed := time.Since(start)
+			if err == nil {
+				log.Printf("[Go] Call %s Cost duration %d res:%v\n", event.FuncRequestEventName_name[int32(name)], elapsed, res)
+			} else {
+				log.Printf("[Go] Call %s Cost duration %d Error:%s\n", event.FuncRequestEventName_name[int32(name)], elapsed, err.Error())
+			}
+		}(start)
+
+		log.Printf("[Go] Call %s req:%v\n", event.FuncRequestEventName_name[int32(name)], req)
+
+		res, err = fn(req)
+
+		if err != nil {
+			return nil, err
+		}
+		return proto.Marshal(res)
+	}
 }
 
 func FfiRequest(data []byte) {

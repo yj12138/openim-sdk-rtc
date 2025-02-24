@@ -5,17 +5,6 @@ import (
 	"log"
 )
 
-type OnRoomListener interface {
-	OnDisconnected()
-	OnDisconnectedWithReason(reason lksdk.DisconnectionReason)
-	OnParticipantConnected(*lksdk.RemoteParticipant)
-	OnParticipantDisconnected(*lksdk.RemoteParticipant)
-	OnActiveSpeakersChanged([]lksdk.Participant)
-	OnRoomMetadataChanged(metadata string)
-	OnReconnecting()
-	OnReconnected()
-}
-
 type Room struct {
 	host        string
 	token       string
@@ -23,20 +12,19 @@ type Room struct {
 	owner       string
 	livekitRoom *lksdk.Room
 
+	listener OnRoomListener
 	callBack *lksdk.RoomCallback
 }
 
-func (r *Room) ConnectByToken(host, token, roomName, identify string) {
+func (r *Room) ConnectByToken(host, token string) {
 	r.host = host
 	r.token = token
-	go func() {
-		livekitRoom, err := lksdk.ConnectToRoomWithToken(host, token, r.callBack, lksdk.WithAutoSubscribe(true))
-		if err != nil {
-			log.Println(err.Error())
-			return
-		}
-		r.livekitRoom = livekitRoom
-	}()
+	livekitRoom, err := lksdk.ConnectToRoomWithToken(host, token, r.callBack, lksdk.WithAutoSubscribe(true))
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+	r.livekitRoom = livekitRoom
 }
 
 func (r *Room) ConnectBySecret(host, apiKey, apiSecret, roomName, identify string) {
@@ -65,36 +53,6 @@ func (r *Room) IsConnSuc() bool {
 	return r.livekitRoom != nil
 }
 
-func (r *Room) PublicTrack(track *Track) {
-	if track.liveKitTrack == nil {
-		log.Panic("track is nil")
-		return
-	}
-	if r.checkConn() {
-		_, err := r.livekitRoom.LocalParticipant.PublishTrack(track.liveKitTrack, &lksdk.TrackPublicationOptions{
-			VideoWidth:  track.videoWidth,
-			VideoHeight: track.videoHeight,
-			Name:        track.name,
-		})
-		if err != nil {
-			log.Panic(err)
-		}
-	}
-}
-
-func (r *Room) UnpublishTrack(track *Track) {
-	if track.liveKitTrack == nil {
-		log.Panic("track is nil")
-		return
-	}
-	if r.checkConn() {
-		err := r.livekitRoom.LocalParticipant.UnpublishTrack(track.liveKitTrack.ID())
-		if err != nil {
-			log.Println(err)
-		}
-	}
-}
-
 func (r *Room) checkConn() bool {
 	if r.IsConnSuc() {
 		return true
@@ -104,30 +62,16 @@ func (r *Room) checkConn() bool {
 	}
 }
 
-func (r *Room) PublishData(data string) {
-	if r.checkConn() {
-		r.livekitRoom.LocalParticipant.PublishDataPacket(lksdk.UserData([]byte(data)), lksdk.WithDataPublishReliable(true))
-	}
-}
-
-func (r *Room) SetSubscribed() {
-}
-
-func (r *Room) UpdateLocalMetadata() {
-}
-
-func (r *Room) UpdateLocalName() {
-}
-
-func (r *Room) GetSessionStats() {
-}
-
 func (r *Room) GetRoomName() string {
 	return r.roomName
 }
 
 func (r *Room) GetOwner() string {
 	return r.owner
+}
+
+func (r *Room) GetLocalParticipant() *lksdk.LocalParticipant {
+	return r.livekitRoom.LocalParticipant
 }
 
 func (r *Room) GetAllParticipantId() []string {
@@ -141,9 +85,10 @@ func (r *Room) GetAllParticipantId() []string {
 	return res
 }
 
-func NewRoom(callBack *lksdk.RoomCallback) *Room {
+func NewRoom(listener OnRoomListener) *Room {
 	room := &Room{
-		callBack: callBack,
+		listener: listener,
+		callBack: lksdk.NewRoomCallback(),
 	}
 	return room
 }

@@ -53,9 +53,10 @@ const (
 
 // protoModules lists all the protobuf modules to be processed for code generation.
 var protoModules = []string{
+	"room",
+	"participant",
 	"audio",
 	"event",
-	"room",
 	"track",
 	"video",
 	"error",
@@ -523,7 +524,7 @@ func Wasm() error {
 
 // ffi_c
 
-var soName = "libopenimsdk"
+var soName = "libopenim_rtc"
 
 var outPath = filepath.Join(".", "output")
 var goSrc = filepath.Join(".", bindlingDir, "ffi_c")

@@ -4,76 +4,10 @@ package openim.rtc.room;
 option csharp_namespace = "OpenIM.RTC.Proto";
 option go_package = "github.com/openimsdk/openim-rtc/proto/go/room";
 
-enum DataPacketKind {
-  KIND_LOSSY = 0;
-  KIND_RELIABLE = 1;
-}
-
 message RoomOptions {
   bool auto_subscribe = 1;  // 自动订阅
   bool adaptive_stream = 2; // 自适应码流
   bool dynacast = 3;        // 动态广播
-}
-
-message TrackPublishOptions {}
-
-message AttributesEntry {
-  string key = 1;
-  string value = 2;
-}
-
-message TranscriptionSegment {
-  string id = 1;
-  string text = 2;
-  uint64 start_time = 3;
-  uint64 end_time = 4;
-  bool final = 5;
-  string language = 6;
-}
-
-message DataStream {
-  enum OperationType {
-    CREATE = 0;
-    UPDATE = 1;
-    DELETE = 2;
-    REACTION = 3;
-  }
-  message TextHeader {
-    OperationType operation_type = 1;
-    string reply_to_stream_id = 2;
-    bool generated = 3;
-    int32 version = 4;
-    repeated string attached_stream_ids = 5;
-  }
-
-  message ByteHeader { string name = 1; }
-
-  message Header {
-    string stream_id = 1;
-    int64 timestamp = 2;
-    string mime_type = 3;
-    string topic = 4;
-    uint64 total_length = 5;
-    map<string, string> attributes = 6;
-    oneof content_header {
-      TextHeader text_header = 7;
-      ByteHeader byte_header = 8;
-    }
-  }
-
-  message Chunk {
-    string stream_id = 1;
-    uint64 chunk_index = 2;
-    bytes content = 3;
-    int32 version = 4;
-    bytes iv = 5;
-  }
-
-  message Trailer {
-    string stream_id = 1;
-    string reason = 2;
-    map<string, string> attributes = 3;
-  }
 }
 
 message ConnectReq {
@@ -81,109 +15,10 @@ message ConnectReq {
   string token = 2;
   RoomOptions options = 3;
 }
-message ConnectRes {}
+message ConnectRes {
+  uint64 room_handle=1;
+  uint64 local_participant_handle = 2;
+}
 
-message DisconnectReq { uint64 room_handler = 1; }
+message DisconnectReq { uint64 room_handle = 1; }
 message DisconnectRes {}
-
-message PublishTrackReq {
-  uint64 local_participant_handle = 1;
-  uint64 track_handle = 2;
-  TrackPublishOptions options = 3;
-}
-message PublishTrackRes {}
-
-message UnpublishTrackReq {
-  uint64 local_participant_handle = 1;
-  string track_sid = 2;
-  bool stop_on_unpublish = 3;
-}
-message UnpublishTrackRes {}
-
-message PublishDataReq {
-  uint64 local_participant_handle = 1;
-  string topic = 2;
-  uint64 data_ptr = 3;
-  uint64 data_len = 4;
-  bool reliable = 5;
-}
-message PublishDataRes {}
-
-message SetSubscribedReq {
-  bool subscribe = 1;
-  uint64 publication_handle = 2;
-}
-message SetSubscribedRes {}
-
-message SetLocalMetadataReq {
-  uint64 local_participant_handle = 1;
-  string metadata = 2;
-}
-message SetLocalMetadataRes {}
-
-message SetLocalNameReq {
-  uint64 local_participant_handle = 1;
-  string name = 2;
-}
-message SetLocalNameRes {}
-
-message SetLocalAttributesReq {
-  uint64 local_participant_handle = 1;
-  repeated AttributesEntry attributes = 2;
-}
-message SetLocalAttributesRes {}
-
-message GetSessionStatsReq { uint64 room_handle = 1; }
-message GetSessionStatsRes {}
-
-message PublishTranscriptionReq {
-  uint64 local_participant_handle = 1;
-  string participant_identify = 2;
-  string track_id = 3;
-  repeated TranscriptionSegment segments = 4;
-}
-message PublishTranscriptionRes {}
-
-message EnableRemoteTrackPublicationReq {
-  uint64 track_publication_handle = 1;
-  bool enabled = 2;
-}
-message EnableRemoteTrackPublicationRes {}
-
-message UpdateRemoteTrackPublicationDimensionReq {
-  uint64 track_publication_handle = 1;
-  uint32 width = 2;
-  uint32 height = 3;
-}
-message UpdateRemoteTrackPublicationDimensionRes {}
-
-message SendStreamHeaderReq {
-  uint64 local_participant_handle = 1;
-  DataStream.Header header = 2;
-  string sender_identity = 3;
-  repeated string destination_identities = 4;
-}
-message SendStreamHeaderRes {}
-
-message SendStreamChunkReq {
-  uint64 local_participant_handle = 1;
-  DataStream.Chunk chunk = 2;
-  string destination_identities = 3;
-  string sender_identity = 4;
-}
-message SendStreamChunkRes {}
-
-message SendStreamTrailerReq {
-  uint64 local_participant_handle = 1;
-  DataStream.Trailer trailer = 2;
-  string destination_identities = 3;
-  string sender_identity = 4;
-}
-message SendStreamTrailerRes {}
-
-message SetDataChannelBufferedAmountLowThresholdReq {
-  uint64 local_participant_handle = 1;
-  uint64 threshold = 2;
-  DataPacketKind kind = 3;
-}
-message SetDataChannelBufferedAmountLowThresholdRes {}
