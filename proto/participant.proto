@@ -79,7 +79,7 @@ message PublishTrackRes {}
 
 message UnpublishTrackReq {
   uint64 local_participant_handle = 1;
-  string track_sid = 2;
+  uint64 track_handle = 2;
   bool stop_on_unpublish = 3;
 }
 message UnpublishTrackRes {}
@@ -87,9 +87,9 @@ message UnpublishTrackRes {}
 message PublishDataReq {
   uint64 local_participant_handle = 1;
   string topic = 2;
-  uint64 data_ptr = 3;
-  uint64 data_len = 4;
-  bool reliable = 5;
+  bytes data = 3;
+  bool reliable = 4;
+  repeated string identifies = 5;
 }
 message PublishDataRes {}
 

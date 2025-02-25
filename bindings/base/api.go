@@ -45,9 +45,20 @@ func (api *API) getRoom(handle uint64) *sdk.Room {
 	panic(fmt.Sprintf("not find handle:%d", handle))
 }
 
-func (api *API) getParticipant(handle uint64) *sdk.Participant {
+func (api *API) getLocalParticipant(handle uint64) *sdk.LocalParticipant {
 	if value, ok := api.handleObjMap.Load(handle); ok {
-		if r, ok := value.(*sdk.Participant); ok {
+		if r, ok := value.(*sdk.LocalParticipant); ok {
+			return r
+		} else {
+			panic(fmt.Sprintf("handle:%d is not sdk.Participant type", handle))
+		}
+	}
+	panic(fmt.Sprintf("not find handle:%d", handle))
+}
+
+func (api *API) getRemoteParticipant(handle uint64) *sdk.RemoteParticipant {
+	if value, ok := api.handleObjMap.Load(handle); ok {
+		if r, ok := value.(*sdk.RemoteParticipant); ok {
 			return r
 		} else {
 			panic(fmt.Sprintf("handle:%d is not sdk.Participant type", handle))

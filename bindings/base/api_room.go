@@ -9,7 +9,7 @@ import (
 func (api *API) Connect(req *pb_room.ConnectReq) (*pb_room.ConnectRes, error) {
 	r := sdk.NewRoom(NewRoomListener())
 	r.ConnectByToken(req.Url, req.Token)
-	participant := sdk.NewParticipant(r.GetLocalParticipant())
+	participant := sdk.NewLocalParticipant(r.GetLocalParticipant())
 	roomHandle := api.storeObj(r)
 	localParticipantHandle := api.storeObj(participant)
 	res := &pb_room.ConnectRes{
