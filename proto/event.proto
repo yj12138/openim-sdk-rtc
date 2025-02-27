@@ -6,7 +6,7 @@ option go_package = "github.com/openimsdk/openim-rtc/proto/go/event";
 
 import "error.proto";
 
-enum FuncRequestEventName {
+enum FuncEventName {
   None = 0;
   // Room
   Connect = 1;
@@ -47,6 +47,9 @@ enum FuncRequestEventName {
   CaptureVideoFrame = 303;
   VideoConvert = 304;
   VideoStreamFromParticipan = 305;
+  //   event
+  RoomEvent = 1001;
+  
 }
 
 message FfiRequest {
@@ -56,7 +59,7 @@ message FfiRequest {
   // The handle Id.
   int64 handleId = 2;
   // Function request event name.
-  FuncRequestEventName eventName = 3;
+  FuncEventName eventName = 3;
   // The request data.
   bytes data = 4;
 }
@@ -64,7 +67,7 @@ message FfiRequest {
 message FfiResult {
   openim.rtc.error.ErrCode errCode = 1;
   string errMsg = 2;
-  FuncRequestEventName eventName = 3;
+  FuncEventName eventName = 3;
   // The result data.
   bytes data = 4;
   // handleId

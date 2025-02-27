@@ -3,9 +3,10 @@ package base
 import (
 	"fmt"
 	// lksdk "github.com/livekit/server-sdk-go/v2"
-	"github.com/openimsdk/openim-rtc/sdk"
 	"sync"
 	"sync/atomic"
+
+	"github.com/openimsdk/openim-rtc/sdk"
 )
 
 var (

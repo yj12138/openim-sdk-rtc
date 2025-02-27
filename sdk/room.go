@@ -13,13 +13,26 @@ type Room struct {
 	livekitRoom *lksdk.Room
 
 	listener OnRoomListener
-	callBack *lksdk.RoomCallback
+}
+
+func (r *Room) createCallBack() *lksdk.RoomCallback {
+	callBack := &lksdk.RoomCallback{
+		OnDisconnected:            r.onDisconnected,
+		OnDisconnectedWithReason:  r.onDisconnectedWithReason,
+		OnParticipantConnected:    r.onParticipantConnected,
+		OnParticipantDisconnected: r.onParticipantDisconnected,
+		OnActiveSpeakersChanged:   r.onActiveSpeakersChanged,
+		OnRoomMetadataChanged:     r.onRoomMetadataChanged,
+		OnReconnecting:            r.onReconnecting,
+		OnReconnected:             r.onReconnected,
+	}
+	return callBack
 }
 
 func (r *Room) ConnectByToken(host, token string) {
 	r.host = host
 	r.token = token
-	livekitRoom, err := lksdk.ConnectToRoomWithToken(host, token, r.callBack, lksdk.WithAutoSubscribe(true))
+	livekitRoom, err := lksdk.ConnectToRoomWithToken(host, token, r.createCallBack(), lksdk.WithAutoSubscribe(true))
 	if err != nil {
 		log.Println(err.Error())
 		return
@@ -35,7 +48,7 @@ func (r *Room) ConnectBySecret(host, apiKey, apiSecret, roomName, identify strin
 		APISecret:           apiSecret,
 		RoomName:            roomName,
 		ParticipantIdentity: identify,
-	}, r.callBack, lksdk.WithAutoSubscribe(true))
+	}, r.createCallBack(), lksdk.WithAutoSubscribe(true))
 	if err != nil {
 		panic(err)
 	}
@@ -85,10 +98,35 @@ func (r *Room) GetAllParticipantId() []string {
 	return res
 }
 
+func (r *Room) onDisconnected() {
+	r.listener.OnDisconnected()
+}
+func (r *Room) onDisconnectedWithReason(reason lksdk.DisconnectionReason) {
+	r.listener.OnDisconnectedWithReason(string(reason))
+}
+func (r *Room) onParticipantConnected(rp *lksdk.RemoteParticipant) {
+	r.listener.OnParticipantConnected()
+}
+func (r *Room) onParticipantDisconnected(rp *lksdk.RemoteParticipant) {
+
+}
+func (r *Room) onActiveSpeakersChanged(ps []lksdk.Participant) {
+
+}
+func (r *Room) onRoomMetadataChanged(metadata string) {
+
+}
+func (r *Room) onReconnecting() {
+
+}
+func (r *Room) onReconnected() {
+
+}
+
 func NewRoom(listener OnRoomListener) *Room {
-	room := &Room{
+	r := &Room{
 		listener: listener,
-		callBack: lksdk.NewRoomCallback(),
 	}
-	return room
+
+	return r
 }

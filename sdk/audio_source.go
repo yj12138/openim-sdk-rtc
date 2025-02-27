@@ -11,10 +11,19 @@ type AudioSource struct {
 	QueueSizeMs uint32
 }
 
-func (source *AudioSource) CaptureFrame() {
+func (source *AudioSource) CaptureFrame(buffer *pb_audio.AudioFrameBufferInfo) {
+    
+}
+
+func (source *AudioSource) ClearBuffer() {
 
 }
 
-func NewAudioSource() *AudioSource {
-	return &AudioSource{}
+func NewAudioSource(sourceType pb_audio.AudioSourceType, sampleRate uint32, numChannels uint32, queueSizeMs uint32) *AudioSource {
+	return &AudioSource{
+		SourceType:  sourceType,
+		SampleRate:  sampleRate,
+		NumChannels: numChannels,
+		QueueSizeMs: queueSizeMs,
+	}
 }

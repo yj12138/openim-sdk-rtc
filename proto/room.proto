@@ -22,3 +22,67 @@ message ConnectRes {
 
 message DisconnectReq { uint64 room_handle = 1; }
 message DisconnectRes {}
+
+message GetSessionStatsReq { uint64 room_handle = 1; }
+message GetSessionStatsRes {}
+
+message Connected{
+
+}
+message Disconnected {}
+message Reconnecting {}
+message Reconnected {}
+message ParticipantConnected{}
+message ParticipantDisconnected {}
+message LocalTrackPublished {}
+message LocalTrackUnpublished {}
+message LocalTrackSubscribed{}
+message TrackPublished{}
+message TrackUnpublished{}
+message TrackSubscribed{}
+message TrackUnsubscribed {}
+message TrackSubscriptionFailed {}
+message TrackMuted{}
+message TrackUnmuted{}
+message ActiveSpeakersChanged{}
+message RoomMetadataChanged{}
+message RoomSidChanged{}
+message ParticipantMetadataChanged{}
+message ParticipantNameChanged{}
+message ParticipantAttributesChanged{}
+message ConnectionQualityChanged{}
+message ConnectionStateChanged{}
+message DataPacketReceived {}
+message TranscriptionReceived {}
+
+message RoomEvent{
+    uint64 room_handle = 1;
+    oneof message {
+    ParticipantConnected participant_connected = 2;
+    ParticipantDisconnected participant_disconnected = 3;
+    LocalTrackPublished local_track_published = 4;
+    LocalTrackUnpublished local_track_unpublished = 5;
+    LocalTrackSubscribed local_track_subscribed = 6;
+    TrackPublished track_published = 7;
+    TrackUnpublished track_unpublished = 8;
+    TrackSubscribed track_subscribed = 9;
+    TrackUnsubscribed track_unsubscribed = 10;
+    TrackSubscriptionFailed track_subscription_failed = 11;
+    TrackMuted track_muted = 12;
+    TrackUnmuted track_unmuted = 13;
+    ActiveSpeakersChanged active_speakers_changed = 14;
+    RoomMetadataChanged room_metadata_changed = 15;
+    RoomSidChanged room_sid_changed = 16;
+    ParticipantMetadataChanged participant_metadata_changed = 17;
+    ParticipantNameChanged participant_name_changed = 18;
+    ParticipantAttributesChanged participant_attributes_changed = 19;
+    ConnectionQualityChanged connection_quality_changed = 20;
+    ConnectionStateChanged connection_state_changed = 21;
+    // Connected connected = 21;
+    Disconnected disconnected = 22;
+    Reconnecting reconnecting = 23;
+    Reconnected reconnected = 24;
+    DataPacketReceived data_packet_received = 27;
+    TranscriptionReceived transcription_received = 28;
+  }
+}

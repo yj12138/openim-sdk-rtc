@@ -15,13 +15,13 @@ var (
 	dispatchFfiResultFun func(handleId int64, data []byte)
 )
 
-type callFunc func(handleId int64, name event.FuncRequestEventName, req []byte) ([]byte, error)
+type callFunc func(handleId int64, name event.FuncEventName, req []byte) ([]byte, error)
 
 func SetDispatchFfiResultFunc(f func(handleId int64, data []byte)) {
 	dispatchFfiResultFun = f
 }
 
-func activeErrResp(handleId int64, eventName event.FuncRequestEventName, err Error) {
+func activeErrResp(handleId int64, eventName event.FuncEventName, err Error) {
 	var ffiResult event.FfiResult
 	ffiResult.HandleId = handleId
 	ffiResult.EventName = eventName
@@ -30,7 +30,7 @@ func activeErrResp(handleId int64, eventName event.FuncRequestEventName, err Err
 	dispatchFfiResult(handleId, &ffiResult)
 }
 
-func activeSuccessResp(handleId int64, eventName event.FuncRequestEventName, res []byte) {
+func activeSuccessResp(handleId int64, eventName event.FuncEventName, res []byte) {
 	var ffiResponse event.FfiResult
 	ffiResponse.Data = res
 	ffiResponse.EventName = eventName
@@ -42,7 +42,7 @@ func GenerateHandleID() int64 {
 	return handleCounter.Add(-1)
 }
 
-func dispatchEventResp(eventName event.FuncRequestEventName, data proto.Message) {
+func dispatchEventResp(eventName event.FuncEventName, data proto.Message) {
 	var res event.FfiResult
 	var err error
 	res.Data, err = proto.Marshal(data)
@@ -74,7 +74,7 @@ func SetProtocolType(protocolType int) {
 }
 
 func wrapFunc[A, B proto.Message](fn func(req A) (B, error)) callFunc {
-	return func(handleId int64, name event.FuncRequestEventName, reqData []byte) (resData []byte, err error) {
+	return func(handleId int64, name event.FuncEventName, reqData []byte) (resData []byte, err error) {
 		start := time.Now()
 		var req A
 		var res B
@@ -89,13 +89,13 @@ func wrapFunc[A, B proto.Message](fn func(req A) (B, error)) callFunc {
 			}
 			elapsed := time.Since(start)
 			if err == nil {
-				log.Printf("[Go] Call %s Cost duration %d res:%v\n", event.FuncRequestEventName_name[int32(name)], elapsed, res)
+				log.Printf("[Go] Call %s Cost duration %d res:%v\n", event.FuncEventName_name[int32(name)], elapsed, res)
 			} else {
-				log.Printf("[Go] Call %s Cost duration %d Error:%s\n", event.FuncRequestEventName_name[int32(name)], elapsed, err.Error())
+				log.Printf("[Go] Call %s Cost duration %d Error:%s\n", event.FuncEventName_name[int32(name)], elapsed, err.Error())
 			}
 		}(start)
 
-		log.Printf("[Go] Call %s req:%v\n", event.FuncRequestEventName_name[int32(name)], req)
+		log.Printf("[Go] Call %s req:%v\n", event.FuncEventName_name[int32(name)], req)
 
 		res, err = fn(req)
 

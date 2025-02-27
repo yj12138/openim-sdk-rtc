@@ -117,8 +117,7 @@ message SetLocalAttributesReq {
 }
 message SetLocalAttributesRes {}
 
-message GetSessionStatsReq { uint64 room_handle = 1; }
-message GetSessionStatsRes {}
+
 
 message PublishTranscriptionReq {
   uint64 local_participant_handle = 1;

@@ -7,10 +7,11 @@ import (
 )
 
 func (api *API) Connect(req *pb_room.ConnectReq) (*pb_room.ConnectRes, error) {
-	r := sdk.NewRoom(NewRoomListener())
+	listener := NewRoomListener()
+	r := sdk.NewRoom(listener)
+	roomHandle := api.storeObj(r)
 	r.ConnectByToken(req.Url, req.Token)
 	participant := sdk.NewLocalParticipant(r.GetLocalParticipant())
-	roomHandle := api.storeObj(r)
 	localParticipantHandle := api.storeObj(participant)
 	res := &pb_room.ConnectRes{
 		RoomHandle:             roomHandle,
@@ -23,4 +24,9 @@ func (api *API) Disconnect(req *pb_room.DisconnectReq) (*pb_room.DisconnectRes, 
 	room := api.getRoom(req.RoomHandle)
 	room.Disconnect()
 	return &pb_room.DisconnectRes{}, nil
+}
+
+func (api *API) GetSessionStats(req *pb_room.GetSessionStatsReq) (*pb_room.GetSessionStatsRes, error) {
+    
+	return nil, nil
 }

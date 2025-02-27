@@ -22,26 +22,38 @@ func (api *API) NewAudioStream(req *pb_audio.NewAudioStreamReq) (*pb_audio.NewAu
 	return res, nil
 }
 func (api *API) NewAudioSource(req *pb_audio.NewAudioSourceReq) (*pb_audio.NewAudioSourceRes, error) {
-
-	return nil, nil
+	audioSource := sdk.NewAudioSource(req.Type, req.SampleRate, req.NumChannels, req.QueueSizeMs)
+	sourceHandle := api.storeObj(audioSource)
+	res := &pb_audio.NewAudioSourceRes{
+		Source: &pb_audio.OwnedAudioSource{
+			Handle: sourceHandle,
+			Info: &pb_audio.AudioSourceInfo{
+				Type: audioSource.SourceType,
+			},
+		},
+	}
+	return res, nil
 }
 func (api *API) CaptureAudioFrame(req *pb_audio.CaptureAudioFrameReq) (*pb_audio.CaptureAudioFrameRes, error) {
-
-	return nil, nil
+	audioSource := api.getAudioSource(req.SourceHandle)
+	audioSource.CaptureFrame(req.Buffer)
+	res := &pb_audio.CaptureAudioFrameRes{}
+	return res, nil
 }
 func (api *API) ClearAudioBuffer(req *pb_audio.ClearAudioBufferReq) (*pb_audio.ClearAudioBufferRes, error) {
-
-	return nil, nil
+	audioSource := api.getAudioSource(req.SourceHandle)
+	audioSource.ClearBuffer()
+	res := &pb_audio.ClearAudioBufferRes{}
+	return res, nil
 }
-func (api *API) NewAudioResampler(req *pb_audio.NewAudioResamplerReq) (*pb_audio.NewAudioResamplerRes, error) {
 
+// TODO
+func (api *API) NewAudioResampler(req *pb_audio.NewAudioResamplerReq) (*pb_audio.NewAudioResamplerRes, error) {
 	return nil, nil
 }
 func (api *API) RemixAndResample(req *pb_audio.RemixAndResampleReq) (*pb_audio.RemixAndResampleRes, error) {
-
 	return nil, nil
 }
 func (api *API) AudioStreamFromParticipant(req *pb_audio.AudioStreamFromParticipantReq) (*pb_audio.AudioStreamFromParticipantRes, error) {
-
 	return nil, nil
 }

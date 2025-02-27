@@ -75,6 +75,3 @@ func (p *LocalParticipant) SetName(name string) {
 func (p *LocalParticipant) SetAttributes(attributes map[string]string) {
 	p.lkLocalParticipant.SetAttributes(attributes)
 }
-
-func (p *LocalParticipant) GetSessionStats() {
-}

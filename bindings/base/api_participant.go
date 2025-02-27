@@ -54,12 +54,9 @@ func (api *API) SetLocalAttributes(req *pb_participant.SetLocalAttributesReq) (*
 	res := &pb_participant.SetLocalAttributesRes{}
 	return res, nil
 }
-func (api *API) GetSessionStats(req *pb_participant.GetSessionStatsReq) (*pb_participant.GetSessionStatsRes, error) {
 
-	return nil, nil
-}
 func (api *API) PublishTranscription(req *pb_participant.PublishTranscriptionReq) (*pb_participant.PublishTranscriptionRes, error) {
-
+	// participant := api.getLocalParticipant(req.LocalParticipantHandle)
 	return nil, nil
 }
 func (api *API) EnableRemoteTrackPublication(req *pb_participant.EnableRemoteTrackPublicationReq) (*pb_participant.EnableRemoteTrackPublicationRes, error) {
@@ -70,6 +67,8 @@ func (api *API) UpdateRemoteTrackPublicationDimension(req *pb_participant.Update
 
 	return nil, nil
 }
+
+// TODO
 func (api *API) SendStreamHeader(req *pb_participant.SendStreamHeaderReq) (*pb_participant.SendStreamHeaderRes, error) {
 
 	return nil, nil
