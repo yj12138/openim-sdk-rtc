@@ -77,3 +77,25 @@ func (api *API) getTrack(handle uint64) *sdk.Track {
 	}
 	panic(fmt.Sprintf("not find handle:%d", handle))
 }
+
+func (api *API) getAudioStream(handle uint64) *sdk.AudioStream {
+	if value, ok := api.handleObjMap.Load(handle); ok {
+		if r, ok := value.(*sdk.AudioStream); ok {
+			return r
+		} else {
+			panic(fmt.Sprintf("handle:%d is not sdk.Stream type", handle))
+		}
+	}
+	panic(fmt.Sprintf("not find handle:%d", handle))
+}
+
+func (api *API) getAudioSource(handle uint64) *sdk.AudioSource {
+	if value, ok := api.handleObjMap.Load(handle); ok {
+		if r, ok := value.(*sdk.AudioSource); ok {
+			return r
+		} else {
+			panic(fmt.Sprintf("handle:%d is not sdk.AudioSource type", handle))
+		}
+	}
+	panic(fmt.Sprintf("not find handle:%d", handle))
+}

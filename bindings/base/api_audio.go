@@ -3,12 +3,23 @@ package base
 import (
 	// lksdk "github.com/livekit/server-sdk-go/v2"
 	pb_audio "github.com/openimsdk/openim-rtc/proto/go/audio"
-	// "github.com/openimsdk/openim-rtc/sdk"
+	"github.com/openimsdk/openim-rtc/sdk"
 )
 
 // Audio
 func (api *API) NewAudioStream(req *pb_audio.NewAudioStreamReq) (*pb_audio.NewAudioStreamRes, error) {
-	return nil, nil
+	track := api.getTrack(req.TrackHandle)
+	audioStream := sdk.NewAudioStreamByTrack(track, req.Type, req.SampleRate, req.NumChannels)
+	streamHandle := api.storeObj(audioStream)
+	res := &pb_audio.NewAudioStreamRes{
+		Stream: &pb_audio.OwnedAudioStream{
+			Handle: streamHandle,
+			Info: &pb_audio.AudioStreamInfo{
+				Type: audioStream.StreamType,
+			},
+		},
+	}
+	return res, nil
 }
 func (api *API) NewAudioSource(req *pb_audio.NewAudioSourceReq) (*pb_audio.NewAudioSourceRes, error) {
 
