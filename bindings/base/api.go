@@ -68,12 +68,23 @@ func (api *API) getRemoteParticipant(handle uint64) *sdk.RemoteParticipant {
 	panic(fmt.Sprintf("not find handle:%d", handle))
 }
 
-func (api *API) getTrack(handle uint64) *sdk.Track {
+func (api *API) getLocalTrack(handle uint64) *sdk.LocalTrack {
 	if value, ok := api.handleObjMap.Load(handle); ok {
-		if r, ok := value.(*sdk.Track); ok {
+		if r, ok := value.(*sdk.LocalTrack); ok {
 			return r
 		} else {
-			panic(fmt.Sprintf("handle:%d is not sdk.Track type", handle))
+			panic(fmt.Sprintf("handle:%d is not sdk.LocalTrack type", handle))
+		}
+	}
+	panic(fmt.Sprintf("not find handle:%d", handle))
+}
+
+func (api *API) getRemoteTrack(handle uint64) *sdk.RemoteTrack {
+	if value, ok := api.handleObjMap.Load(handle); ok {
+		if r, ok := value.(*sdk.RemoteTrack); ok {
+			return r
+		} else {
+			panic(fmt.Sprintf("handle:%d is not sdk.RemoteTrack type", handle))
 		}
 	}
 	panic(fmt.Sprintf("not find handle:%d", handle))

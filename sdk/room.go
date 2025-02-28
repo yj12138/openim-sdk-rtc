@@ -5,7 +5,7 @@ import (
 	"github.com/pion/webrtc/v4"
 
 	"github.com/livekit/protocol/livekit"
-	pb_participant "github.com/openimsdk/openim-rtc/proto/go/participant"
+	pb_common "github.com/openimsdk/openim-rtc/proto/go/common"
 	"log"
 )
 
@@ -17,6 +17,18 @@ type Room struct {
 	livekitRoom *lksdk.Room
 
 	listener OnRoomListener
+
+	remoteParticipants map[string]*RemoteParticipant
+	remoteTracks       map[string]*RemoteTrack
+}
+
+func NewRoom(listener OnRoomListener) *Room {
+	r := &Room{
+		listener:           listener,
+		remoteParticipants: make(map[string]*RemoteParticipant),
+		remoteTracks:       make(map[string]*RemoteTrack),
+	}
+	return r
 }
 
 func (r *Room) createCallBack() *lksdk.RoomCallback {
@@ -35,10 +47,10 @@ func (r *Room) createCallBack() *lksdk.RoomCallback {
 			OnLocalTrackUnpublished: r.onLocalTrackUnpublished,
 
 			// for all participants
-			OnTrackMuted:               r.onTrackMuted,
-			OnTrackUnmuted:             r.onTrackUnmuted,
-			OnMetadataChanged:          r.onMetadataChanged,
-			OnAttributesChanged:        r.onAttributesChanged,
+			OnTrackMuted:               r.onParticipantTrackMuted,
+			OnTrackUnmuted:             r.onParticipantTrackUnmuted,
+			OnMetadataChanged:          r.onParticipantMetadataChanged,
+			OnAttributesChanged:        r.onParticipantAttributesChanged,
 			OnIsSpeakingChanged:        r.onIsSpeakingChanged,
 			OnConnectionQualityChanged: r.onConnectionQualityChanged,
 
@@ -130,29 +142,41 @@ func (r *Room) GetAllParticipantId() []string {
 
 // listener
 func (r *Room) onDisconnected() {
-	r.listener.OnDisconnectedWithReason(pb_participant.DisconnectReason_UNKNOWN_REASON)
+	r.listener.OnDisconnectedWithReason(pb_common.DisconnectReason_UNKNOWN_REASON)
 }
 func (r *Room) onDisconnectedWithReason(reason lksdk.DisconnectionReason) {
-	res := pb_participant.DisconnectReason_UNKNOWN_REASON
+	res := pb_common.DisconnectReason_UNKNOWN_REASON
 	if reason == lksdk.LeaveRequested {
-		res = pb_participant.DisconnectReason_ROOM_CLOSED
+		res = pb_common.DisconnectReason_ROOM_CLOSED
 	} else if reason == lksdk.UserUnavailable {
-		res = pb_participant.DisconnectReason_USER_UNAVAILABLE
+		res = pb_common.DisconnectReason_USER_UNAVAILABLE
 	} else if reason == lksdk.RejectedByUser {
-		res = pb_participant.DisconnectReason_USER_REJECTED
+		res = pb_common.DisconnectReason_USER_REJECTED
 	} else if reason == lksdk.Failed {
-		res = pb_participant.DisconnectReason_JOIN_FAILURE
+		res = pb_common.DisconnectReason_JOIN_FAILURE
 	}
 	r.listener.OnDisconnectedWithReason(res)
 }
 func (r *Room) onParticipantConnected(rp *lksdk.RemoteParticipant) {
-	r.listener.OnParticipantConnected()
+	remoteParticipant := NewRemoteParticipant(rp)
+	r.remoteParticipants[remoteParticipant.LiveKitRemoteParticipant.Identity()] = remoteParticipant
+	r.listener.OnParticipantConnected(remoteParticipant)
 }
 func (r *Room) onParticipantDisconnected(rp *lksdk.RemoteParticipant) {
-	r.listener.OnParticipantDisconnected()
+	remoteParticipant, ok := r.remoteParticipants[rp.Identity()]
+	if ok {
+		r.listener.OnParticipantDisconnected(remoteParticipant)
+		delete(r.remoteParticipants, rp.Identity())
+	} else {
+		log.Printf("not find participant %s", rp.Identity())
+	}
 }
 func (r *Room) onActiveSpeakersChanged(ps []lksdk.Participant) {
-	r.listener.OnActiveSpeakersChanged()
+	participantIdentities := make([]string, len(ps))
+	for i, participant := range ps {
+		participantIdentities[i] = participant.Identity()
+	}
+	r.listener.OnActiveSpeakersChanged(participantIdentities)
 }
 func (r *Room) onRoomMetadataChanged(metadata string) {
 	r.listener.OnRoomMetadataChanged(metadata)
@@ -165,40 +189,58 @@ func (r *Room) onReconnected() {
 }
 
 func (r *Room) onLocalTrackPublished(publication *lksdk.LocalTrackPublication, lp *lksdk.LocalParticipant) {
-	r.listener.OnLocalTrackPublished()
+	r.listener.OnLocalTrackPublished(publication.SID())
 }
 func (r *Room) onLocalTrackUnpublished(publication *lksdk.LocalTrackPublication, lp *lksdk.LocalParticipant) {
-	r.listener.OnLocalTrackUnpublished()
+	r.listener.OnLocalTrackUnpublished(publication.SID())
 }
-func (r *Room) onTrackMuted(pub lksdk.TrackPublication, p lksdk.Participant) {
-	r.listener.OnTrackMuted()
+func (r *Room) onParticipantTrackMuted(pub lksdk.TrackPublication, p lksdk.Participant) {
+	r.listener.OnParticipantTrackMuted(p.Identity(), pub.SID())
 }
-func (r *Room) onTrackUnmuted(pub lksdk.TrackPublication, p lksdk.Participant) {
-	r.listener.OnTrackUnmuted()
+func (r *Room) onParticipantTrackUnmuted(pub lksdk.TrackPublication, p lksdk.Participant) {
+	r.listener.OnParticipantTrackUnmuted(p.Identity(), pub.SID())
 }
-func (r *Room) onMetadataChanged(oldMetadata string, p lksdk.Participant) {
-	r.listener.OnMetadataChanged()
+func (r *Room) onParticipantMetadataChanged(oldMetadata string, p lksdk.Participant) {
+	r.listener.OnParticipantMetadataChanged(p.Identity(), p.Metadata())
 }
-func (r *Room) onAttributesChanged(changed map[string]string, p lksdk.Participant) {
-	r.listener.OnAttributesChanged()
+func (r *Room) onParticipantAttributesChanged(changed map[string]string, p lksdk.Participant) {
+	r.listener.OnParticipantAttributesChanged(p.Identity(), changed)
 }
 
 func (r *Room) onIsSpeakingChanged(p lksdk.Participant) {
-	r.listener.OnIsSpeakingChanged()
+	ps := make([]string, 0)
+	ps = append(ps, p.Identity())
+	r.listener.OnIsSpeakingChanged(ps)
 }
 
 func (r *Room) onConnectionQualityChanged(update *livekit.ConnectionQualityInfo, p lksdk.Participant) {
-	r.listener.OnConnectionQualityChanged()
+	quality := pb_common.ConnectionQuality_QUALITY_POOR
+	if update.Quality == livekit.ConnectionQuality_EXCELLENT {
+		quality = pb_common.ConnectionQuality_QUALITY_EXCELLENT
+	} else if update.Quality == livekit.ConnectionQuality_GOOD {
+		quality = pb_common.ConnectionQuality_QUALITY_GOOD
+	} else if update.Quality == livekit.ConnectionQuality_LOST {
+		quality = pb_common.ConnectionQuality_QUALITY_LOST
+	}
+	r.listener.OnConnectionQualityChanged(p.Identity(), quality)
 }
 
 func (r *Room) onTrackSubscribed(track *webrtc.TrackRemote, publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
-	r.listener.OnTrackSubscribed()
+	remoteTrack := NewRemoteTrack(track, publication, rp)
+	r.remoteTracks[publication.SID()] = remoteTrack
+	r.listener.OnTrackSubscribed(remoteTrack)
 }
 func (r *Room) onTrackUnsubscribed(track *webrtc.TrackRemote, publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
-	r.listener.OnTrackUnsubscribed()
+	remoteTrack, ok := r.remoteTracks[publication.SID()]
+	if ok {
+		r.listener.OnTrackUnsubscribed(remoteTrack)
+		delete(r.remoteTracks, publication.SID())
+	} else {
+		log.Printf("not find RemoteTrack %s", publication.SID())
+	}
 }
 func (r *Room) onTrackSubscriptionFailed(sid string, rp *lksdk.RemoteParticipant) {
-	r.listener.OnTrackSubscriptionFailed()
+	r.listener.OnTrackSubscriptionFailed(rp.Identity(), sid, "TODO")
 }
 func (r *Room) onTrackPublished(publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
 	r.listener.OnTrackPublished()
@@ -211,11 +253,4 @@ func (r *Room) onDataPacket(data lksdk.DataPacket, params lksdk.DataReceiveParam
 }
 func (r *Room) onTranscriptionReceived(transcriptionSegments []*lksdk.TranscriptionSegment, p lksdk.Participant, publication lksdk.TrackPublication) {
 	r.listener.OnTranscriptionReceived()
-}
-
-func NewRoom(listener OnRoomListener) *Room {
-	r := &Room{
-		listener: listener,
-	}
-	return r
 }

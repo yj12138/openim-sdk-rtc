@@ -7,14 +7,14 @@ import (
 
 func (api *API) PublishTrack(req *pb_participant.PublishTrackReq) (*pb_participant.PublishTrackRes, error) {
 	participant := api.getLocalParticipant(req.LocalParticipantHandle)
-	track := api.getTrack(req.TrackHandle)
+	track := api.getLocalTrack(req.TrackHandle)
 	participant.PublicTrack(track)
 	res := &pb_participant.PublishTrackRes{}
 	return res, nil
 }
 func (api *API) UnpublishTrack(req *pb_participant.UnpublishTrackReq) (*pb_participant.UnpublishTrackRes, error) {
 	participant := api.getLocalParticipant(req.LocalParticipantHandle)
-	track := api.getTrack(req.TrackHandle)
+	track := api.getLocalTrack(req.TrackHandle)
 	// TODO req.StopOnUnpublish
 	participant.PublicTrack(track)
 	res := &pb_participant.UnpublishTrackRes{}

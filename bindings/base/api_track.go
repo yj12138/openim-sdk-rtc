@@ -12,12 +12,12 @@ func (api *API) CreateVideoTrack(req *pb_track.CreateVideoTrackReq) (*pb_track.C
 		Track: &pb_track.OwnedTrack{
 			Handle: trackHandle,
 			Info: &pb_track.TrackInfo{
-				Sid:         track.GetSid(),
-				Name:        track.GetName(),
+				Sid:         track.LocalTrackPublication.SID(),
+				Name:        track.LocalTrackPublication.Name(),
 				Kind:        track.Kind(),
 				StreamState: track.StreamState(),
-				Muted:       track.IsMuted(),
-				Remote:      track.IsRemote(),
+				Muted:       track.LocalTrackPublication.IsMuted(),
+				Remote:      false,
 			},
 		},
 	}
@@ -30,20 +30,20 @@ func (api *API) CreateAudioTrack(req *pb_track.CreateAudioTrackReq) (*pb_track.C
 		Track: &pb_track.OwnedTrack{
 			Handle: trackHandle,
 			Info: &pb_track.TrackInfo{
-				Sid:         track.GetSid(),
-				Name:        track.GetName(),
+				Sid:         track.LocalTrackPublication.SID(),
+				Name:        track.LocalTrackPublication.Name(),
 				Kind:        track.Kind(),
 				StreamState: track.StreamState(),
-				Muted:       track.IsMuted(),
-				Remote:      track.IsRemote(),
+				Muted:       track.LocalTrackPublication.IsMuted(),
+				Remote:      false,
 			},
 		},
 	}
 	return res, nil
 }
 func (api *API) LocalTrackMute(req *pb_track.LocalTrackMuteReq) (*pb_track.LocalTrackMuteRes, error) {
-	track := api.getTrack(req.TrackHandle)
-	track.SetMuted(req.Mute)
+	track := api.getLocalTrack(req.TrackHandle)
+	track.LocalTrackPublication.SetMuted(req.Mute)
 	res := &pb_track.LocalTrackMuteRes{}
 	return res, nil
 }

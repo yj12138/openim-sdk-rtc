@@ -5,55 +5,45 @@ import (
 	"log"
 )
 
-type RemoteParticipant struct {
-	lkRemoteParticipant *lksdk.RemoteParticipant
-}
-
-func NewRemoteParticipant(remoteParticipant *lksdk.RemoteParticipant) *RemoteParticipant {
-	return &RemoteParticipant{
-		lkRemoteParticipant: remoteParticipant,
-	}
-}
-
 type LocalParticipant struct {
-	lkLocalParticipant *lksdk.LocalParticipant
+	LiveKitLocalParticipant *lksdk.LocalParticipant
 }
 
 func NewLocalParticipant(localParticipant *lksdk.LocalParticipant) *LocalParticipant {
 	return &LocalParticipant{
-		lkLocalParticipant: localParticipant,
+		LiveKitLocalParticipant: localParticipant,
 	}
 }
 
-func (p *LocalParticipant) PublicTrack(track *Track) {
-	if track.liveKitTrack == nil {
+func (p *LocalParticipant) PublicTrack(track *LocalTrack) {
+	if track.LiveKitTrack == nil {
 		log.Panic("track is nil")
 		return
 	}
-	trackPublication, err := p.lkLocalParticipant.PublishTrack(track.liveKitTrack, &lksdk.TrackPublicationOptions{
-		VideoWidth:  track.videoWidth,
-		VideoHeight: track.videoHeight,
-		Name:        track.name,
+	trackPublication, err := p.LiveKitLocalParticipant.PublishTrack(track.LiveKitTrack, &lksdk.TrackPublicationOptions{
+		VideoWidth:  track.VideoWidth,
+		VideoHeight: track.VideoHeight,
+		Name:        track.Name,
 	})
-	track.localTrackPublication = trackPublication
+	track.LocalTrackPublication = trackPublication
 	if err != nil {
 		log.Panic(err)
 	}
 }
 
-func (p *LocalParticipant) UnpublishTrack(track *Track) {
-	if track.liveKitTrack == nil {
+func (p *LocalParticipant) UnpublishTrack(track *LocalTrack) {
+	if track.LiveKitTrack == nil {
 		log.Panic("track is nil")
 		return
 	}
-	err := p.lkLocalParticipant.UnpublishTrack(track.liveKitTrack.ID())
+	err := p.LiveKitLocalParticipant.UnpublishTrack(track.LocalTrackPublication.SID())
 	if err != nil {
 		log.Println(err)
 	}
 }
 
 func (p *LocalParticipant) PublishData(topic string, data []byte, reliable bool, identifies []string) {
-	p.lkLocalParticipant.PublishDataPacket(
+	p.LiveKitLocalParticipant.PublishDataPacket(
 		lksdk.UserData([]byte(data)),
 		lksdk.WithDataPublishReliable(reliable),
 		lksdk.WithDataPublishTopic(topic),
@@ -65,13 +55,23 @@ func (p *LocalParticipant) SetSubscribed() {
 }
 
 func (p *LocalParticipant) SetMetadata(metaData string) {
-	p.lkLocalParticipant.SetMetadata(metaData)
+	p.LiveKitLocalParticipant.SetMetadata(metaData)
 }
 
 func (p *LocalParticipant) SetName(name string) {
-	p.lkLocalParticipant.SetName(name)
+	p.LiveKitLocalParticipant.SetName(name)
 }
 
 func (p *LocalParticipant) SetAttributes(attributes map[string]string) {
-	p.lkLocalParticipant.SetAttributes(attributes)
+	p.LiveKitLocalParticipant.SetAttributes(attributes)
+}
+
+type RemoteParticipant struct {
+	LiveKitRemoteParticipant *lksdk.RemoteParticipant
+}
+
+func NewRemoteParticipant(remoteParticipant *lksdk.RemoteParticipant) *RemoteParticipant {
+	return &RemoteParticipant{
+		LiveKitRemoteParticipant: remoteParticipant,
+	}
 }

@@ -10,7 +10,7 @@ type AudioStream struct {
 	NumChannels uint32
 }
 
-func NewAudioStreamByTrack(track *Track, streamType pb_audio.AudioStreamType, sampleRate uint32, numChannels uint32) *AudioStream {
+func NewAudioStreamByTrack(track *LocalTrack, streamType pb_audio.AudioStreamType, sampleRate uint32, numChannels uint32) *AudioStream {
 	return &AudioStream{
 		StreamType:  streamType,
 		SampleRate:  sampleRate,

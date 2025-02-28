@@ -53,6 +53,7 @@ const (
 
 // protoModules lists all the protobuf modules to be processed for code generation.
 var protoModules = []string{
+	"common",
 	"room",
 	"participant",
 	"audio",

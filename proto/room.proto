@@ -4,21 +4,9 @@ package openim.rtc.room;
 option csharp_namespace = "OpenIM.RTC.Proto";
 option go_package = "github.com/openimsdk/openim-rtc/proto/go/room";
 
+import "common.proto";
 import "participant.proto";
 import "track.proto";
-
-enum ConnectionQuality {
-  QUALITY_POOR = 0;
-  QUALITY_GOOD = 1;
-  QUALITY_EXCELLENT = 2;
-  QUALITY_LOST = 3;
-}
-
-enum ConnectionState {
-  CONN_DISCONNECTED = 0;
-  CONN_CONNECTED = 1;
-  CONN_RECONNECTING = 2;
-}
 
 enum DataPacketKind {
   KIND_LOSSY = 0;
@@ -111,24 +99,19 @@ message ParticipantNameChanged {
   string name = 2;
 }
 
-message AttributesEntry {
-  string key = 1;
-  string value = 2;
-}
-
 message ParticipantAttributesChanged {
   string participant_identity = 1;
-  repeated AttributesEntry attributes = 2;
-  repeated AttributesEntry changed_attributes = 3;
+  repeated openim.rtc.common.AttributesEntry attributes = 2;
+  repeated openim.rtc.common.AttributesEntry changed_attributes = 3;
 }
 message ConnectionQualityChanged {
   string participant_identity = 1;
-  ConnectionQuality quality = 2;
+  openim.rtc.common.ConnectionQuality quality = 2;
 }
 
-message ConnectionStateChanged { ConnectionState state = 1; }
+message ConnectionStateChanged { openim.rtc.common.ConnectionState state = 1; }
 
-message Disconnected { openim.rtc.participant.DisconnectReason reason = 1; }
+message Disconnected { openim.rtc.common.DisconnectReason reason = 1; }
 
 message Reconnecting {}
 

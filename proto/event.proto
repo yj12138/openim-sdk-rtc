@@ -49,7 +49,6 @@ enum FuncEventName {
   VideoStreamFromParticipan = 305;
   //   event
   RoomEvent = 1001;
-  
 }
 
 message FfiRequest {

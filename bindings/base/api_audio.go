@@ -8,7 +8,7 @@ import (
 
 // Audio
 func (api *API) NewAudioStream(req *pb_audio.NewAudioStreamReq) (*pb_audio.NewAudioStreamRes, error) {
-	track := api.getTrack(req.TrackHandle)
+	track := api.getLocalTrack(req.TrackHandle)
 	audioStream := sdk.NewAudioStreamByTrack(track, req.Type, req.SampleRate, req.NumChannels)
 	streamHandle := api.storeObj(audioStream)
 	res := &pb_audio.NewAudioStreamRes{

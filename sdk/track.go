@@ -5,10 +5,7 @@ import (
 	"time"
 
 	lksdk "github.com/livekit/server-sdk-go/v2"
-	// pb_audio "github.com/openimsdk/openim-rtc/proto/go/audio"
-	// pb_room "github.com/openimsdk/openim-rtc/proto/go/room"
 	pb_track "github.com/openimsdk/openim-rtc/proto/go/track"
-	// pb_video "github.com/openimsdk/openim-rtc/proto/go/video"
 	"github.com/pion/webrtc/v4"
 )
 
@@ -16,58 +13,34 @@ const (
 	MimeTypeOpus = "audio/opus"
 )
 
-type Track struct {
-	name                  string
-	mimeType              string
-	videoWidth            int
-	videoHeight           int
-	sampleProvider        *RealSampleProvider
-	liveKitTrack          *lksdk.LocalTrack
-	localTrackPublication *lksdk.LocalTrackPublication
+type LocalTrack struct {
+	Name                  string
+	MimeType              string
+	VideoWidth            int
+	VideoHeight           int
+	SampleProvider        *RealSampleProvider
+	LiveKitTrack          *lksdk.LocalTrack
+	LocalTrackPublication *lksdk.LocalTrackPublication
 }
 
-func (t *Track) GetSid() string {
-	return t.liveKitTrack.StreamID()
-}
-
-func (t *Track) GetName() string {
-	return t.name
-}
-
-func (t *Track) Kind() pb_track.TrackKind {
-	if t.localTrackPublication.Kind() == "video" {
+func (t *LocalTrack) Kind() pb_track.TrackKind {
+	if t.LocalTrackPublication.Kind() == "video" {
 		return pb_track.TrackKind_KIND_VIDEO
-	} else if t.localTrackPublication.Kind() == "audio" {
+	} else if t.LocalTrackPublication.Kind() == "audio" {
 		return pb_track.TrackKind_KIND_AUDIO
 	}
 	return pb_track.TrackKind_KIND_UNKNOWN
 }
 
-func (t *Track) StreamState() pb_track.StreamState {
+func (t *LocalTrack) StreamState() pb_track.StreamState {
 	return pb_track.StreamState_STATE_ACTIVE
 }
 
-func (t *Track) SetMuted(muted bool) {
-	t.localTrackPublication.SetMuted(muted)
+func (t *LocalTrack) WriteData(data []byte, duration time.Duration) {
+	t.SampleProvider.WriteData(data, duration)
 }
 
-func (t *Track) IsMuted() bool {
-	return t.localTrackPublication.IsMuted()
-}
-
-func (t *Track) IsRemote() bool {
-	return false
-}
-
-func (t *Track) Close() {
-
-}
-
-func (t *Track) WriteData(data []byte, duration time.Duration) {
-	t.sampleProvider.WriteData(data, duration)
-}
-
-func NewAudioTrack(name string) *Track {
+func NewAudioTrack(name string) *LocalTrack {
 	mimeType := MimeTypeOpus
 	provider := NewRealSampleProvider(mimeType)
 	liveKitTrack, err := lksdk.NewLocalTrack(webrtc.RTPCodecCapability{
@@ -81,17 +54,40 @@ func NewAudioTrack(name string) *Track {
 			log.Panic(err.Error())
 		}
 	})
-	track := &Track{
-		name:           name,
-		mimeType:       mimeType,
-		liveKitTrack:   liveKitTrack,
-		videoWidth:     0,
-		videoHeight:    0,
-		sampleProvider: provider,
+	track := &LocalTrack{
+		Name:           name,
+		MimeType:       mimeType,
+		LiveKitTrack:   liveKitTrack,
+		VideoWidth:     0,
+		VideoHeight:    0,
+		SampleProvider: provider,
 	}
 	return track
 }
 
-func NewVideoTrack() *Track {
+func NewVideoTrack() *LocalTrack {
 	return nil
+}
+
+type RemoteTrack struct {
+	LiveKitTrack      *webrtc.TrackRemote
+	Publication       *lksdk.RemoteTrackPublication
+	RemoteParticipant *lksdk.RemoteParticipant
+}
+
+func (t *RemoteTrack) Kind() pb_track.TrackKind {
+	if t.Publication.Kind() == "video" {
+		return pb_track.TrackKind_KIND_VIDEO
+	} else if t.Publication.Kind() == "audio" {
+		return pb_track.TrackKind_KIND_AUDIO
+	}
+	return pb_track.TrackKind_KIND_UNKNOWN
+}
+
+func NewRemoteTrack(trackRemote *webrtc.TrackRemote, publication *lksdk.RemoteTrackPublication, remoteParticipant *lksdk.RemoteParticipant) *RemoteTrack {
+	return &RemoteTrack{
+		LiveKitTrack:      trackRemote,
+		Publication:       publication,
+		RemoteParticipant: remoteParticipant,
+	}
 }
