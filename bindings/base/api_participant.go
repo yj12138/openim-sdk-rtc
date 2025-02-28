@@ -27,7 +27,6 @@ func (api *API) PublishData(req *pb_participant.PublishDataReq) (*pb_participant
 	return res, nil
 }
 func (api *API) SetSubscribed(req *pb_participant.SetSubscribedReq) (*pb_participant.SetSubscribedRes, error) {
-
 	return nil, nil
 }
 func (api *API) SetLocalMetadata(req *pb_participant.SetLocalMetadataReq) (*pb_participant.SetLocalMetadataRes, error) {

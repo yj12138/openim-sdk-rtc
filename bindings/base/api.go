@@ -2,10 +2,10 @@ package base
 
 import (
 	"fmt"
-	// lksdk "github.com/livekit/server-sdk-go/v2"
 	"sync"
 	"sync/atomic"
 
+	lksdk "github.com/livekit/server-sdk-go/v2"
 	"github.com/openimsdk/openim-rtc/sdk"
 )
 
@@ -51,7 +51,7 @@ func (api *API) getLocalParticipant(handle uint64) *sdk.LocalParticipant {
 		if r, ok := value.(*sdk.LocalParticipant); ok {
 			return r
 		} else {
-			panic(fmt.Sprintf("handle:%d is not sdk.Participant type", handle))
+			panic(fmt.Sprintf("handle:%d is not sdk.LocalParticipant type", handle))
 		}
 	}
 	panic(fmt.Sprintf("not find handle:%d", handle))
@@ -62,7 +62,7 @@ func (api *API) getRemoteParticipant(handle uint64) *sdk.RemoteParticipant {
 		if r, ok := value.(*sdk.RemoteParticipant); ok {
 			return r
 		} else {
-			panic(fmt.Sprintf("handle:%d is not sdk.Participant type", handle))
+			panic(fmt.Sprintf("handle:%d is not sdk.RemoteParticipant type", handle))
 		}
 	}
 	panic(fmt.Sprintf("not find handle:%d", handle))
@@ -79,12 +79,12 @@ func (api *API) getLocalTrack(handle uint64) *sdk.LocalTrack {
 	panic(fmt.Sprintf("not find handle:%d", handle))
 }
 
-func (api *API) getRemoteTrack(handle uint64) *sdk.RemoteTrack {
+func (api *API) getRemotePublication(handle uint64) *lksdk.RemoteTrackPublication {
 	if value, ok := api.handleObjMap.Load(handle); ok {
-		if r, ok := value.(*sdk.RemoteTrack); ok {
+		if r, ok := value.(*lksdk.RemoteTrackPublication); ok {
 			return r
 		} else {
-			panic(fmt.Sprintf("handle:%d is not sdk.RemoteTrack type", handle))
+			panic(fmt.Sprintf("handle:%d is not RemoteTrackPublication type", handle))
 		}
 	}
 	panic(fmt.Sprintf("not find handle:%d", handle))

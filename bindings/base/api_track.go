@@ -14,8 +14,8 @@ func (api *API) CreateVideoTrack(req *pb_track.CreateVideoTrackReq) (*pb_track.C
 			Info: &pb_track.TrackInfo{
 				Sid:         track.LocalTrackPublication.SID(),
 				Name:        track.LocalTrackPublication.Name(),
-				Kind:        track.Kind(),
-				StreamState: track.StreamState(),
+				Kind:        sdk.ConvertTrackKind(track.LocalTrackPublication.Kind()),
+				StreamState: pb_track.StreamState_STATE_ACTIVE,
 				Muted:       track.LocalTrackPublication.IsMuted(),
 				Remote:      false,
 			},
@@ -32,8 +32,8 @@ func (api *API) CreateAudioTrack(req *pb_track.CreateAudioTrackReq) (*pb_track.C
 			Info: &pb_track.TrackInfo{
 				Sid:         track.LocalTrackPublication.SID(),
 				Name:        track.LocalTrackPublication.Name(),
-				Kind:        track.Kind(),
-				StreamState: track.StreamState(),
+				Kind:        sdk.ConvertTrackKind(track.LocalTrackPublication.Kind()),
+				StreamState: pb_track.StreamState_STATE_ACTIVE,
 				Muted:       track.LocalTrackPublication.IsMuted(),
 				Remote:      false,
 			},

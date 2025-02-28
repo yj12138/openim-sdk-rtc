@@ -52,6 +52,7 @@ func (p *LocalParticipant) PublishData(topic string, data []byte, reliable bool,
 }
 
 func (p *LocalParticipant) SetSubscribed() {
+    
 }
 
 func (p *LocalParticipant) SetMetadata(metaData string) {

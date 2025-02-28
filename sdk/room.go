@@ -4,9 +4,12 @@ import (
 	lksdk "github.com/livekit/server-sdk-go/v2"
 	"github.com/pion/webrtc/v4"
 
+	"log"
+
 	"github.com/livekit/protocol/livekit"
 	pb_common "github.com/openimsdk/openim-rtc/proto/go/common"
-	"log"
+	pb_room "github.com/openimsdk/openim-rtc/proto/go/room"
+	pb_track "github.com/openimsdk/openim-rtc/proto/go/track"
 )
 
 type Room struct {
@@ -19,14 +22,12 @@ type Room struct {
 	listener OnRoomListener
 
 	remoteParticipants map[string]*RemoteParticipant
-	remoteTracks       map[string]*RemoteTrack
 }
 
 func NewRoom(listener OnRoomListener) *Room {
 	r := &Room{
 		listener:           listener,
 		remoteParticipants: make(map[string]*RemoteParticipant),
-		remoteTracks:       make(map[string]*RemoteTrack),
 	}
 	return r
 }
@@ -226,31 +227,59 @@ func (r *Room) onConnectionQualityChanged(update *livekit.ConnectionQualityInfo,
 }
 
 func (r *Room) onTrackSubscribed(track *webrtc.TrackRemote, publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
-	remoteTrack := NewRemoteTrack(track, publication, rp)
-	r.remoteTracks[publication.SID()] = remoteTrack
-	r.listener.OnTrackSubscribed(remoteTrack)
+	info := &pb_track.TrackInfo{
+		Sid:         publication.SID(),
+		Name:        publication.Name(),
+		Kind:        ConvertTrackKind(publication.Kind()),
+		StreamState: pb_track.StreamState_STATE_UNKNOWN,
+		Muted:       publication.IsMuted(),
+		Remote:      true,
+	}
+	r.listener.OnTrackSubscribed(rp.Identity(), info)
 }
 func (r *Room) onTrackUnsubscribed(track *webrtc.TrackRemote, publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
-	remoteTrack, ok := r.remoteTracks[publication.SID()]
-	if ok {
-		r.listener.OnTrackUnsubscribed(remoteTrack)
-		delete(r.remoteTracks, publication.SID())
-	} else {
-		log.Printf("not find RemoteTrack %s", publication.SID())
-	}
+	r.listener.OnTrackUnsubscribed(rp.Identity(), publication.SID())
 }
 func (r *Room) onTrackSubscriptionFailed(sid string, rp *lksdk.RemoteParticipant) {
 	r.listener.OnTrackSubscriptionFailed(rp.Identity(), sid, "TODO")
 }
 func (r *Room) onTrackPublished(publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
-	r.listener.OnTrackPublished()
+	r.listener.OnTrackPublished(rp.Identity(), &pb_track.TrackPublicationInfo{})
 }
 func (r *Room) onTrackUnpublished(publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
-	r.listener.OnTrackUnpublished()
+	r.listener.OnTrackUnpublished(rp.Identity(), publication.SID())
 }
 func (r *Room) onDataPacket(data lksdk.DataPacket, params lksdk.DataReceiveParams) {
-	r.listener.OnDataPacket()
+	packet := data.ToProto()
+	var value interface{} = nil
+	if user, ok := packet.Value.(*livekit.DataPacket_User); ok {
+		value = &pb_room.UserPacket{
+			Topic: *user.User.Topic,
+			Data:  user.User.Payload,
+		}
+	}
+	if sipDtmf, ok := packet.Value.(*livekit.DataPacket_SipDtmf); ok {
+		value = &pb_room.SipDTMF{
+			Digit: sipDtmf.SipDtmf.Digit,
+			Code:  sipDtmf.SipDtmf.Code,
+		}
+	}
+	if value != nil {
+		r.listener.OnDataPacket(packet.ParticipantIdentity, nil)
+	}
 }
 func (r *Room) onTranscriptionReceived(transcriptionSegments []*lksdk.TranscriptionSegment, p lksdk.Participant, publication lksdk.TrackPublication) {
-	r.listener.OnTranscriptionReceived()
+	segments := make([]*pb_room.TranscriptionSegment, len(transcriptionSegments))
+	for i, segment := range transcriptionSegments {
+		segments[i] = &pb_room.TranscriptionSegment{
+			Id:        segment.ID,
+			Text:      segment.Text,
+			StartTime: segment.StartTime,
+			EndTime:   segment.EndTime,
+			Final:     segment.Final,
+			Language:  segment.Language,
+		}
+	}
+
+	r.listener.OnTranscriptionReceived(p.Identity(), publication.SID(), segments)
 }

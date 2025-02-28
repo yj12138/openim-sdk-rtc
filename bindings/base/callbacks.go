@@ -1,6 +1,7 @@
 package base
 
 import (
+	// lksdk "github.com/livekit/server-sdk-go/v2"
 	pb_common "github.com/openimsdk/openim-rtc/proto/go/common"
 	pb_event "github.com/openimsdk/openim-rtc/proto/go/event"
 	pb_participant "github.com/openimsdk/openim-rtc/proto/go/participant"
@@ -180,35 +181,24 @@ func (l *RoomListener) OnConnectionQualityChanged(participantIdentify string, qu
 }
 
 // for remote participants
-func (l *RoomListener) OnTrackSubscribed(rt *sdk.RemoteTrack) {
-	handle := api.storeObj(rt)
+func (l *RoomListener) OnTrackSubscribed(participantIdentify string, trackInfo *pb_track.TrackInfo) {
 	dispatchEventResp(pb_event.FuncEventName_RoomEvent, &pb_room.RoomEvent{
 		RoomHandle: l.RoomHandle,
 		Message: &pb_room.RoomEvent_TrackSubscribed{
 			TrackSubscribed: &pb_room.TrackSubscribed{
-				ParticipantIdentity: rt.RemoteParticipant.Identity(),
-				Track: &pb_track.OwnedTrack{
-					Handle: handle,
-					Info: &pb_track.TrackInfo{
-						Sid:         rt.Publication.SID(),
-						Name:        rt.Publication.Name(),
-						Kind:        rt.Kind(),
-						StreamState: pb_track.StreamState_STATE_UNKNOWN,
-						Muted:       rt.Publication.IsMuted(),
-						Remote:      true,
-					},
-				},
+				ParticipantIdentity: participantIdentify,
+				Track:               trackInfo,
 			},
 		},
 	})
 }
-func (l *RoomListener) OnTrackUnsubscribed(rt *sdk.RemoteTrack) {
+func (l *RoomListener) OnTrackUnsubscribed(participantIdentify string, trackSid string) {
 	dispatchEventResp(pb_event.FuncEventName_RoomEvent, &pb_room.RoomEvent{
 		RoomHandle: l.RoomHandle,
 		Message: &pb_room.RoomEvent_TrackUnsubscribed{
 			TrackUnsubscribed: &pb_room.TrackUnsubscribed{
-				ParticipantIdentity: rt.RemoteParticipant.Identity(),
-				TrackSid:            rt.Publication.SID(),
+				ParticipantIdentity: participantIdentify,
+				TrackSid:            trackSid,
 			},
 		},
 	})
@@ -226,37 +216,62 @@ func (l *RoomListener) OnTrackSubscriptionFailed(participantIdentify string, tra
 	})
 }
 
-func (l *RoomListener) OnTrackPublished() {
+func (l *RoomListener) OnTrackPublished(participantIdentify string, publication *pb_track.TrackPublicationInfo) {
 	dispatchEventResp(pb_event.FuncEventName_RoomEvent, &pb_room.RoomEvent{
 		RoomHandle: l.RoomHandle,
 		Message: &pb_room.RoomEvent_TrackPublished{
-			TrackPublished: &pb_room.TrackPublished{},
+			TrackPublished: &pb_room.TrackPublished{
+				ParticipantIdentity: participantIdentify,
+				Publication:         publication,
+			},
 		},
 	})
 }
-func (l *RoomListener) OnTrackUnpublished() {
+
+func (l *RoomListener) OnTrackUnpublished(participantIdentify string, publicationSid string) {
 	dispatchEventResp(pb_event.FuncEventName_RoomEvent, &pb_room.RoomEvent{
 		RoomHandle: l.RoomHandle,
 		Message: &pb_room.RoomEvent_TrackUnpublished{
-			TrackUnpublished: &pb_room.TrackUnpublished{},
+			TrackUnpublished: &pb_room.TrackUnpublished{
+				ParticipantIdentity: participantIdentify,
+				PublicationSid:      publicationSid,
+			},
 		},
 	})
 }
 
-func (l *RoomListener) OnDataPacket() {
+func (l *RoomListener) OnDataPacket(participantIdentify string, value interface{}) {
+	msg := &pb_room.RoomEvent_DataPacketReceived{
+		DataPacketReceived: &pb_room.DataPacketReceived{
+			ParticipantIdentity: participantIdentify,
+			Value:               nil,
+		},
+	}
+	if user, ok := value.(*pb_room.UserPacket); ok {
+		msg.DataPacketReceived.Value = &pb_room.DataPacketReceived_User{
+			User: user,
+		}
+	}
+	if sipDtmf, ok := value.(*pb_room.SipDTMF); ok {
+		msg.DataPacketReceived.Value = &pb_room.DataPacketReceived_SipDtmf{
+			SipDtmf: sipDtmf,
+		}
+	}
 	dispatchEventResp(pb_event.FuncEventName_RoomEvent, &pb_room.RoomEvent{
 		RoomHandle: l.RoomHandle,
-		Message: &pb_room.RoomEvent_DataPacketReceived{
-			DataPacketReceived: &pb_room.DataPacketReceived{},
-		},
+		Message:    msg,
 	})
 }
 
-func (l *RoomListener) OnTranscriptionReceived() {
+func (l *RoomListener) OnTranscriptionReceived(participantIdentify string, trackSid string, segments []*pb_room.TranscriptionSegment) {
 	dispatchEventResp(pb_event.FuncEventName_RoomEvent, &pb_room.RoomEvent{
 		RoomHandle: l.RoomHandle,
 		Message: &pb_room.RoomEvent_TranscriptionReceived{
-			TranscriptionReceived: &pb_room.TranscriptionReceived{},
+			TranscriptionReceived: &pb_room.TranscriptionReceived{
+				ParticipantIdentity: participantIdentify,
+				TrackSid:            trackSid,
+				Segments:            segments,
+			},
 		},
 	})
 }

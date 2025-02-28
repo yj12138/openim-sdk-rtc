@@ -13,6 +13,40 @@ enum DataPacketKind {
   KIND_RELIABLE = 1;
 }
 
+message BufferInfo {
+  uint64 data_ptr = 1;
+  uint64 data_len = 2;
+}
+
+message OwnedBuffer {
+  uint64 handle = 1;
+  BufferInfo data = 2;
+}
+
+message UserPacket {
+  string topic = 1;
+  bytes data = 2;
+}
+
+message ChatMessage {
+  string id = 1;
+  int64 timestamp = 2;
+  string message = 3;
+  int64 edit_timestamp = 4;
+  bool deleted = 5;
+  bool generated = 6;
+}
+
+message ChatMessageReceived {
+  ChatMessage message = 1;
+  string participant_identity = 2;
+}
+
+message SipDTMF {
+  uint32 code = 1;
+  string digit = 2;
+}
+
 message RoomOptions {
   bool auto_subscribe = 1;  // 自动订阅
   bool adaptive_stream = 2; // 自适应码流
@@ -49,7 +83,7 @@ message LocalTrackSubscribed { string track_sid = 1; }
 
 message TrackPublished {
   string participant_identity = 1;
-  openim.rtc.track.OwnedTrackPublication publication = 2;
+  openim.rtc.track.TrackPublicationInfo publication = 2;
 }
 
 message TrackUnpublished {
@@ -59,7 +93,7 @@ message TrackUnpublished {
 
 message TrackSubscribed {
   string participant_identity = 1;
-  openim.rtc.track.OwnedTrack track = 2;
+  openim.rtc.track.TrackInfo track = 2;
 }
 
 message TrackUnsubscribed {
@@ -117,9 +151,30 @@ message Reconnecting {}
 
 message Reconnected {}
 
-message DataPacketReceived {}
+message DataPacketReceived {
+  DataPacketKind kind = 1;
+  // Can be empty if the data is sent a server SDK
+  string participant_identity = 2;
+  oneof value {
+    UserPacket user = 4;
+    SipDTMF sip_dtmf = 5;
+  }
+}
 
-message TranscriptionReceived {}
+message TranscriptionSegment {
+  string id = 1;
+  string text = 2;
+  uint64 start_time = 3;
+  uint64 end_time = 4;
+  bool final = 5;
+  string language = 6;
+}
+
+message TranscriptionReceived {
+  string participant_identity = 1;
+  string track_sid = 2;
+  repeated TranscriptionSegment segments = 3;
+}
 
 message RoomEvent {
   uint64 room_handle = 1;
