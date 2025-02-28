@@ -95,6 +95,15 @@ message DataStream {
   }
 }
 
+message ChatMessage {
+  string id = 1;
+  int64 timestamp = 2;
+  string message = 3;
+  int64 edit_timestamp = 4;
+  bool deleted = 5;
+  bool generated = 6;
+}
+
 message PublishTrackReq {
   uint64 local_participant_handle = 1;
   uint64 track_handle = 2;
@@ -119,8 +128,9 @@ message PublishDataReq {
 message PublishDataRes {}
 
 message SetSubscribedReq {
-  bool subscribe = 1;
-  uint64 publication_handle = 2;
+  uint64 remote_participant_handle = 1;
+  string publication_sid = 2;
+  bool subscribe = 3;
 }
 message SetSubscribedRes {}
 
@@ -186,6 +196,23 @@ message SendStreamTrailerReq {
   string sender_identity = 4;
 }
 message SendStreamTrailerRes {}
+
+message SendChatMessageReq {
+  uint64 local_participant_handle = 1;
+  string message = 2;
+  string destination_identities = 3;
+  string sender_identity = 4;
+}
+message SendChatMessageRes {}
+
+message EditChatMessageReq {
+  uint64 local_participant_handle = 1;
+  string edit_text = 2;
+  ChatMessage original_message = 3;
+  string destination_identities = 4;
+  string sender_identity = 5;
+}
+message EditChatMessageRes {}
 
 message SetDataChannelBufferedAmountLowThresholdReq {
   uint64 local_participant_handle = 1;

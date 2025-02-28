@@ -235,6 +235,12 @@ func (r *Room) onTrackSubscribed(track *webrtc.TrackRemote, publication *lksdk.R
 		Muted:       publication.IsMuted(),
 		Remote:      true,
 	}
+
+	participant, ok := r.remoteParticipants[rp.Identity()]
+	if ok {
+		participant.addRemoteTrackPublication(publication)
+	}
+
 	r.listener.OnTrackSubscribed(rp.Identity(), info)
 }
 func (r *Room) onTrackUnsubscribed(track *webrtc.TrackRemote, publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
@@ -244,6 +250,10 @@ func (r *Room) onTrackSubscriptionFailed(sid string, rp *lksdk.RemoteParticipant
 	r.listener.OnTrackSubscriptionFailed(rp.Identity(), sid, "TODO")
 }
 func (r *Room) onTrackPublished(publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
+	participant, ok := r.remoteParticipants[rp.Identity()]
+	if ok {
+		participant.addRemoteTrackPublication(publication)
+	}
 	r.listener.OnTrackPublished(rp.Identity(), &pb_track.TrackPublicationInfo{})
 }
 func (r *Room) onTrackUnpublished(publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {

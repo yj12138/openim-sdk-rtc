@@ -26,6 +26,9 @@ enum FuncEventName {
   SendStreamChunk = 15;
   SendStreamTrailer = 16;
   SetDataChannelBufferedAmountLowThreshold = 17;
+  SendChatMessageRequest = 18;
+  EditChatMessageRequest = 19;
+
   // Track
   CreateVideoTrack = 101;
   CreateAudioTrack = 102;

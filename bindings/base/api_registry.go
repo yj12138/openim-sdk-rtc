@@ -22,6 +22,8 @@ var funcMap = map[event.FuncEventName]callFunc{
 	event.FuncEventName_SendStreamHeader:                         wrapFunc(api.SendStreamHeader),
 	event.FuncEventName_SendStreamChunk:                          wrapFunc(api.SendStreamChunk),
 	event.FuncEventName_SendStreamTrailer:                        wrapFunc(api.SendStreamTrailer),
+	event.FuncEventName_SendChatMessageRequest:                   wrapFunc(api.SendChatMessage),
+	event.FuncEventName_EditChatMessageRequest:                   wrapFunc(api.EditChatMessage),
 	event.FuncEventName_SetDataChannelBufferedAmountLowThreshold: wrapFunc(api.SetDataChannelBufferedAmountLowThreshold),
 	// track
 	event.FuncEventName_CreateVideoTrack:                wrapFunc(api.CreateVideoTrack),
