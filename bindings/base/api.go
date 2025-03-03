@@ -7,12 +7,19 @@ import (
 	"sync/atomic"
 )
 
+type CPointerToGoByteSliceNoCopyFunc func(cPointer uint64, length uint32) []byte
+
 var (
-	api *API
+	api                             *API
+	cPointerToGoByteSliceNoCopyFunc CPointerToGoByteSliceNoCopyFunc
 )
 
 func init() {
 	api = NewAPI()
+}
+
+func SetCPointerToGoByteSliceNoCopyFunc(f CPointerToGoByteSliceNoCopyFunc) {
+	cPointerToGoByteSliceNoCopyFunc = f
 }
 
 type API struct {

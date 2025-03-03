@@ -11,8 +11,8 @@ type AudioSource struct {
 	QueueSizeMs uint32
 }
 
-func (source *AudioSource) CaptureFrame(buffer *pb_audio.AudioFrameBufferInfo) {
-    
+func (source *AudioSource) CaptureFrame(data []byte) {
+
 }
 
 func (source *AudioSource) ClearBuffer() {

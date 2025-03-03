@@ -36,7 +36,10 @@ func (api *API) NewAudioSource(req *pb_audio.NewAudioSourceReq) (*pb_audio.NewAu
 }
 func (api *API) CaptureAudioFrame(req *pb_audio.CaptureAudioFrameReq) (*pb_audio.CaptureAudioFrameRes, error) {
 	audioSource := api.getAudioSource(req.SourceHandle)
-	audioSource.CaptureFrame(req.Buffer)
+	buffer := req.Buffer
+	length := buffer.NumChannels * buffer.SampleRate * 2
+	data := cPointerToGoByteSliceNoCopyFunc(req.Buffer.DataPtr, length)
+	audioSource.CaptureFrame(data)
 	res := &pb_audio.CaptureAudioFrameRes{}
 	return res, nil
 }

@@ -39,6 +39,7 @@ const (
 
 func init() {
 	base.SetDispatchFfiResultFunc(dispatchResultForC)
+	base.SetCPointerToGoByteSliceNoCopyFunc(CPointerToGoByteSliceNoCopy)
 	go monitorResultMapSize()
 }
 
@@ -63,7 +64,7 @@ func dispatchResultForC(handleID int64, data []byte) {
 	//exports to other languages, so no return value is needed here.
 }
 
-func CPointerToGoByteSliceNoCopy(cPointer uint64, length int) []byte {
+func CPointerToGoByteSliceNoCopy(cPointer uint64, length uint32) []byte {
 	// 将 uint64 转换为 unsafe.Pointer
 	goPointer := unsafe.Pointer(uintptr(cPointer))
 	// 使用 unsafe.Slice 创建一个切片，直接引用 C 内存
