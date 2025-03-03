@@ -4,6 +4,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/livekit/protocol/livekit"
 	lksdk "github.com/livekit/server-sdk-go/v2"
 
 	pb_participant "github.com/openimsdk/openim-rtc/proto/go/participant"
@@ -44,6 +45,22 @@ func (p *LocalParticipant) UnpublishTrack(track *LocalTrack) {
 	if err != nil {
 		log.Println(err)
 	}
+}
+
+func (p *LocalParticipant) SetSubscriptionPermission(allParticipants bool, permissions []*pb_participant.ParticipantTrackPermission) {
+	trackPermissions := make([]*livekit.TrackPermission, 0)
+	for _, permission := range permissions {
+		trackPermissions = append(trackPermissions, &livekit.TrackPermission{
+			ParticipantIdentity: permission.ParticipantIdentity,
+			AllTracks:           permission.AllowAll,
+			TrackSids:           permission.AllowedTrackSids,
+		})
+	}
+	sp := &livekit.SubscriptionPermission{
+		AllParticipants:  allParticipants,
+		TrackPermissions: trackPermissions,
+	}
+	p.LiveKitLocalParticipant.SetSubscriptionPermission(sp)
 }
 
 func (p *LocalParticipant) SendData(topic string, data []byte, reliable bool, identifies []string) {
@@ -107,26 +124,10 @@ func (p *LocalParticipant) SetAttributes(attributes map[string]string) {
 
 type RemoteParticipant struct {
 	LiveKitRemoteParticipant *lksdk.RemoteParticipant
-	remoteTrackPublications  map[string]*lksdk.RemoteTrackPublication
 }
 
 func NewRemoteParticipant(remoteParticipant *lksdk.RemoteParticipant) *RemoteParticipant {
 	return &RemoteParticipant{
 		LiveKitRemoteParticipant: remoteParticipant,
-		remoteTrackPublications:  make(map[string]*lksdk.RemoteTrackPublication),
-	}
-}
-
-func (rp *RemoteParticipant) addRemoteTrackPublication(rtp *lksdk.RemoteTrackPublication) {
-	_, ok := rp.remoteTrackPublications[rtp.SID()]
-	if !ok {
-		rp.remoteTrackPublications[rtp.SID()] = rtp
-	}
-}
-
-func (rp *RemoteParticipant) SetSubscribed(publicationId string, subscribe bool) {
-	publication, ok := rp.remoteTrackPublications[publicationId]
-	if ok {
-		publication.SetSubscribed(subscribe)
 	}
 }

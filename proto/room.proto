@@ -48,9 +48,9 @@ message SipDTMF {
 }
 
 message RoomOptions {
-  bool auto_subscribe = 1;  // 自动订阅
-  bool adaptive_stream = 2; // 自适应码流
-  bool dynacast = 3;        // 动态广播
+  bool auto_subscribe = 1;
+  bool adaptive_stream = 2;
+  bool dynacast = 3;
 }
 
 message ConnectReq {
@@ -66,8 +66,8 @@ message ConnectRes {
 message DisconnectReq { uint64 room_handle = 1; }
 message DisconnectRes {}
 
-message GetSessionStatsReq { uint64 room_handle = 1; }
-message GetSessionStatsRes {}
+message GetConnectStateReq { uint64 room_handle = 1; }
+message GetConnectStateRes { openim.rtc.common.ConnectionState state = 1; }
 
 message ParticipantConnected {
   openim.rtc.participant.OwnedParticipant info = 1;

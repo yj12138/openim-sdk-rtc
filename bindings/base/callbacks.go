@@ -181,13 +181,22 @@ func (l *RoomListener) OnConnectionQualityChanged(participantIdentify string, qu
 }
 
 // for remote participants
-func (l *RoomListener) OnTrackSubscribed(participantIdentify string, trackInfo *pb_track.TrackInfo) {
+func (l *RoomListener) OnTrackSubscribed(participantIdentify string, track *sdk.RemoteTrack) {
+	info := &pb_track.TrackInfo{
+		Sid:         track.Publication.SID(),
+		Name:        track.Publication.Name(),
+		Kind:        sdk.ConvertTrackKind(track.Publication.Kind()),
+		StreamState: pb_track.StreamState_STATE_UNKNOWN,
+		Muted:       track.Publication.IsMuted(),
+		Remote:      true,
+	}
+
 	dispatchEventResp(pb_event.FuncEventName_RoomEvent, &pb_room.RoomEvent{
 		RoomHandle: l.RoomHandle,
 		Message: &pb_room.RoomEvent_TrackSubscribed{
 			TrackSubscribed: &pb_room.TrackSubscribed{
 				ParticipantIdentity: participantIdentify,
-				Track:               trackInfo,
+				Track:               info,
 			},
 		},
 	})
@@ -216,13 +225,25 @@ func (l *RoomListener) OnTrackSubscriptionFailed(participantIdentify string, tra
 	})
 }
 
-func (l *RoomListener) OnTrackPublished(participantIdentify string, publication *pb_track.TrackPublicationInfo) {
+func (l *RoomListener) OnTrackPublished(participantIdentify string, remoteTrack *sdk.RemoteTrack) {
+
 	dispatchEventResp(pb_event.FuncEventName_RoomEvent, &pb_room.RoomEvent{
 		RoomHandle: l.RoomHandle,
 		Message: &pb_room.RoomEvent_TrackPublished{
 			TrackPublished: &pb_room.TrackPublished{
 				ParticipantIdentity: participantIdentify,
-				Publication:         publication,
+				Publication: &pb_track.TrackPublicationInfo{
+					Sid:         remoteTrack.Publication.SID(),
+					Name:        remoteTrack.Publication.Name(),
+					Kind:        sdk.ConvertTrackKind(remoteTrack.Publication.Kind()),
+					Source:      pb_track.TrackSource(remoteTrack.Publication.Source()),
+					Simulcasted: remoteTrack.Publication.TrackInfo().GetSimulcast(),
+					Width:       remoteTrack.Publication.TrackInfo().Height,
+					Height:      remoteTrack.Publication.TrackInfo().Height,
+					MimeType:    remoteTrack.Publication.MimeType(),
+					Muted:       remoteTrack.Publication.IsMuted(),
+					Remote:      true,
+				},
 			},
 		},
 	})

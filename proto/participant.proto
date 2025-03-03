@@ -34,6 +34,12 @@ enum DataPacketKind {
   KIND_RELIABLE = 1;
 }
 
+message ParticipantTrackPermission {
+  string participant_identity = 1;
+  bool allow_all = 2;
+  repeated string allowed_track_sids = 3;
+}
+
 message TrackPublishOptions {}
 
 message AttributesEntry {
@@ -127,13 +133,6 @@ message PublishDataReq {
 }
 message PublishDataRes {}
 
-message SetSubscribedReq {
-  uint64 remote_participant_handle = 1;
-  string publication_sid = 2;
-  bool subscribe = 3;
-}
-message SetSubscribedRes {}
-
 message SetLocalMetadataReq {
   uint64 local_participant_handle = 1;
   string metadata = 2;
@@ -159,19 +158,6 @@ message PublishTranscriptionReq {
   repeated TranscriptionSegment segments = 4;
 }
 message PublishTranscriptionRes {}
-
-message EnableRemoteTrackPublicationReq {
-  uint64 track_publication_handle = 1;
-  bool enabled = 2;
-}
-message EnableRemoteTrackPublicationRes {}
-
-message UpdateRemoteTrackPublicationDimensionReq {
-  uint64 track_publication_handle = 1;
-  uint32 width = 2;
-  uint32 height = 3;
-}
-message UpdateRemoteTrackPublicationDimensionRes {}
 
 message SendStreamHeaderReq {
   uint64 local_participant_handle = 1;
@@ -220,3 +206,10 @@ message SetDataChannelBufferedAmountLowThresholdReq {
   DataPacketKind kind = 3;
 }
 message SetDataChannelBufferedAmountLowThresholdRes {}
+
+message SetTrackSubscriptionPermissionsReq {
+  uint64 local_participant_handle = 1;
+  bool all_participants_allowed = 2;
+  repeated ParticipantTrackPermission permissions = 3;
+}
+message SetTrackSubscriptionPermissionsRes {}

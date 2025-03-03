@@ -27,7 +27,10 @@ func (api *API) Disconnect(req *pb_room.DisconnectReq) (*pb_room.DisconnectRes, 
 	return &pb_room.DisconnectRes{}, nil
 }
 
-func (api *API) GetSessionStats(req *pb_room.GetSessionStatsReq) (*pb_room.GetSessionStatsRes, error) {
-
-	return nil, nil
+func (api *API) GetConnectState(req *pb_room.GetConnectStateReq) (*pb_room.GetConnectStateRes, error) {
+	room := api.getRoom(req.RoomHandle)
+	res := &pb_room.GetConnectStateRes{
+		State: room.GetConnectState(),
+	}
+	return res, nil
 }

@@ -13,6 +13,35 @@ const (
 	MimeTypeOpus = "audio/opus"
 )
 
+type RemoteTrack struct {
+	Track       *webrtc.TrackRemote
+	Participant *lksdk.RemoteParticipant
+	Publication *lksdk.RemoteTrackPublication
+}
+
+func (rt *RemoteTrack) SetEnable(enable bool) {
+	rt.Publication.SetEnabled(enable)
+}
+func (rt *RemoteTrack) SetSubscribed(publicationId string, subscribe bool) {
+	rt.Publication.SetSubscribed(subscribe)
+}
+
+func (rt *RemoteTrack) EnableTrackPubliciation(remotetrackPublicationSid string, enable bool) {
+	rt.Publication.SetEnabled(enable)
+}
+
+func (rt *RemoteTrack) UpdatePublicationDimension(remotetrackPublicationSid string, width uint32, height uint32) {
+	rt.Publication.SetVideoDimensions(width, height)
+}
+
+func NewRemoteTrack(track *webrtc.TrackRemote, remoteParticipant *lksdk.RemoteParticipant, remoteTrackPublication *lksdk.RemoteTrackPublication) *RemoteTrack {
+	return &RemoteTrack{
+		Track:       track,
+		Participant: remoteParticipant,
+		Publication: remoteTrackPublication,
+	}
+}
+
 type LocalTrack struct {
 	Name                  string
 	MimeType              string
@@ -22,10 +51,6 @@ type LocalTrack struct {
 	LiveKitTrack          *lksdk.LocalTrack
 	LocalTrackPublication *lksdk.LocalTrackPublication
 }
-
-// func (t *LocalTrack) StreamState() pb_track.StreamState {
-// 	return pb_track.StreamState_STATE_ACTIVE
-// }
 
 func (t *LocalTrack) WriteData(data []byte, duration time.Duration) {
 	t.SampleProvider.WriteData(data, duration)

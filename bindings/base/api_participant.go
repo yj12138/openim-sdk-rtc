@@ -2,7 +2,6 @@ package base
 
 import (
 	pb_participant "github.com/openimsdk/openim-rtc/proto/go/participant"
-	// "github.com/openimsdk/openim-rtc/sdk"
 )
 
 func (api *API) PublishTrack(req *pb_participant.PublishTrackReq) (*pb_participant.PublishTrackRes, error) {
@@ -26,11 +25,7 @@ func (api *API) PublishData(req *pb_participant.PublishDataReq) (*pb_participant
 	res := &pb_participant.PublishDataRes{}
 	return res, nil
 }
-func (api *API) SetSubscribed(req *pb_participant.SetSubscribedReq) (*pb_participant.SetSubscribedRes, error) {
-	participant := api.getRemoteParticipant(req.RemoteParticipantHandle)
-	participant.SetSubscribed(req.PublicationSid, req.Subscribe)
-	return nil, nil
-}
+
 func (api *API) SetLocalMetadata(req *pb_participant.SetLocalMetadataReq) (*pb_participant.SetLocalMetadataRes, error) {
 	participant := api.getLocalParticipant(req.LocalParticipantHandle)
 	participant.SetMetadata(req.Metadata)
@@ -45,24 +40,13 @@ func (api *API) SetLocalName(req *pb_participant.SetLocalNameReq) (*pb_participa
 }
 func (api *API) SetLocalAttributes(req *pb_participant.SetLocalAttributesReq) (*pb_participant.SetLocalAttributesRes, error) {
 	participant := api.getLocalParticipant(req.LocalParticipantHandle)
-
 	attributes := make(map[string]string)
 	for _, entry := range req.Attributes {
 		attributes[entry.Key] = entry.Value
 	}
 	participant.SetAttributes(attributes)
-
 	res := &pb_participant.SetLocalAttributesRes{}
 	return res, nil
-}
-func (api *API) EnableRemoteTrackPublication(req *pb_participant.EnableRemoteTrackPublicationReq) (*pb_participant.EnableRemoteTrackPublicationRes, error) {
-
-	return nil, nil
-}
-
-func (api *API) UpdateRemoteTrackPublicationDimension(req *pb_participant.UpdateRemoteTrackPublicationDimensionReq) (*pb_participant.UpdateRemoteTrackPublicationDimensionRes, error) {
-
-	return nil, nil
 }
 
 func (api *API) PublishTranscription(req *pb_participant.PublishTranscriptionReq) (*pb_participant.PublishTranscriptionRes, error) {
@@ -107,6 +91,10 @@ func (api *API) SendStreamTrailer(req *pb_participant.SendStreamTrailerReq) (*pb
 	res := &pb_participant.SendStreamTrailerRes{}
 	return res, nil
 }
-func (api *API) SetDataChannelBufferedAmountLowThreshold(req *pb_participant.SetDataChannelBufferedAmountLowThresholdReq) (*pb_participant.SetDataChannelBufferedAmountLowThresholdRes, error) {
-	return nil, nil
+
+func (api *API) SetTrackSubscriptionPermissions(req *pb_participant.SetTrackSubscriptionPermissionsReq) (*pb_participant.SetTrackSubscriptionPermissionsRes, error) {
+	participant := api.getLocalParticipant(req.LocalParticipantHandle)
+	participant.SetSubscriptionPermission(req.AllParticipantsAllowed, req.Permissions)
+	res := &pb_participant.SetTrackSubscriptionPermissionsRes{}
+	return res, nil
 }

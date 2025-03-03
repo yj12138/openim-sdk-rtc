@@ -9,25 +9,22 @@ import (
 	"github.com/livekit/protocol/livekit"
 	pb_common "github.com/openimsdk/openim-rtc/proto/go/common"
 	pb_room "github.com/openimsdk/openim-rtc/proto/go/room"
-	pb_track "github.com/openimsdk/openim-rtc/proto/go/track"
 )
 
 type Room struct {
-	host        string
-	token       string
-	roomName    string
-	owner       string
-	livekitRoom *lksdk.Room
-
-	listener OnRoomListener
-
+	host               string
+	token              string
+	livekitRoom        *lksdk.Room
+	listener           OnRoomListener
 	remoteParticipants map[string]*RemoteParticipant
+	remoteTracks       map[string]*RemoteTrack
 }
 
 func NewRoom(listener OnRoomListener) *Room {
 	r := &Room{
 		listener:           listener,
 		remoteParticipants: make(map[string]*RemoteParticipant),
+		remoteTracks:       make(map[string]*RemoteTrack),
 	}
 	return r
 }
@@ -65,8 +62,6 @@ func (r *Room) createCallBack() *lksdk.RoomCallback {
 			OnDataPacket:              r.onDataPacket,
 			OnTranscriptionReceived:   r.onTranscriptionReceived,
 		},
-		// participant
-
 	}
 
 	return callBack
@@ -84,8 +79,6 @@ func (r *Room) ConnectByToken(host, token string) {
 }
 
 func (r *Room) ConnectBySecret(host, apiKey, apiSecret, roomName, identify string) {
-	r.roomName = roomName
-	r.owner = identify
 	room, err := lksdk.ConnectToRoom(host, lksdk.ConnectInfo{
 		APIKey:              apiKey,
 		APISecret:           apiSecret,
@@ -105,6 +98,20 @@ func (r *Room) Disconnect() {
 	r.livekitRoom = nil
 }
 
+func (r *Room) GetConnectState() pb_common.ConnectionState {
+	if r.livekitRoom != nil {
+		state := r.livekitRoom.ConnectionState()
+		if state == lksdk.ConnectionStateConnected {
+			return pb_common.ConnectionState_CONN_CONNECTED
+		} else if state == lksdk.ConnectionStateDisconnected {
+			return pb_common.ConnectionState_CONN_DISCONNECTED
+		} else if state == lksdk.ConnectionStateReconnecting {
+			return pb_common.ConnectionState_CONN_RECONNECTING
+		}
+	}
+	return pb_common.ConnectionState_CONN_DISCONNECTED
+}
+
 func (r *Room) IsConnSuc() bool {
 	return r.livekitRoom != nil
 }
@@ -116,14 +123,6 @@ func (r *Room) checkConn() bool {
 		log.Panic("not connect to room")
 		return false
 	}
-}
-
-func (r *Room) GetRoomName() string {
-	return r.roomName
-}
-
-func (r *Room) GetOwner() string {
-	return r.owner
 }
 
 func (r *Room) GetLocalParticipant() *lksdk.LocalParticipant {
@@ -227,21 +226,10 @@ func (r *Room) onConnectionQualityChanged(update *livekit.ConnectionQualityInfo,
 }
 
 func (r *Room) onTrackSubscribed(track *webrtc.TrackRemote, publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
-	info := &pb_track.TrackInfo{
-		Sid:         publication.SID(),
-		Name:        publication.Name(),
-		Kind:        ConvertTrackKind(publication.Kind()),
-		StreamState: pb_track.StreamState_STATE_UNKNOWN,
-		Muted:       publication.IsMuted(),
-		Remote:      true,
-	}
-
-	participant, ok := r.remoteParticipants[rp.Identity()]
-	if ok {
-		participant.addRemoteTrackPublication(publication)
-	}
-
-	r.listener.OnTrackSubscribed(rp.Identity(), info)
+	log.Println("onTrackSubscribed")
+	remoteTrack := NewRemoteTrack(track, rp, publication)
+	r.remoteTracks[remoteTrack.Publication.SID()] = remoteTrack
+	r.listener.OnTrackSubscribed(rp.Identity(), remoteTrack)
 }
 func (r *Room) onTrackUnsubscribed(track *webrtc.TrackRemote, publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
 	r.listener.OnTrackUnsubscribed(rp.Identity(), publication.SID())
@@ -250,11 +238,11 @@ func (r *Room) onTrackSubscriptionFailed(sid string, rp *lksdk.RemoteParticipant
 	r.listener.OnTrackSubscriptionFailed(rp.Identity(), sid, "TODO")
 }
 func (r *Room) onTrackPublished(publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
-	participant, ok := r.remoteParticipants[rp.Identity()]
+	log.Println("onTrackPublished")
+	remoteTrack, ok := r.remoteTracks[publication.SID()]
 	if ok {
-		participant.addRemoteTrackPublication(publication)
+		r.listener.OnTrackPublished(rp.Identity(), remoteTrack)
 	}
-	r.listener.OnTrackPublished(rp.Identity(), &pb_track.TrackPublicationInfo{})
 }
 func (r *Room) onTrackUnpublished(publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
 	r.listener.OnTrackUnpublished(rp.Identity(), publication.SID())

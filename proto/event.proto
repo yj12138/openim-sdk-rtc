@@ -11,24 +11,24 @@ enum FuncEventName {
   // Room
   Connect = 1;
   Disconnect = 2;
-  PublishTrack = 3;
-  UnpublishTrack = 4;
-  PublishData = 5;
-  SetSubscribed = 6;
-  SetLocalMetadata = 7;
-  SetLocalName = 8;
-  SetLocalAttributes = 9;
-  GetSessionStats = 10;
-  PublishTranscription = 11;
-  EnableRemoteTrackPublication = 12;
-  UpdateRemoteTrackPublicationDimension = 13;
-  SendStreamHeader = 14;
-  SendStreamChunk = 15;
-  SendStreamTrailer = 16;
-  SetDataChannelBufferedAmountLowThreshold = 17;
-  SendChatMessageRequest = 18;
-  EditChatMessageRequest = 19;
-
+  GetConnectState = 3;
+  // Participant
+  PublishTrack = 10;
+  UnpublishTrack = 11;
+  PublishData = 12;
+  SetSubscribed = 13;
+  SetLocalMetadata = 14;
+  SetLocalName = 15;
+  SetLocalAttributes = 16;
+  PublishTranscription = 17;
+  EnableRemoteTrackPublication = 18;
+  UpdateRemoteTrackPublicationDimension = 19;
+  SendStreamHeader = 20;
+  SendStreamChunk = 21;
+  SendStreamTrailer = 22;
+  SetDataChannelBufferedAmountLowThreshold = 23;
+  SendChatMessageRequest = 24;
+  EditChatMessageRequest = 25;
   // Track
   CreateVideoTrack = 101;
   CreateAudioTrack = 102;
@@ -50,6 +50,7 @@ enum FuncEventName {
   CaptureVideoFrame = 303;
   VideoConvert = 304;
   VideoStreamFromParticipan = 305;
+
   //   event
   RoomEvent = 1001;
 }

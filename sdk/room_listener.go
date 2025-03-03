@@ -3,7 +3,6 @@ package sdk
 import (
 	pb_common "github.com/openimsdk/openim-rtc/proto/go/common"
 	pb_room "github.com/openimsdk/openim-rtc/proto/go/room"
-	pb_track "github.com/openimsdk/openim-rtc/proto/go/track"
 )
 
 type OnRoomListener interface {
@@ -28,10 +27,10 @@ type OnRoomListener interface {
 	OnConnectionQualityChanged(participantIdentify string, quality pb_common.ConnectionQuality)
 
 	// for remote participants
-	OnTrackSubscribed(participantIdentify string, trackInfo *pb_track.TrackInfo)
+	OnTrackSubscribed(participantIdentify string, track *RemoteTrack)
 	OnTrackUnsubscribed(participantIdentify string, trackSid string)
 	OnTrackSubscriptionFailed(participantIdentify string, trackSid string, err string)
-	OnTrackPublished(participantIdentify string, publication *pb_track.TrackPublicationInfo)
+	OnTrackPublished(participantIdentify string, track *RemoteTrack)
 	OnTrackUnpublished(participantIdentify string, publicationSid string)
 	OnDataPacket(participantIdentify string, value interface{})
 	OnTranscriptionReceived(participantIdentify string, trackSid string, segments []*pb_room.TranscriptionSegment)

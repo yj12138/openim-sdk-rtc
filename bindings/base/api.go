@@ -77,6 +77,17 @@ func (api *API) getLocalTrack(handle uint64) *sdk.LocalTrack {
 	panic(fmt.Sprintf("not find handle:%d", handle))
 }
 
+func (api *API) getRemoteTrack(handle uint64) *sdk.RemoteTrack {
+	if value, ok := api.handleObjMap.Load(handle); ok {
+		if r, ok := value.(*sdk.RemoteTrack); ok {
+			return r
+		} else {
+			panic(fmt.Sprintf("handle:%d is not sdk.LocalTrack type", handle))
+		}
+	}
+	panic(fmt.Sprintf("not find handle:%d", handle))
+}
+
 func (api *API) getAudioStream(handle uint64) *sdk.AudioStream {
 	if value, ok := api.handleObjMap.Load(handle); ok {
 		if r, ok := value.(*sdk.AudioStream); ok {

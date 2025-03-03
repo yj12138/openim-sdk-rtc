@@ -58,12 +58,6 @@ message OwnedTrack {
   TrackInfo info = 2;
 }
 
-message ParticipantTrackPermission {
-  string participant_identity = 1;
-  bool allow_all = 2;
-  string allowed_track_sids = 3;
-}
-
 message CreateVideoTrackReq {
   string name = 1;
   uint64 source_handle = 2;
@@ -88,12 +82,27 @@ message EnableRemoteTrackReq {
 }
 message EnableRemoteTrackRes { bool enabled = 1; }
 
-message GetStatsReq{}
-message GetStatsRes{}
-
-message SetTrackSubscriptionPermissionsReq {
-  uint64 local_participant_handle = 1;
-  bool all_participants_allowed = 2;
-  ParticipantTrackPermission permissions = 3;
+message SetSubscribedReq {
+  uint64 remote_track_handle = 1;
+  string publication_sid = 2;
+  bool subscribe = 3;
 }
-message SetTrackSubscriptionPermissionsRes {}
+message SetSubscribedRes {}
+
+message EnableRemoteTrackPublicationReq {
+  uint64 remote_track_handle = 1;
+  string track_publication_sid = 2;
+  bool enabled = 3;
+}
+message EnableRemoteTrackPublicationRes {}
+
+message UpdateRemoteTrackPublicationDimensionReq {
+  uint64 remote_track_handle = 1;
+  string track_publication_sid = 2;
+  uint32 width = 3;
+  uint32 height = 4;
+}
+message UpdateRemoteTrackPublicationDimensionRes {}
+
+message GetStatsReq {}
+message GetStatsRes {}
