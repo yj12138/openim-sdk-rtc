@@ -4,6 +4,11 @@ package openim.rtc.common;
 option csharp_namespace = "OpenIM.RTC.Proto";
 option go_package = "github.com/openimsdk/openim-rtc/proto/go/common";
 
+enum DataPacketKind {
+  KIND_LOSSY = 0;
+  KIND_RELIABLE = 1;
+}
+
 message AttributesEntry {
   string key = 1;
   string value = 2;

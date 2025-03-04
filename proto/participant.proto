@@ -29,11 +29,6 @@ enum ParticipantKind {
   PARTICIPANT_KIND_AGENT = 4;
 }
 
-enum DataPacketKind {
-  KIND_LOSSY = 0;
-  KIND_RELIABLE = 1;
-}
-
 message ParticipantTrackPermission {
   string participant_identity = 1;
   bool allow_all = 2;
@@ -41,11 +36,6 @@ message ParticipantTrackPermission {
 }
 
 message TrackPublishOptions {}
-
-message AttributesEntry {
-  string key = 1;
-  string value = 2;
-}
 
 message TranscriptionSegment {
   string id = 1;
@@ -147,7 +137,7 @@ message SetLocalNameRes {}
 
 message SetLocalAttributesReq {
   uint64 local_participant_handle = 1;
-  repeated AttributesEntry attributes = 2;
+  repeated openim.rtc.common.AttributesEntry attributes = 2;
 }
 message SetLocalAttributesRes {}
 
@@ -203,7 +193,7 @@ message EditChatMessageRes {}
 message SetDataChannelBufferedAmountLowThresholdReq {
   uint64 local_participant_handle = 1;
   uint64 threshold = 2;
-  DataPacketKind kind = 3;
+  openim.rtc.common.DataPacketKind kind = 3;
 }
 message SetDataChannelBufferedAmountLowThresholdRes {}
 
