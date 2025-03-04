@@ -53,6 +53,31 @@ enum FuncEventName {
 
   //   event
   RoomEvent = 1001;
+  TrackEvent = 1002;
+  VideoStreamEvent = 1003;
+  AudioStreamEvent = 1004;
+  ConnectCallback = 1005;
+  DisconnectCallback = 1006;
+  DisposeCallback = 1007;
+  PublishTrackCallback = 1008;
+  UnpublishTrackCallback = 1009;
+  PublishDataCallback = 1010;
+  PublishTranscriptionCallback = 1011;
+  CaptureAudioFrameCallback = 1012;
+  SetLocalMetadataCallback = 1013;
+  SetLocalNameCallback = 1014;
+  SetLocalAttributesCallback = 1015;
+  GetStatsCallback = 1016;
+  LogBatch = 1017;
+  GetSessionStatsCallback = 1018;
+  Panic = 1019;
+  PublishSipDtmfCallback = 1020;
+  SendChatMessageCallback = 1021;
+  PerformRpcCallback = 1022;
+  RpcMethodInvocationEvent = 1023;
+  SendStreamHeaderCallback = 1024;
+  SendStreamChunkCallback = 1025;
+  SendStreamTrailerCallback = 1026;
 }
 
 message FfiRequest {

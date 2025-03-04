@@ -20,3 +20,58 @@ message VideoConvertRes {}
 
 message VideoStreamFromParticipanReq {};
 message VideoStreamFromParticipanRes {};
+
+enum VideoBufferType {
+  RGBA = 0;
+  ABGR = 1;
+  ARGB = 2;
+  BGRA = 3;
+  RGB24 = 4;
+  I420 = 5;
+  I420A = 6;
+  I422 = 7;
+  I444 = 8;
+  I010 = 9;
+  NV12 = 10;
+}
+
+message VideoBufferInfo {
+  message ComponentInfo {
+    uint64 data_ptr = 1;
+    uint32 stride = 2;
+    uint32 size = 3;
+  }
+  VideoBufferType type = 1;
+  uint32 width = 2;
+  uint32 height = 3;
+  uint64 data_ptr = 4;
+  uint32 stride = 6;
+  repeated ComponentInfo components = 7;
+}
+
+message OwnedVideoBuffer {
+  uint64 handle = 1;
+  VideoBufferInfo info = 2;
+}
+
+enum VideoRotation {
+  VIDEO_ROTATION_0 = 0;
+  VIDEO_ROTATION_90 = 1;
+  VIDEO_ROTATION_180 = 2;
+  VIDEO_ROTATION_270 = 3;
+}
+
+message VideoFrameReceived {
+  OwnedVideoBuffer buffer = 1;
+  int64 timestamp_us = 2; // In microseconds
+  VideoRotation rotation = 3;
+}
+message VideoStreamEOS {}
+
+message VideoStreamEvent {
+  uint64 stream_handle = 1;
+  oneof message {
+    VideoFrameReceived frame_received = 2;
+    VideoStreamEOS eos = 3;
+  }
+}

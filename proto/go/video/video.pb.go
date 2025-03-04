@@ -20,6 +20,131 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type VideoBufferType int32
+
+const (
+	VideoBufferType_RGBA  VideoBufferType = 0
+	VideoBufferType_ABGR  VideoBufferType = 1
+	VideoBufferType_ARGB  VideoBufferType = 2
+	VideoBufferType_BGRA  VideoBufferType = 3
+	VideoBufferType_RGB24 VideoBufferType = 4
+	VideoBufferType_I420  VideoBufferType = 5
+	VideoBufferType_I420A VideoBufferType = 6
+	VideoBufferType_I422  VideoBufferType = 7
+	VideoBufferType_I444  VideoBufferType = 8
+	VideoBufferType_I010  VideoBufferType = 9
+	VideoBufferType_NV12  VideoBufferType = 10
+)
+
+// Enum value maps for VideoBufferType.
+var (
+	VideoBufferType_name = map[int32]string{
+		0:  "RGBA",
+		1:  "ABGR",
+		2:  "ARGB",
+		3:  "BGRA",
+		4:  "RGB24",
+		5:  "I420",
+		6:  "I420A",
+		7:  "I422",
+		8:  "I444",
+		9:  "I010",
+		10: "NV12",
+	}
+	VideoBufferType_value = map[string]int32{
+		"RGBA":  0,
+		"ABGR":  1,
+		"ARGB":  2,
+		"BGRA":  3,
+		"RGB24": 4,
+		"I420":  5,
+		"I420A": 6,
+		"I422":  7,
+		"I444":  8,
+		"I010":  9,
+		"NV12":  10,
+	}
+)
+
+func (x VideoBufferType) Enum() *VideoBufferType {
+	p := new(VideoBufferType)
+	*p = x
+	return p
+}
+
+func (x VideoBufferType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (VideoBufferType) Descriptor() protoreflect.EnumDescriptor {
+	return file_video_proto_enumTypes[0].Descriptor()
+}
+
+func (VideoBufferType) Type() protoreflect.EnumType {
+	return &file_video_proto_enumTypes[0]
+}
+
+func (x VideoBufferType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use VideoBufferType.Descriptor instead.
+func (VideoBufferType) EnumDescriptor() ([]byte, []int) {
+	return file_video_proto_rawDescGZIP(), []int{0}
+}
+
+type VideoRotation int32
+
+const (
+	VideoRotation_VIDEO_ROTATION_0   VideoRotation = 0
+	VideoRotation_VIDEO_ROTATION_90  VideoRotation = 1
+	VideoRotation_VIDEO_ROTATION_180 VideoRotation = 2
+	VideoRotation_VIDEO_ROTATION_270 VideoRotation = 3
+)
+
+// Enum value maps for VideoRotation.
+var (
+	VideoRotation_name = map[int32]string{
+		0: "VIDEO_ROTATION_0",
+		1: "VIDEO_ROTATION_90",
+		2: "VIDEO_ROTATION_180",
+		3: "VIDEO_ROTATION_270",
+	}
+	VideoRotation_value = map[string]int32{
+		"VIDEO_ROTATION_0":   0,
+		"VIDEO_ROTATION_90":  1,
+		"VIDEO_ROTATION_180": 2,
+		"VIDEO_ROTATION_270": 3,
+	}
+)
+
+func (x VideoRotation) Enum() *VideoRotation {
+	p := new(VideoRotation)
+	*p = x
+	return p
+}
+
+func (x VideoRotation) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (VideoRotation) Descriptor() protoreflect.EnumDescriptor {
+	return file_video_proto_enumTypes[1].Descriptor()
+}
+
+func (VideoRotation) Type() protoreflect.EnumType {
+	return &file_video_proto_enumTypes[1]
+}
+
+func (x VideoRotation) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use VideoRotation.Descriptor instead.
+func (VideoRotation) EnumDescriptor() ([]byte, []int) {
+	return file_video_proto_rawDescGZIP(), []int{1}
+}
+
 type NewVideoStreamReq struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -400,6 +525,401 @@ func (*VideoStreamFromParticipanRes) Descriptor() ([]byte, []int) {
 	return file_video_proto_rawDescGZIP(), []int{9}
 }
 
+type VideoBufferInfo struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Type       VideoBufferType                  `protobuf:"varint,1,opt,name=type,proto3,enum=openim.rtc.video.VideoBufferType" json:"type"`
+	Width      uint32                           `protobuf:"varint,2,opt,name=width,proto3" json:"width"`
+	Height     uint32                           `protobuf:"varint,3,opt,name=height,proto3" json:"height"`
+	DataPtr    uint64                           `protobuf:"varint,4,opt,name=data_ptr,json=dataPtr,proto3" json:"data_ptr"`
+	Stride     uint32                           `protobuf:"varint,6,opt,name=stride,proto3" json:"stride"`
+	Components []*VideoBufferInfo_ComponentInfo `protobuf:"bytes,7,rep,name=components,proto3" json:"components"`
+}
+
+func (x *VideoBufferInfo) Reset() {
+	*x = VideoBufferInfo{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_video_proto_msgTypes[10]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *VideoBufferInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VideoBufferInfo) ProtoMessage() {}
+
+func (x *VideoBufferInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_video_proto_msgTypes[10]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VideoBufferInfo.ProtoReflect.Descriptor instead.
+func (*VideoBufferInfo) Descriptor() ([]byte, []int) {
+	return file_video_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *VideoBufferInfo) GetType() VideoBufferType {
+	if x != nil {
+		return x.Type
+	}
+	return VideoBufferType_RGBA
+}
+
+func (x *VideoBufferInfo) GetWidth() uint32 {
+	if x != nil {
+		return x.Width
+	}
+	return 0
+}
+
+func (x *VideoBufferInfo) GetHeight() uint32 {
+	if x != nil {
+		return x.Height
+	}
+	return 0
+}
+
+func (x *VideoBufferInfo) GetDataPtr() uint64 {
+	if x != nil {
+		return x.DataPtr
+	}
+	return 0
+}
+
+func (x *VideoBufferInfo) GetStride() uint32 {
+	if x != nil {
+		return x.Stride
+	}
+	return 0
+}
+
+func (x *VideoBufferInfo) GetComponents() []*VideoBufferInfo_ComponentInfo {
+	if x != nil {
+		return x.Components
+	}
+	return nil
+}
+
+type OwnedVideoBuffer struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Handle uint64           `protobuf:"varint,1,opt,name=handle,proto3" json:"handle"`
+	Info   *VideoBufferInfo `protobuf:"bytes,2,opt,name=info,proto3" json:"info"`
+}
+
+func (x *OwnedVideoBuffer) Reset() {
+	*x = OwnedVideoBuffer{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_video_proto_msgTypes[11]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *OwnedVideoBuffer) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OwnedVideoBuffer) ProtoMessage() {}
+
+func (x *OwnedVideoBuffer) ProtoReflect() protoreflect.Message {
+	mi := &file_video_proto_msgTypes[11]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OwnedVideoBuffer.ProtoReflect.Descriptor instead.
+func (*OwnedVideoBuffer) Descriptor() ([]byte, []int) {
+	return file_video_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *OwnedVideoBuffer) GetHandle() uint64 {
+	if x != nil {
+		return x.Handle
+	}
+	return 0
+}
+
+func (x *OwnedVideoBuffer) GetInfo() *VideoBufferInfo {
+	if x != nil {
+		return x.Info
+	}
+	return nil
+}
+
+type VideoFrameReceived struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Buffer      *OwnedVideoBuffer `protobuf:"bytes,1,opt,name=buffer,proto3" json:"buffer"`
+	TimestampUs int64             `protobuf:"varint,2,opt,name=timestamp_us,json=timestampUs,proto3" json:"timestamp_us"` // In microseconds
+	Rotation    VideoRotation     `protobuf:"varint,3,opt,name=rotation,proto3,enum=openim.rtc.video.VideoRotation" json:"rotation"`
+}
+
+func (x *VideoFrameReceived) Reset() {
+	*x = VideoFrameReceived{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_video_proto_msgTypes[12]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *VideoFrameReceived) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VideoFrameReceived) ProtoMessage() {}
+
+func (x *VideoFrameReceived) ProtoReflect() protoreflect.Message {
+	mi := &file_video_proto_msgTypes[12]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VideoFrameReceived.ProtoReflect.Descriptor instead.
+func (*VideoFrameReceived) Descriptor() ([]byte, []int) {
+	return file_video_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *VideoFrameReceived) GetBuffer() *OwnedVideoBuffer {
+	if x != nil {
+		return x.Buffer
+	}
+	return nil
+}
+
+func (x *VideoFrameReceived) GetTimestampUs() int64 {
+	if x != nil {
+		return x.TimestampUs
+	}
+	return 0
+}
+
+func (x *VideoFrameReceived) GetRotation() VideoRotation {
+	if x != nil {
+		return x.Rotation
+	}
+	return VideoRotation_VIDEO_ROTATION_0
+}
+
+type VideoStreamEOS struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *VideoStreamEOS) Reset() {
+	*x = VideoStreamEOS{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_video_proto_msgTypes[13]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *VideoStreamEOS) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VideoStreamEOS) ProtoMessage() {}
+
+func (x *VideoStreamEOS) ProtoReflect() protoreflect.Message {
+	mi := &file_video_proto_msgTypes[13]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VideoStreamEOS.ProtoReflect.Descriptor instead.
+func (*VideoStreamEOS) Descriptor() ([]byte, []int) {
+	return file_video_proto_rawDescGZIP(), []int{13}
+}
+
+type VideoStreamEvent struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	StreamHandle uint64 `protobuf:"varint,1,opt,name=stream_handle,json=streamHandle,proto3" json:"stream_handle"`
+	// Types that are assignable to Message:
+	//
+	//	*VideoStreamEvent_FrameReceived
+	//	*VideoStreamEvent_Eos
+	Message isVideoStreamEvent_Message `protobuf_oneof:"message"`
+}
+
+func (x *VideoStreamEvent) Reset() {
+	*x = VideoStreamEvent{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_video_proto_msgTypes[14]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *VideoStreamEvent) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VideoStreamEvent) ProtoMessage() {}
+
+func (x *VideoStreamEvent) ProtoReflect() protoreflect.Message {
+	mi := &file_video_proto_msgTypes[14]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VideoStreamEvent.ProtoReflect.Descriptor instead.
+func (*VideoStreamEvent) Descriptor() ([]byte, []int) {
+	return file_video_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *VideoStreamEvent) GetStreamHandle() uint64 {
+	if x != nil {
+		return x.StreamHandle
+	}
+	return 0
+}
+
+func (m *VideoStreamEvent) GetMessage() isVideoStreamEvent_Message {
+	if m != nil {
+		return m.Message
+	}
+	return nil
+}
+
+func (x *VideoStreamEvent) GetFrameReceived() *VideoFrameReceived {
+	if x, ok := x.GetMessage().(*VideoStreamEvent_FrameReceived); ok {
+		return x.FrameReceived
+	}
+	return nil
+}
+
+func (x *VideoStreamEvent) GetEos() *VideoStreamEOS {
+	if x, ok := x.GetMessage().(*VideoStreamEvent_Eos); ok {
+		return x.Eos
+	}
+	return nil
+}
+
+type isVideoStreamEvent_Message interface {
+	isVideoStreamEvent_Message()
+}
+
+type VideoStreamEvent_FrameReceived struct {
+	FrameReceived *VideoFrameReceived `protobuf:"bytes,2,opt,name=frame_received,json=frameReceived,proto3,oneof"`
+}
+
+type VideoStreamEvent_Eos struct {
+	Eos *VideoStreamEOS `protobuf:"bytes,3,opt,name=eos,proto3,oneof"`
+}
+
+func (*VideoStreamEvent_FrameReceived) isVideoStreamEvent_Message() {}
+
+func (*VideoStreamEvent_Eos) isVideoStreamEvent_Message() {}
+
+type VideoBufferInfo_ComponentInfo struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	DataPtr uint64 `protobuf:"varint,1,opt,name=data_ptr,json=dataPtr,proto3" json:"data_ptr"`
+	Stride  uint32 `protobuf:"varint,2,opt,name=stride,proto3" json:"stride"`
+	Size    uint32 `protobuf:"varint,3,opt,name=size,proto3" json:"size"`
+}
+
+func (x *VideoBufferInfo_ComponentInfo) Reset() {
+	*x = VideoBufferInfo_ComponentInfo{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_video_proto_msgTypes[15]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *VideoBufferInfo_ComponentInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VideoBufferInfo_ComponentInfo) ProtoMessage() {}
+
+func (x *VideoBufferInfo_ComponentInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_video_proto_msgTypes[15]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VideoBufferInfo_ComponentInfo.ProtoReflect.Descriptor instead.
+func (*VideoBufferInfo_ComponentInfo) Descriptor() ([]byte, []int) {
+	return file_video_proto_rawDescGZIP(), []int{10, 0}
+}
+
+func (x *VideoBufferInfo_ComponentInfo) GetDataPtr() uint64 {
+	if x != nil {
+		return x.DataPtr
+	}
+	return 0
+}
+
+func (x *VideoBufferInfo_ComponentInfo) GetStride() uint32 {
+	if x != nil {
+		return x.Stride
+	}
+	return 0
+}
+
+func (x *VideoBufferInfo_ComponentInfo) GetSize() uint32 {
+	if x != nil {
+		return x.Size
+	}
+	return 0
+}
+
 var File_video_proto protoreflect.FileDescriptor
 
 var file_video_proto_rawDesc = []byte{
@@ -419,12 +939,79 @@ var file_video_proto_rawDesc = []byte{
 	0x65, 0x6f, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x46, 0x72, 0x6f, 0x6d, 0x50, 0x61, 0x72, 0x74,
 	0x69, 0x63, 0x69, 0x70, 0x61, 0x6e, 0x52, 0x65, 0x71, 0x22, 0x1e, 0x0a, 0x1c, 0x56, 0x69, 0x64,
 	0x65, 0x6f, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x46, 0x72, 0x6f, 0x6d, 0x50, 0x61, 0x72, 0x74,
-	0x69, 0x63, 0x69, 0x70, 0x61, 0x6e, 0x52, 0x65, 0x73, 0x42, 0x43, 0x5a, 0x2e, 0x67, 0x69, 0x74,
-	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x6f, 0x70, 0x65, 0x6e, 0x69, 0x6d, 0x73, 0x64,
-	0x6b, 0x2f, 0x6f, 0x70, 0x65, 0x6e, 0x69, 0x6d, 0x2d, 0x72, 0x74, 0x63, 0x2f, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x2f, 0x76, 0x69, 0x64, 0x65, 0x6f, 0xaa, 0x02, 0x10, 0x4f, 0x70,
-	0x65, 0x6e, 0x49, 0x4d, 0x2e, 0x52, 0x54, 0x43, 0x2e, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x69, 0x63, 0x69, 0x70, 0x61, 0x6e, 0x52, 0x65, 0x73, 0x22, 0xd2, 0x02, 0x0a, 0x0f, 0x56, 0x69,
+	0x64, 0x65, 0x6f, 0x42, 0x75, 0x66, 0x66, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x35, 0x0a,
+	0x04, 0x74, 0x79, 0x70, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x21, 0x2e, 0x6f, 0x70,
+	0x65, 0x6e, 0x69, 0x6d, 0x2e, 0x72, 0x74, 0x63, 0x2e, 0x76, 0x69, 0x64, 0x65, 0x6f, 0x2e, 0x56,
+	0x69, 0x64, 0x65, 0x6f, 0x42, 0x75, 0x66, 0x66, 0x65, 0x72, 0x54, 0x79, 0x70, 0x65, 0x52, 0x04,
+	0x74, 0x79, 0x70, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x77, 0x69, 0x64, 0x74, 0x68, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x0d, 0x52, 0x05, 0x77, 0x69, 0x64, 0x74, 0x68, 0x12, 0x16, 0x0a, 0x06, 0x68, 0x65,
+	0x69, 0x67, 0x68, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x06, 0x68, 0x65, 0x69, 0x67,
+	0x68, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x64, 0x61, 0x74, 0x61, 0x5f, 0x70, 0x74, 0x72, 0x18, 0x04,
+	0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x64, 0x61, 0x74, 0x61, 0x50, 0x74, 0x72, 0x12, 0x16, 0x0a,
+	0x06, 0x73, 0x74, 0x72, 0x69, 0x64, 0x65, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x06, 0x73,
+	0x74, 0x72, 0x69, 0x64, 0x65, 0x12, 0x4f, 0x0a, 0x0a, 0x63, 0x6f, 0x6d, 0x70, 0x6f, 0x6e, 0x65,
+	0x6e, 0x74, 0x73, 0x18, 0x07, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x2f, 0x2e, 0x6f, 0x70, 0x65, 0x6e,
+	0x69, 0x6d, 0x2e, 0x72, 0x74, 0x63, 0x2e, 0x76, 0x69, 0x64, 0x65, 0x6f, 0x2e, 0x56, 0x69, 0x64,
+	0x65, 0x6f, 0x42, 0x75, 0x66, 0x66, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x2e, 0x43, 0x6f, 0x6d,
+	0x70, 0x6f, 0x6e, 0x65, 0x6e, 0x74, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x0a, 0x63, 0x6f, 0x6d, 0x70,
+	0x6f, 0x6e, 0x65, 0x6e, 0x74, 0x73, 0x1a, 0x56, 0x0a, 0x0d, 0x43, 0x6f, 0x6d, 0x70, 0x6f, 0x6e,
+	0x65, 0x6e, 0x74, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x19, 0x0a, 0x08, 0x64, 0x61, 0x74, 0x61, 0x5f,
+	0x70, 0x74, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x64, 0x61, 0x74, 0x61, 0x50,
+	0x74, 0x72, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x74, 0x72, 0x69, 0x64, 0x65, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x0d, 0x52, 0x06, 0x73, 0x74, 0x72, 0x69, 0x64, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x73, 0x69,
+	0x7a, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x04, 0x73, 0x69, 0x7a, 0x65, 0x22, 0x61,
+	0x0a, 0x10, 0x4f, 0x77, 0x6e, 0x65, 0x64, 0x56, 0x69, 0x64, 0x65, 0x6f, 0x42, 0x75, 0x66, 0x66,
+	0x65, 0x72, 0x12, 0x16, 0x0a, 0x06, 0x68, 0x61, 0x6e, 0x64, 0x6c, 0x65, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x04, 0x52, 0x06, 0x68, 0x61, 0x6e, 0x64, 0x6c, 0x65, 0x12, 0x35, 0x0a, 0x04, 0x69, 0x6e,
+	0x66, 0x6f, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x21, 0x2e, 0x6f, 0x70, 0x65, 0x6e, 0x69,
+	0x6d, 0x2e, 0x72, 0x74, 0x63, 0x2e, 0x76, 0x69, 0x64, 0x65, 0x6f, 0x2e, 0x56, 0x69, 0x64, 0x65,
+	0x6f, 0x42, 0x75, 0x66, 0x66, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x04, 0x69, 0x6e, 0x66,
+	0x6f, 0x22, 0xb0, 0x01, 0x0a, 0x12, 0x56, 0x69, 0x64, 0x65, 0x6f, 0x46, 0x72, 0x61, 0x6d, 0x65,
+	0x52, 0x65, 0x63, 0x65, 0x69, 0x76, 0x65, 0x64, 0x12, 0x3a, 0x0a, 0x06, 0x62, 0x75, 0x66, 0x66,
+	0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x22, 0x2e, 0x6f, 0x70, 0x65, 0x6e, 0x69,
+	0x6d, 0x2e, 0x72, 0x74, 0x63, 0x2e, 0x76, 0x69, 0x64, 0x65, 0x6f, 0x2e, 0x4f, 0x77, 0x6e, 0x65,
+	0x64, 0x56, 0x69, 0x64, 0x65, 0x6f, 0x42, 0x75, 0x66, 0x66, 0x65, 0x72, 0x52, 0x06, 0x62, 0x75,
+	0x66, 0x66, 0x65, 0x72, 0x12, 0x21, 0x0a, 0x0c, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d,
+	0x70, 0x5f, 0x75, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x74, 0x69, 0x6d, 0x65,
+	0x73, 0x74, 0x61, 0x6d, 0x70, 0x55, 0x73, 0x12, 0x3b, 0x0a, 0x08, 0x72, 0x6f, 0x74, 0x61, 0x74,
+	0x69, 0x6f, 0x6e, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x1f, 0x2e, 0x6f, 0x70, 0x65, 0x6e,
+	0x69, 0x6d, 0x2e, 0x72, 0x74, 0x63, 0x2e, 0x76, 0x69, 0x64, 0x65, 0x6f, 0x2e, 0x56, 0x69, 0x64,
+	0x65, 0x6f, 0x52, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x08, 0x72, 0x6f, 0x74, 0x61,
+	0x74, 0x69, 0x6f, 0x6e, 0x22, 0x10, 0x0a, 0x0e, 0x56, 0x69, 0x64, 0x65, 0x6f, 0x53, 0x74, 0x72,
+	0x65, 0x61, 0x6d, 0x45, 0x4f, 0x53, 0x22, 0xc7, 0x01, 0x0a, 0x10, 0x56, 0x69, 0x64, 0x65, 0x6f,
+	0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x12, 0x23, 0x0a, 0x0d, 0x73,
+	0x74, 0x72, 0x65, 0x61, 0x6d, 0x5f, 0x68, 0x61, 0x6e, 0x64, 0x6c, 0x65, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x04, 0x52, 0x0c, 0x73, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x48, 0x61, 0x6e, 0x64, 0x6c, 0x65,
+	0x12, 0x4d, 0x0a, 0x0e, 0x66, 0x72, 0x61, 0x6d, 0x65, 0x5f, 0x72, 0x65, 0x63, 0x65, 0x69, 0x76,
+	0x65, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x6f, 0x70, 0x65, 0x6e, 0x69,
+	0x6d, 0x2e, 0x72, 0x74, 0x63, 0x2e, 0x76, 0x69, 0x64, 0x65, 0x6f, 0x2e, 0x56, 0x69, 0x64, 0x65,
+	0x6f, 0x46, 0x72, 0x61, 0x6d, 0x65, 0x52, 0x65, 0x63, 0x65, 0x69, 0x76, 0x65, 0x64, 0x48, 0x00,
+	0x52, 0x0d, 0x66, 0x72, 0x61, 0x6d, 0x65, 0x52, 0x65, 0x63, 0x65, 0x69, 0x76, 0x65, 0x64, 0x12,
+	0x34, 0x0a, 0x03, 0x65, 0x6f, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x20, 0x2e, 0x6f,
+	0x70, 0x65, 0x6e, 0x69, 0x6d, 0x2e, 0x72, 0x74, 0x63, 0x2e, 0x76, 0x69, 0x64, 0x65, 0x6f, 0x2e,
+	0x56, 0x69, 0x64, 0x65, 0x6f, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x45, 0x4f, 0x53, 0x48, 0x00,
+	0x52, 0x03, 0x65, 0x6f, 0x73, 0x42, 0x09, 0x0a, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
+	0x2a, 0x81, 0x01, 0x0a, 0x0f, 0x56, 0x69, 0x64, 0x65, 0x6f, 0x42, 0x75, 0x66, 0x66, 0x65, 0x72,
+	0x54, 0x79, 0x70, 0x65, 0x12, 0x08, 0x0a, 0x04, 0x52, 0x47, 0x42, 0x41, 0x10, 0x00, 0x12, 0x08,
+	0x0a, 0x04, 0x41, 0x42, 0x47, 0x52, 0x10, 0x01, 0x12, 0x08, 0x0a, 0x04, 0x41, 0x52, 0x47, 0x42,
+	0x10, 0x02, 0x12, 0x08, 0x0a, 0x04, 0x42, 0x47, 0x52, 0x41, 0x10, 0x03, 0x12, 0x09, 0x0a, 0x05,
+	0x52, 0x47, 0x42, 0x32, 0x34, 0x10, 0x04, 0x12, 0x08, 0x0a, 0x04, 0x49, 0x34, 0x32, 0x30, 0x10,
+	0x05, 0x12, 0x09, 0x0a, 0x05, 0x49, 0x34, 0x32, 0x30, 0x41, 0x10, 0x06, 0x12, 0x08, 0x0a, 0x04,
+	0x49, 0x34, 0x32, 0x32, 0x10, 0x07, 0x12, 0x08, 0x0a, 0x04, 0x49, 0x34, 0x34, 0x34, 0x10, 0x08,
+	0x12, 0x08, 0x0a, 0x04, 0x49, 0x30, 0x31, 0x30, 0x10, 0x09, 0x12, 0x08, 0x0a, 0x04, 0x4e, 0x56,
+	0x31, 0x32, 0x10, 0x0a, 0x2a, 0x6c, 0x0a, 0x0d, 0x56, 0x69, 0x64, 0x65, 0x6f, 0x52, 0x6f, 0x74,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x14, 0x0a, 0x10, 0x56, 0x49, 0x44, 0x45, 0x4f, 0x5f, 0x52,
+	0x4f, 0x54, 0x41, 0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x30, 0x10, 0x00, 0x12, 0x15, 0x0a, 0x11, 0x56,
+	0x49, 0x44, 0x45, 0x4f, 0x5f, 0x52, 0x4f, 0x54, 0x41, 0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x39, 0x30,
+	0x10, 0x01, 0x12, 0x16, 0x0a, 0x12, 0x56, 0x49, 0x44, 0x45, 0x4f, 0x5f, 0x52, 0x4f, 0x54, 0x41,
+	0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x31, 0x38, 0x30, 0x10, 0x02, 0x12, 0x16, 0x0a, 0x12, 0x56, 0x49,
+	0x44, 0x45, 0x4f, 0x5f, 0x52, 0x4f, 0x54, 0x41, 0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x32, 0x37, 0x30,
+	0x10, 0x03, 0x42, 0x43, 0x5a, 0x2e, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
+	0x2f, 0x6f, 0x70, 0x65, 0x6e, 0x69, 0x6d, 0x73, 0x64, 0x6b, 0x2f, 0x6f, 0x70, 0x65, 0x6e, 0x69,
+	0x6d, 0x2d, 0x72, 0x74, 0x63, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x2f, 0x76,
+	0x69, 0x64, 0x65, 0x6f, 0xaa, 0x02, 0x10, 0x4f, 0x70, 0x65, 0x6e, 0x49, 0x4d, 0x2e, 0x52, 0x54,
+	0x43, 0x2e, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -439,25 +1026,41 @@ func file_video_proto_rawDescGZIP() []byte {
 	return file_video_proto_rawDescData
 }
 
-var file_video_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_video_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_video_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_video_proto_goTypes = []any{
-	(*NewVideoStreamReq)(nil),            // 0: openim.rtc.video.NewVideoStreamReq
-	(*NewVideoStreamRes)(nil),            // 1: openim.rtc.video.NewVideoStreamRes
-	(*NewVideoSourceReq)(nil),            // 2: openim.rtc.video.NewVideoSourceReq
-	(*NewVideoSourceRes)(nil),            // 3: openim.rtc.video.NewVideoSourceRes
-	(*CaptureVideoFrameReq)(nil),         // 4: openim.rtc.video.CaptureVideoFrameReq
-	(*CaptureVideoFrameRes)(nil),         // 5: openim.rtc.video.CaptureVideoFrameRes
-	(*VideoConvertReq)(nil),              // 6: openim.rtc.video.VideoConvertReq
-	(*VideoConvertRes)(nil),              // 7: openim.rtc.video.VideoConvertRes
-	(*VideoStreamFromParticipanReq)(nil), // 8: openim.rtc.video.VideoStreamFromParticipanReq
-	(*VideoStreamFromParticipanRes)(nil), // 9: openim.rtc.video.VideoStreamFromParticipanRes
+	(VideoBufferType)(0),                  // 0: openim.rtc.video.VideoBufferType
+	(VideoRotation)(0),                    // 1: openim.rtc.video.VideoRotation
+	(*NewVideoStreamReq)(nil),             // 2: openim.rtc.video.NewVideoStreamReq
+	(*NewVideoStreamRes)(nil),             // 3: openim.rtc.video.NewVideoStreamRes
+	(*NewVideoSourceReq)(nil),             // 4: openim.rtc.video.NewVideoSourceReq
+	(*NewVideoSourceRes)(nil),             // 5: openim.rtc.video.NewVideoSourceRes
+	(*CaptureVideoFrameReq)(nil),          // 6: openim.rtc.video.CaptureVideoFrameReq
+	(*CaptureVideoFrameRes)(nil),          // 7: openim.rtc.video.CaptureVideoFrameRes
+	(*VideoConvertReq)(nil),               // 8: openim.rtc.video.VideoConvertReq
+	(*VideoConvertRes)(nil),               // 9: openim.rtc.video.VideoConvertRes
+	(*VideoStreamFromParticipanReq)(nil),  // 10: openim.rtc.video.VideoStreamFromParticipanReq
+	(*VideoStreamFromParticipanRes)(nil),  // 11: openim.rtc.video.VideoStreamFromParticipanRes
+	(*VideoBufferInfo)(nil),               // 12: openim.rtc.video.VideoBufferInfo
+	(*OwnedVideoBuffer)(nil),              // 13: openim.rtc.video.OwnedVideoBuffer
+	(*VideoFrameReceived)(nil),            // 14: openim.rtc.video.VideoFrameReceived
+	(*VideoStreamEOS)(nil),                // 15: openim.rtc.video.VideoStreamEOS
+	(*VideoStreamEvent)(nil),              // 16: openim.rtc.video.VideoStreamEvent
+	(*VideoBufferInfo_ComponentInfo)(nil), // 17: openim.rtc.video.VideoBufferInfo.ComponentInfo
 }
 var file_video_proto_depIdxs = []int32{
-	0, // [0:0] is the sub-list for method output_type
-	0, // [0:0] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0,  // 0: openim.rtc.video.VideoBufferInfo.type:type_name -> openim.rtc.video.VideoBufferType
+	17, // 1: openim.rtc.video.VideoBufferInfo.components:type_name -> openim.rtc.video.VideoBufferInfo.ComponentInfo
+	12, // 2: openim.rtc.video.OwnedVideoBuffer.info:type_name -> openim.rtc.video.VideoBufferInfo
+	13, // 3: openim.rtc.video.VideoFrameReceived.buffer:type_name -> openim.rtc.video.OwnedVideoBuffer
+	1,  // 4: openim.rtc.video.VideoFrameReceived.rotation:type_name -> openim.rtc.video.VideoRotation
+	14, // 5: openim.rtc.video.VideoStreamEvent.frame_received:type_name -> openim.rtc.video.VideoFrameReceived
+	15, // 6: openim.rtc.video.VideoStreamEvent.eos:type_name -> openim.rtc.video.VideoStreamEOS
+	7,  // [7:7] is the sub-list for method output_type
+	7,  // [7:7] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_video_proto_init() }
@@ -586,19 +1189,96 @@ func file_video_proto_init() {
 				return nil
 			}
 		}
+		file_video_proto_msgTypes[10].Exporter = func(v any, i int) any {
+			switch v := v.(*VideoBufferInfo); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_video_proto_msgTypes[11].Exporter = func(v any, i int) any {
+			switch v := v.(*OwnedVideoBuffer); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_video_proto_msgTypes[12].Exporter = func(v any, i int) any {
+			switch v := v.(*VideoFrameReceived); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_video_proto_msgTypes[13].Exporter = func(v any, i int) any {
+			switch v := v.(*VideoStreamEOS); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_video_proto_msgTypes[14].Exporter = func(v any, i int) any {
+			switch v := v.(*VideoStreamEvent); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_video_proto_msgTypes[15].Exporter = func(v any, i int) any {
+			switch v := v.(*VideoBufferInfo_ComponentInfo); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+	}
+	file_video_proto_msgTypes[14].OneofWrappers = []any{
+		(*VideoStreamEvent_FrameReceived)(nil),
+		(*VideoStreamEvent_Eos)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_video_proto_rawDesc,
-			NumEnums:      0,
-			NumMessages:   10,
+			NumEnums:      2,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_video_proto_goTypes,
 		DependencyIndexes: file_video_proto_depIdxs,
+		EnumInfos:         file_video_proto_enumTypes,
 		MessageInfos:      file_video_proto_msgTypes,
 	}.Build()
 	File_video_proto = out.File

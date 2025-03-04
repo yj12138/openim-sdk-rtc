@@ -8,6 +8,29 @@ import "common.proto";
 import "participant.proto";
 import "track.proto";
 
+enum IceTransportType {
+  TRANSPORT_RELAY = 0;
+  TRANSPORT_NOHOST = 1;
+  TRANSPORT_ALL = 2;
+}
+
+enum ContinualGatheringPolicy {
+  GATHER_ONCE = 0;
+  GATHER_CONTINUALLY = 1;
+}
+
+message RtcConfig {
+  IceTransportType ice_transport_type = 1;
+  ContinualGatheringPolicy continual_gathering_policy = 2;
+  repeated IceServer ice_servers = 3; // empty fallback to default
+}
+
+message IceServer {
+  repeated string urls = 1;
+  string username = 2;
+  string password = 3;
+}
+
 message BufferInfo {
   uint64 data_ptr = 1;
   uint64 data_len = 2;
@@ -37,6 +60,9 @@ message RoomOptions {
   bool auto_subscribe = 1;
   bool adaptive_stream = 2;
   bool dynacast = 3;
+  //   E2eeOptions e2ee = 4;
+  RtcConfig rtc_config = 5; // allow to setup a custom RtcConfiguration
+  uint32 join_retries = 6;
 }
 
 message ConnectReq {

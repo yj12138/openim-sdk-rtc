@@ -4,8 +4,6 @@ package openim.rtc.track;
 option csharp_namespace = "OpenIM.RTC.Proto";
 option go_package = "github.com/openimsdk/openim-rtc/proto/go/track";
 
-message TrackEvent {}
-
 enum TrackKind {
   KIND_UNKNOWN = 0;
   KIND_AUDIO = 1;
@@ -106,3 +104,5 @@ message UpdateRemoteTrackPublicationDimensionRes {}
 
 message GetStatsReq {}
 message GetStatsRes {}
+
+message TrackEvent {}

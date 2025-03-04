@@ -98,3 +98,14 @@ message AudioStreamFromParticipantReq {
   uint32 num_channels = 6;
 }
 message AudioStreamFromParticipantRes {}
+
+message AudioFrameReceived { OwnedAudioFrameBuffer frame = 1; }
+message AudioStreamEOS {}
+
+message AudioStreamEvent {
+  uint64 stream_handle = 1;
+  oneof message {
+    AudioFrameReceived frame_received = 2;
+    AudioStreamEOS eos = 3;
+  }
+}
