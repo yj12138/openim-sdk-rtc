@@ -5,6 +5,7 @@ option csharp_namespace = "OpenIM.RTC.Proto";
 option go_package = "github.com/openimsdk/openim-rtc/proto/go/audio";
 
 import "track.proto";
+import "common.proto";
 
 enum AudioStreamType {
   AUDIO_STREAM_NATIVE = 0;
@@ -18,7 +19,7 @@ enum AudioSourceType {
 message AudioStreamInfo { AudioStreamType type = 1; }
 
 message OwnedAudioStream {
-  uint64 handle = 1;
+  openim.rtc.common.FfiOwnedHandle handle = 1;
   AudioStreamInfo info = 2;
 }
 
@@ -31,7 +32,7 @@ message AudioSourceOptions {
 message AudioSourceInfo { AudioSourceType type = 1; }
 
 message OwnedAudioSource {
-  uint64 handle = 1;
+  openim.rtc.common.FfiOwnedHandle handle = 1;
   AudioSourceInfo info = 2;
 }
 
@@ -42,19 +43,19 @@ message AudioFrameBufferInfo {
   uint32 samples_per_channel = 4;
 }
 message OwnedAudioFrameBuffer {
-  uint64 handle = 1;
+  openim.rtc.common.FfiOwnedHandle handle = 1;
   AudioFrameBufferInfo info = 2;
 }
 
 message AudioResamplerInfo {}
 
 message OwnedAudioResampler {
-  uint64 handle = 1;
+  openim.rtc.common.FfiOwnedHandle handle = 1;
   AudioResamplerInfo info = 2;
 }
 
 message NewAudioStreamReq {
-  uint64 track_handle = 1;
+  openim.rtc.common.FfiOwnedHandle track_handle = 1;
   AudioStreamType type = 2;
   uint32 sample_rate = 3;
   uint32 num_channels = 4;
@@ -71,19 +72,19 @@ message NewAudioSourceReq {
 message NewAudioSourceRes { OwnedAudioSource source = 1; }
 
 message CaptureAudioFrameReq {
-  uint64 source_handle = 1;
+  openim.rtc.common.FfiOwnedHandle source_handle = 1;
   AudioFrameBufferInfo buffer = 2;
 }
 message CaptureAudioFrameRes {}
 
-message ClearAudioBufferReq { uint64 source_handle = 1; }
+message ClearAudioBufferReq { openim.rtc.common.FfiOwnedHandle source_handle = 1; }
 message ClearAudioBufferRes {}
 
 message NewAudioResamplerReq {}
 message NewAudioResamplerRes { OwnedAudioResampler resampler = 1; }
 
 message RemixAndResampleReq {
-  uint64 resampler_handle = 1;
+  openim.rtc.common.FfiOwnedHandle resampler_handle = 1;
   AudioFrameBufferInfo buffer = 2;
   uint32 num_channels = 3;
   uint32 sample_rate = 4;
@@ -91,7 +92,7 @@ message RemixAndResampleReq {
 message RemixAndResampleRes { OwnedAudioFrameBuffer buffer = 1; }
 
 message AudioStreamFromParticipantReq {
-  uint64 participant_handle = 1;
+  openim.rtc.common.FfiOwnedHandle participant_handle = 1;
   AudioStreamType type = 2;
   openim.rtc.track.TrackSource track_source = 3;
   uint32 sample_rate = 5;
@@ -103,7 +104,7 @@ message AudioFrameReceived { OwnedAudioFrameBuffer frame = 1; }
 message AudioStreamEOS {}
 
 message AudioStreamEvent {
-  uint64 stream_handle = 1;
+  openim.rtc.common.FfiOwnedHandle stream_handle = 1;
   oneof message {
     AudioFrameReceived frame_received = 2;
     AudioStreamEOS eos = 3;

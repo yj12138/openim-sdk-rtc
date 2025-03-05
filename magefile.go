@@ -525,7 +525,7 @@ func Wasm() error {
 
 // ffi_c
 
-var soName = "libopenim_rtc"
+var soName = "libopenim_rtc_ffi"
 
 var outPath = filepath.Join(".", "output")
 var goSrc = filepath.Join(".", bindlingDir, "ffi_c")
@@ -741,7 +741,8 @@ func BuildWindows() error {
 	if err := os.MkdirAll(filepath.Join(goSrc, windowsOut), 0755); err != nil {
 		return err
 	}
-	cmd := exec.Command("go", "build", "-buildmode=c-shared", "-trimpath", "-ldflags=-s -w", "-o", filepath.Join(windowsOut, strings.Join([]string{soName, "dll"}, ".")), ".")
+	dllName := strings.TrimPrefix(soName, "lib")
+	cmd := exec.Command("go", "build", "-buildmode=c-shared", "-trimpath", "-ldflags=-s -w", "-o", filepath.Join(windowsOut, strings.Join([]string{dllName, "dll"}, ".")), ".")
 	cmd.Dir = goSrc
 	cmd.Env = os.Environ()
 

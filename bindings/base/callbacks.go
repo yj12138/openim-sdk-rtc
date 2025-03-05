@@ -11,7 +11,7 @@ import (
 )
 
 type RoomListener struct {
-	RoomHandle uint64
+	RoomHandle *pb_common.FfiOwnedHandle
 }
 
 // for room
@@ -284,7 +284,7 @@ func (l *RoomListener) OnDataPacket(participantIdentify string, value interface{
 	})
 }
 
-func (l *RoomListener) OnTranscriptionReceived(participantIdentify string, trackSid string, segments []*pb_room.TranscriptionSegment) {
+func (l *RoomListener) OnTranscriptionReceived(participantIdentify string, trackSid string, segments []*pb_participant.TranscriptionSegment) {
 	dispatchEventResp(pb_event.FuncEventName_RoomEvent, &pb_room.RoomEvent{
 		RoomHandle: l.RoomHandle,
 		Message: &pb_room.RoomEvent_TranscriptionReceived{

@@ -9,6 +9,8 @@ enum DataPacketKind {
   KIND_RELIABLE = 1;
 }
 
+message FfiOwnedHandle { uint64 id = 1; }
+
 message AttributesEntry {
   string key = 1;
   string value = 2;

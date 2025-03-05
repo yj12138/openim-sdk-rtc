@@ -37,7 +37,7 @@ message BufferInfo {
 }
 
 message OwnedBuffer {
-  uint64 handle = 1;
+  openim.rtc.common.FfiOwnedHandle handle = 1;
   BufferInfo data = 2;
 }
 
@@ -56,6 +56,19 @@ message SipDTMF {
   string digit = 2;
 }
 
+message RoomInfo {
+  string sid = 1;
+  string name = 2;
+  string metadata = 3;
+  uint64 lossy_dc_buffered_amount_low_threshold = 4;
+  uint64 reliable_dc_buffered_amount_low_threshold = 5;
+}
+
+message OwnedRoom {
+  openim.rtc.common.FfiOwnedHandle handle = 1;
+  RoomInfo info = 2;
+}
+
 message RoomOptions {
   bool auto_subscribe = 1;
   bool adaptive_stream = 2;
@@ -71,14 +84,29 @@ message ConnectReq {
   RoomOptions options = 3;
 }
 message ConnectRes {
-  uint64 room_handle = 1;
-  uint64 local_participant_handle = 2;
+  openim.rtc.common.FfiOwnedHandle room_handle = 1;
+  openim.rtc.common.FfiOwnedHandle local_participant_handle = 2;
+  message ParticipantWithTracks {
+    openim.rtc.participant.OwnedParticipant participant = 1;
+    repeated openim.rtc.track.OwnedTrackPublication publications = 2;
+  }
+
+  message Result {
+    OwnedRoom room = 1;
+    openim.rtc.participant.OwnedParticipant local_participant = 2;
+    repeated ParticipantWithTracks participants = 3;
+  }
+
+  oneof message {
+    string error = 3;
+    Result result = 4;
+  }
 }
 
-message DisconnectReq { uint64 room_handle = 1; }
+message DisconnectReq { openim.rtc.common.FfiOwnedHandle room_handle = 1; }
 message DisconnectRes {}
 
-message GetConnectStateReq { uint64 room_handle = 1; }
+message GetConnectStateReq { openim.rtc.common.FfiOwnedHandle room_handle = 1; }
 message GetConnectStateRes { openim.rtc.common.ConnectionState state = 1; }
 
 message ParticipantConnected {
@@ -180,7 +208,7 @@ message TranscriptionReceived {
 }
 
 message RoomEvent {
-  uint64 room_handle = 1;
+  openim.rtc.common.FfiOwnedHandle room_handle = 1;
   oneof message {
     ParticipantConnected participant_connected = 2;
     ParticipantDisconnected participant_disconnected = 3;

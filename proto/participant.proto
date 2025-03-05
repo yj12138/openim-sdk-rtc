@@ -17,7 +17,7 @@ message ParticipantInfo {
 }
 
 message OwnedParticipant {
-  uint64 handle = 1;
+  openim.rtc.common.FfiOwnedHandle handle = 1;
   ParticipantInfo info = 2;
 }
 
@@ -101,21 +101,21 @@ message ChatMessage {
 }
 
 message PublishTrackReq {
-  uint64 local_participant_handle = 1;
-  uint64 track_handle = 2;
+  openim.rtc.common.FfiOwnedHandle local_participant_handle = 1;
+  openim.rtc.common.FfiOwnedHandle track_handle = 2;
   TrackPublishOptions options = 3;
 }
 message PublishTrackRes {}
 
 message UnpublishTrackReq {
-  uint64 local_participant_handle = 1;
-  uint64 track_handle = 2;
+  openim.rtc.common.FfiOwnedHandle local_participant_handle = 1;
+  openim.rtc.common.FfiOwnedHandle track_handle = 2;
   bool stop_on_unpublish = 3;
 }
 message UnpublishTrackRes {}
 
 message PublishDataReq {
-  uint64 local_participant_handle = 1;
+  openim.rtc.common.FfiOwnedHandle local_participant_handle = 1;
   string topic = 2;
   bytes data = 3;
   bool reliable = 4;
@@ -124,25 +124,25 @@ message PublishDataReq {
 message PublishDataRes {}
 
 message SetLocalMetadataReq {
-  uint64 local_participant_handle = 1;
+  openim.rtc.common.FfiOwnedHandle local_participant_handle = 1;
   string metadata = 2;
 }
 message SetLocalMetadataRes {}
 
 message SetLocalNameReq {
-  uint64 local_participant_handle = 1;
+  openim.rtc.common.FfiOwnedHandle local_participant_handle = 1;
   string name = 2;
 }
 message SetLocalNameRes {}
 
 message SetLocalAttributesReq {
-  uint64 local_participant_handle = 1;
+  openim.rtc.common.FfiOwnedHandle local_participant_handle = 1;
   repeated openim.rtc.common.AttributesEntry attributes = 2;
 }
 message SetLocalAttributesRes {}
 
 message PublishTranscriptionReq {
-  uint64 local_participant_handle = 1;
+  openim.rtc.common.FfiOwnedHandle local_participant_handle = 1;
   string participant_identify = 2;
   string track_id = 3;
   repeated TranscriptionSegment segments = 4;
@@ -150,7 +150,7 @@ message PublishTranscriptionReq {
 message PublishTranscriptionRes {}
 
 message SendStreamHeaderReq {
-  uint64 local_participant_handle = 1;
+  openim.rtc.common.FfiOwnedHandle local_participant_handle = 1;
   DataStream.Header header = 2;
   string sender_identity = 3;
   repeated string destination_identities = 4;
@@ -158,7 +158,7 @@ message SendStreamHeaderReq {
 message SendStreamHeaderRes {}
 
 message SendStreamChunkReq {
-  uint64 local_participant_handle = 1;
+  openim.rtc.common.FfiOwnedHandle local_participant_handle = 1;
   DataStream.Chunk chunk = 2;
   string destination_identities = 3;
   string sender_identity = 4;
@@ -166,7 +166,7 @@ message SendStreamChunkReq {
 message SendStreamChunkRes {}
 
 message SendStreamTrailerReq {
-  uint64 local_participant_handle = 1;
+  openim.rtc.common.FfiOwnedHandle local_participant_handle = 1;
   DataStream.Trailer trailer = 2;
   string destination_identities = 3;
   string sender_identity = 4;
@@ -174,7 +174,7 @@ message SendStreamTrailerReq {
 message SendStreamTrailerRes {}
 
 message SendChatMessageReq {
-  uint64 local_participant_handle = 1;
+  openim.rtc.common.FfiOwnedHandle local_participant_handle = 1;
   string message = 2;
   string destination_identities = 3;
   string sender_identity = 4;
@@ -182,7 +182,7 @@ message SendChatMessageReq {
 message SendChatMessageRes {}
 
 message EditChatMessageReq {
-  uint64 local_participant_handle = 1;
+  openim.rtc.common.FfiOwnedHandle local_participant_handle = 1;
   string edit_text = 2;
   ChatMessage original_message = 3;
   string destination_identities = 4;
@@ -191,14 +191,14 @@ message EditChatMessageReq {
 message EditChatMessageRes {}
 
 message SetDataChannelBufferedAmountLowThresholdReq {
-  uint64 local_participant_handle = 1;
+  openim.rtc.common.FfiOwnedHandle local_participant_handle = 1;
   uint64 threshold = 2;
   openim.rtc.common.DataPacketKind kind = 3;
 }
 message SetDataChannelBufferedAmountLowThresholdRes {}
 
 message SetTrackSubscriptionPermissionsReq {
-  uint64 local_participant_handle = 1;
+  openim.rtc.common.FfiOwnedHandle local_participant_handle = 1;
   bool all_participants_allowed = 2;
   repeated ParticipantTrackPermission permissions = 3;
 }

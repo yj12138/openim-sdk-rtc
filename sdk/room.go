@@ -8,6 +8,7 @@ import (
 
 	"github.com/livekit/protocol/livekit"
 	pb_common "github.com/openimsdk/openim-rtc/proto/go/common"
+	pb_participant "github.com/openimsdk/openim-rtc/proto/go/participant"
 	pb_room "github.com/openimsdk/openim-rtc/proto/go/room"
 )
 
@@ -267,9 +268,9 @@ func (r *Room) onDataPacket(data lksdk.DataPacket, params lksdk.DataReceiveParam
 	}
 }
 func (r *Room) onTranscriptionReceived(transcriptionSegments []*lksdk.TranscriptionSegment, p lksdk.Participant, publication lksdk.TrackPublication) {
-	segments := make([]*pb_room.TranscriptionSegment, len(transcriptionSegments))
+	segments := make([]*pb_participant.TranscriptionSegment, len(transcriptionSegments))
 	for i, segment := range transcriptionSegments {
-		segments[i] = &pb_room.TranscriptionSegment{
+		segments[i] = &pb_participant.TranscriptionSegment{
 			Id:        segment.ID,
 			Text:      segment.Text,
 			StartTime: segment.StartTime,

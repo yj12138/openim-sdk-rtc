@@ -91,22 +91,22 @@ func monitorResultMapSize() {
 // event: The callback function to be invoked.
 // protocolType : The serialization protocol type (1 for JSON, 2 for Protocol Buffers, 3 for Thrift, 4 for FlatBuffers e.g.,or others)
 //
-//export ffi_init
-func ffi_init(event C.CallBack, protocolType C.int) int64 {
+//export openim_rtc_ffi_init
+func openim_rtc_ffi_init(event C.CallBack) int64 {
 	C.eventCallBack = event
-	base.SetProtocolType(int(protocolType))
+	base.SetProtocolType(0)
 	return 1
 }
 
-//export ffi_request
-func ffi_request(data *C.void, length C.int) {
+//export openim_rtc_ffi_request
+func openim_rtc_ffi_request(data *C.void, length C.int) {
 	//Synchronously copy data to prevent memory from being released prematurely after calling the Go function.
 	goData := C.GoBytes(unsafe.Pointer(data), length)
 	base.FfiRequest(goData)
 }
 
-//export ffi_drop_handle
-func ffi_drop_handle(handleID int64) {
+//export openim_rtc_ffi_drop_handle
+func openim_rtc_ffi_drop_handle(handleID int64) {
 	mu.Lock()
 	defer mu.Unlock()
 	if result, ok := resultMap[handleID]; ok {
