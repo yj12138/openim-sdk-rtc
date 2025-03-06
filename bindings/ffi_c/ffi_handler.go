@@ -61,7 +61,13 @@ func openim_rtc_ffi_request(data *C.void, length C.int, dataPtr **C.void, dataLe
 
 	base.Request(call)
 
+	if call.ReqData == nil {
+		return 0
+	}
 	len := len(call.ResData)
+	if len == 0 {
+		return 0
+	}
 	ptr := C.malloc(C.size_t(len))
 	if ptr == nil {
 		return 0
@@ -74,11 +80,15 @@ func openim_rtc_ffi_request(data *C.void, length C.int, dataPtr **C.void, dataLe
 }
 
 //export openim_rtc_ffi_drop_handle
-func openim_rtc_ffi_drop_handle(handleId int64) {
-	// if result, ok := resultMap[handleId]; ok {
-	// 	C.free(unsafe.Pointer(result.cData))
-	// 	delete(resultMap, handleID)
-	// } else {
-	// 	log.ZWarn(context.Background(), "can not find resource to recycle", nil, "handleID", handleID)
-	// }
+func openim_rtc_ffi_drop_handle(handleId uint64) {
+	call := base.GetFFICall(handleId)
+	if call != nil {
+		C.free(unsafe.Pointer(call.ReqDataPtr))
+		C.free(unsafe.Pointer(call.ResDataPtr))
+	}
+	event := base.GetFFIEvent(handleId)
+	if event != nil {
+		C.free(unsafe.Pointer(event.DataPtr))
+	}
+	base.RemoteHandle(handleId)
 }

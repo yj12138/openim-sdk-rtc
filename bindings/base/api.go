@@ -39,6 +39,9 @@ func (api *API) storeObj(value any) uint64 {
 	api.objMap.Store(handle, value)
 	return handle
 }
+func (api *API) delObj(handle uint64) {
+	api.objMap.Delete(handle)
+}
 
 func (api *API) getRoom(handle uint64) *sdk.Room {
 	if value, ok := api.objMap.Load(handle); ok {

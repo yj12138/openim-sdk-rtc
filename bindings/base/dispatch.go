@@ -36,20 +36,20 @@ func (a *API) getFFICall(handle uint64) *FFICall {
 		if r, ok := value.(*FFICall); ok {
 			return r
 		} else {
-			panic(fmt.Sprintf("handle:%d is not sdk.Room type", handle))
+			panic(fmt.Sprintf("handle:%d is not FFICall type", handle))
 		}
 	}
-	panic(fmt.Sprintf("not find handle:%d", handle))
+	return nil
 }
 func (a *API) getFFIEvent(handle uint64) *FFIEvent {
 	if value, ok := api.objMap.Load(handle); ok {
 		if r, ok := value.(*FFIEvent); ok {
 			return r
 		} else {
-			panic(fmt.Sprintf("handle:%d is not sdk.Room type", handle))
+			panic(fmt.Sprintf("handle:%d is not FFIEvent type", handle))
 		}
 	}
-	panic(fmt.Sprintf("not find handle:%d", handle))
+	return nil
 }
 func StoreFFICall(call *FFICall) uint64 {
 	return api.storeObj(call)
@@ -59,6 +59,10 @@ func GetFFICall(handle uint64) *FFICall {
 }
 func GetFFIEvent(handle uint64) *FFIEvent {
 	return api.getFFIEvent(handle)
+}
+
+func RemoteHandle(handle uint64) {
+	api.delObj(handle)
 }
 
 func dispatchEvent(pbFfiEvent *pb_ffi.FfiEvent) {
@@ -80,5 +84,5 @@ func Request(call *FFICall) {
 		log.Println("unmarshal error:", err.Error())
 		return
 	}
-
+    
 }
