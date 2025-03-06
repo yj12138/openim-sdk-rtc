@@ -4,6 +4,7 @@ package main
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 
 typedef void (*CallBack)(void* dataPtr,int len);
 extern CallBack eventCallBack;
@@ -13,55 +14,29 @@ import "C"
 
 import (
 	"context"
-	"fmt"
-	"sync"
-	"time"
-	"unsafe"
-
 	"github.com/openimsdk/openim-rtc/bindings/base"
 	"github.com/openimsdk/tools/errs"
 	"github.com/openimsdk/tools/log"
-)
-
-type ResultData struct {
-	cData  *C.uint8_t
-	length int
-}
-
-var (
-	resultMap = make(map[int64]*ResultData)
-	mu        sync.Mutex
-)
-
-const (
-	checkTimePeriod = time.Minute * 1
+	"unsafe"
 )
 
 func init() {
-	base.SetDispatchFfiResultFunc(dispatchResultForC)
+	base.SetEventCallBackFunc(eventCallBack)
 	base.SetCPointerToGoByteSliceNoCopyFunc(CPointerToGoByteSliceNoCopy)
-	go monitorResultMapSize()
 }
 
-func dispatchResultForC(handleID int64, data []byte) {
-	cData := (*C.uint8_t)(C.malloc(C.size_t(len(data))))
+func eventCallBack(event *base.FFIEvent) {
+	dataLen := len(event.Data)
+	cData := (*C.uint8_t)(C.malloc(C.size_t(dataLen)))
 	if cData == nil {
 		log.ZWarn(context.Background(), "callback data", errs.New("Failed to allocate memory"))
 	}
-	cDataPtr := (*[1 << 30]byte)(unsafe.Pointer(cData))[:len(data):len(data)]
-	copy(cDataPtr, data)
-	mu.Lock()
-	resultMap[handleID] = &ResultData{
-		cData:  cData,
-		length: len(data),
-	}
-	mu.Unlock()
+	cDataPtr := (*[1 << 30]byte)(unsafe.Pointer(cData))[:dataLen:dataLen]
+	copy(cDataPtr, event.Data)
 	if C.eventCallBack != nil {
-		len := C.int(len(data))
+		len := C.int(dataLen)
 		C.InvokeCallBack(C.eventCallBack, (*C.char)(unsafe.Pointer(cData)), len)
 	}
-	// Currently, the SDK uses asynchronous calls for Go to C interface
-	//exports to other languages, so no return value is needed here.
 }
 
 func CPointerToGoByteSliceNoCopy(cPointer uint64, length uint32) []byte {
@@ -71,48 +46,39 @@ func CPointerToGoByteSliceNoCopy(cPointer uint64, length uint32) []byte {
 	return unsafe.Slice((*byte)(goPointer), int(length))
 }
 
-func monitorResultMapSize() {
-	ticker := time.NewTicker(checkTimePeriod)
-	defer ticker.Stop()
-
-	for range ticker.C {
-		mu.Lock()
-		totalBytes := 0
-		for _, result := range resultMap {
-			totalBytes += result.length // Use the actual length stored in ResultData
-		}
-		mu.Unlock()
-		totalMB := float64(totalBytes) / (1024 * 1024)
-		log.ZDebug(context.Background(), fmt.Sprintf("Current resultMap size: %.2f MB", totalMB))
-	}
-}
-
-// ffi_init initializes the callback and a selected serialization protocol
-// event: The callback function to be invoked.
-// protocolType : The serialization protocol type (1 for JSON, 2 for Protocol Buffers, 3 for Thrift, 4 for FlatBuffers e.g.,or others)
-//
 //export openim_rtc_ffi_init
 func openim_rtc_ffi_init(event C.CallBack) int64 {
 	C.eventCallBack = event
-	base.SetProtocolType(0)
 	return 1
 }
 
 //export openim_rtc_ffi_request
-func openim_rtc_ffi_request(data *C.void, length C.int) {
-	//Synchronously copy data to prevent memory from being released prematurely after calling the Go function.
-	goData := C.GoBytes(unsafe.Pointer(data), length)
-	base.FfiRequest(goData)
+func openim_rtc_ffi_request(data *C.void, length C.int, dataPtr **C.void, dataLen *C.size_t) C.int64_t {
+	call := &base.FFICall{}
+	// TODO 可以使用无拷贝复制
+	call.ReqDataPtr = unsafe.Pointer(data)
+	call.ReqData = C.GoBytes(call.ReqDataPtr, length)
+
+	base.Request(call)
+
+	len := len(call.ResData)
+	ptr := C.malloc(C.size_t(len))
+	if ptr == nil {
+		return 0
+	}
+	call.ResDataPtr = unsafe.Pointer(ptr)
+	C.memcpy(ptr, unsafe.Pointer(&call.ResData[0]), C.size_t(len))
+	*dataPtr = (*C.void)(ptr)
+	*dataLen = C.size_t(len)
+	return C.int64_t(call.HandleId)
 }
 
 //export openim_rtc_ffi_drop_handle
-func openim_rtc_ffi_drop_handle(handleID int64) {
-	mu.Lock()
-	defer mu.Unlock()
-	if result, ok := resultMap[handleID]; ok {
-		C.free(unsafe.Pointer(result.cData))
-		delete(resultMap, handleID)
-	} else {
-		log.ZWarn(context.Background(), "can not find resource to recycle", nil, "handleID", handleID)
-	}
+func openim_rtc_ffi_drop_handle(handleId int64) {
+	// if result, ok := resultMap[handleId]; ok {
+	// 	C.free(unsafe.Pointer(result.cData))
+	// 	delete(resultMap, handleID)
+	// } else {
+	// 	log.ZWarn(context.Background(), "can not find resource to recycle", nil, "handleID", handleID)
+	// }
 }

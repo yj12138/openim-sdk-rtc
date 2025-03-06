@@ -2,7 +2,7 @@ package sdk
 
 import (
 	"github.com/livekit/protocol/livekit"
-	pb_participant "github.com/openimsdk/openim-rtc/proto/go/participant"
+	pb_room "github.com/openimsdk/openim-rtc/proto/go/room"
 )
 
 type TranscriptionDataPacket struct {
@@ -21,7 +21,7 @@ func (p *TranscriptionDataPacket) ToProto() *livekit.DataPacket {
 	}}
 }
 
-func ConvertTranscriptionDataPacket(identify string, trackid string, _segments []*pb_participant.TranscriptionSegment) *TranscriptionDataPacket {
+func ConvertTranscriptionDataPacket(identify string, trackid string, _segments []*pb_room.TranscriptionSegment) *TranscriptionDataPacket {
 	segments := make([]*livekit.TranscriptionSegment, len(_segments))
 	for i, s := range _segments {
 		segments[i] = &livekit.TranscriptionSegment{
@@ -78,7 +78,7 @@ func (p *StreamHeaderPacket) ToProto() *livekit.DataPacket {
 		},
 	}}
 }
-func ConvertStreamHeaderPacket(header *pb_participant.DataStream_Header) *StreamHeaderPacket {
+func ConvertStreamHeaderPacket(header *pb_room.DataStream_Header) *StreamHeaderPacket {
 	return &StreamHeaderPacket{
 		StreamId:       header.StreamId,
 		Timestamp:      header.Timestamp,
@@ -109,7 +109,7 @@ func (p *StreamChunkPacket) ToProto() *livekit.DataPacket {
 		},
 	}}
 }
-func ConvertStreamChunkPacket(chunk *pb_participant.DataStream_Chunk) *StreamChunkPacket {
+func ConvertStreamChunkPacket(chunk *pb_room.DataStream_Chunk) *StreamChunkPacket {
 	return &StreamChunkPacket{
 		StreamId:   chunk.StreamId,
 		ChunkIndex: chunk.ChunkIndex,
@@ -135,7 +135,7 @@ func (p *StreamTrailerPacket) ToProto() *livekit.DataPacket {
 	}}
 }
 
-func ConvertStreamTrailerPacket(trailer *pb_participant.DataStream_Trailer) *StreamTrailerPacket {
+func ConvertStreamTrailerPacket(trailer *pb_room.DataStream_Trailer) *StreamTrailerPacket {
 	return &StreamTrailerPacket{
 		StreamId:   trailer.StreamId,
 		Reason:     trailer.Reason,

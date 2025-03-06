@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package openim.rtc.proto;
+option csharp_namespace = "OpenIM.RTC.Proto";
+option go_package = "github.com/openimsdk/openim-rtc/proto/go/track_publication";
+
+// Enable/Disable a remote track publication
+message EnableRemoteTrackPublicationRequest {
+  uint64 track_publication_handle = 1;
+  bool enabled = 2;
+}
+
+message EnableRemoteTrackPublicationResponse {}
+
+// update a remote track publication dimension
+message UpdateRemoteTrackPublicationDimensionRequest {
+  uint64 track_publication_handle = 1;
+  uint32 width = 2;
+  uint32 height = 3;
+}
+
+message UpdateRemoteTrackPublicationDimensionResponse {}

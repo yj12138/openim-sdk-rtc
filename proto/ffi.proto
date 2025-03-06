@@ -1,0 +1,228 @@
+syntax = "proto3";
+
+package openim.rtc.proto;
+option csharp_namespace = "OpenIM.RTC.Proto";
+option go_package = "github.com/openimsdk/openim-rtc/proto/go/ffi";
+
+// import "handle.proto";
+import "e2ee.proto";
+import "track.proto";
+import "track_publication.proto";
+import "room.proto";
+import "video_frame.proto";
+import "audio_frame.proto";
+import "rpc.proto";
+
+message FfiRequest {
+  oneof message {
+    DisposeRequest dispose = 2;
+
+    // Room
+    ConnectRequest connect = 3;
+    DisconnectRequest disconnect = 4;
+    PublishTrackRequest publish_track = 5;
+    UnpublishTrackRequest unpublish_track = 6;
+    PublishDataRequest publish_data = 7;
+    SetSubscribedRequest set_subscribed = 8;
+    SetLocalMetadataRequest set_local_metadata = 9;
+    SetLocalNameRequest set_local_name = 10;
+    SetLocalAttributesRequest set_local_attributes = 11;
+    GetSessionStatsRequest get_session_stats = 12;
+    PublishTranscriptionRequest publish_transcription = 13;
+    PublishSipDtmfRequest publish_sip_dtmf = 14;
+
+    // Track
+    CreateVideoTrackRequest create_video_track = 15;
+    CreateAudioTrackRequest create_audio_track = 16;
+    LocalTrackMuteRequest local_track_mute = 17;
+    EnableRemoteTrackRequest enable_remote_track = 18;
+    GetStatsRequest get_stats = 19;
+    SetTrackSubscriptionPermissionsRequest set_track_subscription_permissions =
+        48;
+
+    // Video
+    NewVideoStreamRequest new_video_stream = 20;
+    NewVideoSourceRequest new_video_source = 21;
+    CaptureVideoFrameRequest capture_video_frame = 22;
+    VideoConvertRequest video_convert = 23;
+    VideoStreamFromParticipantRequest video_stream_from_participant = 24;
+
+    // Audio
+    NewAudioStreamRequest new_audio_stream = 25;
+    NewAudioSourceRequest new_audio_source = 26;
+    CaptureAudioFrameRequest capture_audio_frame = 27;
+    ClearAudioBufferRequest clear_audio_buffer = 28;
+    NewAudioResamplerRequest new_audio_resampler = 29;
+    RemixAndResampleRequest remix_and_resample = 30;
+    E2eeRequest e2ee = 31;
+    AudioStreamFromParticipantRequest audio_stream_from_participant = 32;
+    NewSoxResamplerRequest new_sox_resampler = 33;
+    PushSoxResamplerRequest push_sox_resampler = 34;
+    FlushSoxResamplerRequest flush_sox_resampler = 35;
+    SendChatMessageRequest send_chat_message = 36;
+    EditChatMessageRequest edit_chat_message = 37;
+
+    // RPC
+    PerformRpcRequest perform_rpc = 38;
+    RegisterRpcMethodRequest register_rpc_method = 39;
+    UnregisterRpcMethodRequest unregister_rpc_method = 40;
+    RpcMethodInvocationResponseRequest rpc_method_invocation_response = 41;
+
+    // Track Publication
+    EnableRemoteTrackPublicationRequest enable_remote_track_publication = 42;
+    UpdateRemoteTrackPublicationDimensionRequest
+        update_remote_track_publication_dimension = 43;
+
+    // Data Streams
+    SendStreamHeaderRequest send_stream_header = 44;
+    SendStreamChunkRequest send_stream_chunk = 45;
+    SendStreamTrailerRequest send_stream_trailer = 46;
+
+    // Data Channel
+    SetDataChannelBufferedAmountLowThresholdRequest
+        set_data_channel_buffered_amount_low_threshold = 47;
+
+    // Audio Filter Plugin
+    LoadAudioFilterPluginRequest load_audio_filter_plugin = 49;
+  }
+}
+
+// This is the output of livekit_ffi_request function.
+message FfiResponse {
+  oneof message {
+    DisposeResponse dispose = 2;
+
+    // Room
+    ConnectResponse connect = 3;
+    DisconnectResponse disconnect = 4;
+    PublishTrackResponse publish_track = 5;
+    UnpublishTrackResponse unpublish_track = 6;
+    PublishDataResponse publish_data = 7;
+    SetSubscribedResponse set_subscribed = 8;
+    SetLocalMetadataResponse set_local_metadata = 9;
+    SetLocalNameResponse set_local_name = 10;
+    SetLocalAttributesResponse set_local_attributes = 11;
+    GetSessionStatsResponse get_session_stats = 12;
+    PublishTranscriptionResponse publish_transcription = 13;
+    PublishSipDtmfResponse publish_sip_dtmf = 14;
+
+    // Track
+    CreateVideoTrackResponse create_video_track = 15;
+    CreateAudioTrackResponse create_audio_track = 16;
+    LocalTrackMuteResponse local_track_mute = 17;
+    EnableRemoteTrackResponse enable_remote_track = 18;
+    GetStatsResponse get_stats = 19;
+    SetTrackSubscriptionPermissionsResponse set_track_subscription_permissions =
+        47;
+
+    // Video
+    NewVideoStreamResponse new_video_stream = 20;
+    NewVideoSourceResponse new_video_source = 21;
+    CaptureVideoFrameResponse capture_video_frame = 22;
+    VideoConvertResponse video_convert = 23;
+    VideoStreamFromParticipantResponse video_stream_from_participant = 24;
+
+    // Audio
+    NewAudioStreamResponse new_audio_stream = 25;
+    NewAudioSourceResponse new_audio_source = 26;
+    CaptureAudioFrameResponse capture_audio_frame = 27;
+    ClearAudioBufferResponse clear_audio_buffer = 28;
+    NewAudioResamplerResponse new_audio_resampler = 29;
+    RemixAndResampleResponse remix_and_resample = 30;
+    AudioStreamFromParticipantResponse audio_stream_from_participant = 31;
+    E2eeResponse e2ee = 32;
+    NewSoxResamplerResponse new_sox_resampler = 33;
+    PushSoxResamplerResponse push_sox_resampler = 34;
+    FlushSoxResamplerResponse flush_sox_resampler = 35;
+    SendChatMessageResponse send_chat_message = 36;
+    // RPC
+    PerformRpcResponse perform_rpc = 37;
+    RegisterRpcMethodResponse register_rpc_method = 38;
+    UnregisterRpcMethodResponse unregister_rpc_method = 39;
+    RpcMethodInvocationResponseResponse rpc_method_invocation_response = 40;
+    // Track Publication
+    EnableRemoteTrackPublicationResponse enable_remote_track_publication = 41;
+    UpdateRemoteTrackPublicationDimensionResponse
+        update_remote_track_publication_dimension = 42;
+
+    // Data Streams
+    SendStreamHeaderResponse send_stream_header = 43;
+    SendStreamChunkResponse send_stream_chunk = 44;
+    SendStreamTrailerResponse send_stream_trailer = 45;
+
+    // Data Channel
+    SetDataChannelBufferedAmountLowThresholdResponse
+        set_data_channel_buffered_amount_low_threshold = 46;
+
+    // Audio Filter Plugin
+    LoadAudioFilterPluginResponse load_audio_filter_plugin = 48;
+  }
+}
+
+// To minimize complexity, participant events are not included in the protocol.
+// It is easily deducible from the room events and it turned out that is is
+// easier to implement on the ffi client side.
+message FfiEvent {
+  oneof message {
+    RoomEvent room_event = 1;
+    TrackEvent track_event = 2;
+    VideoStreamEvent video_stream_event = 3;
+    AudioStreamEvent audio_stream_event = 4;
+    ConnectCallback connect = 5;
+    DisconnectCallback disconnect = 7;
+    DisposeCallback dispose = 8;
+    PublishTrackCallback publish_track = 9;
+    UnpublishTrackCallback unpublish_track = 10;
+    PublishDataCallback publish_data = 11;
+    PublishTranscriptionCallback publish_transcription = 12;
+    CaptureAudioFrameCallback capture_audio_frame = 13;
+    SetLocalMetadataCallback set_local_metadata = 14;
+    SetLocalNameCallback set_local_name = 15;
+    SetLocalAttributesCallback set_local_attributes = 16;
+    GetStatsCallback get_stats = 17;
+    LogBatch logs = 18;
+    GetSessionStatsCallback get_session_stats = 19;
+    Panic panic = 20;
+    PublishSipDtmfCallback publish_sip_dtmf = 21;
+    SendChatMessageCallback chat_message = 22;
+    PerformRpcCallback perform_rpc = 23;
+    RpcMethodInvocationEvent rpc_method_invocation = 24;
+    SendStreamHeaderCallback send_stream_header = 25;
+    SendStreamChunkCallback send_stream_chunk = 26;
+    SendStreamTrailerCallback send_stream_trailer = 27;
+  }
+}
+
+// Stop all rooms synchronously (Do we need async here?).
+// e.g: This is used for the Unity Editor after each assemblies reload.
+// TODO(theomonnom): Implement a debug mode where we can find all leaked
+// handles?
+message DisposeRequest { bool async = 1; }
+message DisposeResponse {
+  uint64 async_id = 1; // None if sync
+}
+
+message DisposeCallback { uint64 async_id = 1; }
+
+enum LogLevel {
+  LOG_ERROR = 0;
+  LOG_WARN = 1;
+  LOG_INFO = 2;
+  LOG_DEBUG = 3;
+  LOG_TRACE = 4;
+}
+
+message LogRecord {
+  LogLevel level = 1;
+  string target = 2; // e.g "livekit", "libwebrtc", "tokio-tungstenite", etc...
+  string module_path = 3;
+  string file = 4;
+  uint32 line = 5;
+  string message = 6;
+}
+
+message LogBatch { repeated LogRecord records = 1; }
+
+message Panic { string message = 1; }
+
+// TODO(theomonnom): Debug messages (Print handles).

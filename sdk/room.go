@@ -7,7 +7,6 @@ import (
 	"log"
 
 	"github.com/livekit/protocol/livekit"
-	pb_common "github.com/openimsdk/openim-rtc/proto/go/common"
 	pb_participant "github.com/openimsdk/openim-rtc/proto/go/participant"
 	pb_room "github.com/openimsdk/openim-rtc/proto/go/room"
 )
@@ -99,18 +98,18 @@ func (r *Room) Disconnect() {
 	r.livekitRoom = nil
 }
 
-func (r *Room) GetConnectState() pb_common.ConnectionState {
+func (r *Room) GetConnectState() pb_room.ConnectionState {
 	if r.livekitRoom != nil {
 		state := r.livekitRoom.ConnectionState()
 		if state == lksdk.ConnectionStateConnected {
-			return pb_common.ConnectionState_CONN_CONNECTED
+			return pb_room.ConnectionState_CONN_CONNECTED
 		} else if state == lksdk.ConnectionStateDisconnected {
-			return pb_common.ConnectionState_CONN_DISCONNECTED
+			return pb_room.ConnectionState_CONN_DISCONNECTED
 		} else if state == lksdk.ConnectionStateReconnecting {
-			return pb_common.ConnectionState_CONN_RECONNECTING
+			return pb_room.ConnectionState_CONN_RECONNECTING
 		}
 	}
-	return pb_common.ConnectionState_CONN_DISCONNECTED
+	return pb_room.ConnectionState_CONN_DISCONNECTED
 }
 
 func (r *Room) IsConnSuc() bool {
@@ -143,18 +142,18 @@ func (r *Room) GetAllParticipantId() []string {
 
 // listener
 func (r *Room) onDisconnected() {
-	r.listener.OnDisconnectedWithReason(pb_common.DisconnectReason_UNKNOWN_REASON)
+	r.listener.OnDisconnectedWithReason(pb_participant.DisconnectReason_UNKNOWN_REASON)
 }
 func (r *Room) onDisconnectedWithReason(reason lksdk.DisconnectionReason) {
-	res := pb_common.DisconnectReason_UNKNOWN_REASON
+	res := pb_participant.DisconnectReason_UNKNOWN_REASON
 	if reason == lksdk.LeaveRequested {
-		res = pb_common.DisconnectReason_ROOM_CLOSED
+		res = pb_participant.DisconnectReason_ROOM_CLOSED
 	} else if reason == lksdk.UserUnavailable {
-		res = pb_common.DisconnectReason_USER_UNAVAILABLE
+		res = pb_participant.DisconnectReason_USER_UNAVAILABLE
 	} else if reason == lksdk.RejectedByUser {
-		res = pb_common.DisconnectReason_USER_REJECTED
+		res = pb_participant.DisconnectReason_USER_REJECTED
 	} else if reason == lksdk.Failed {
-		res = pb_common.DisconnectReason_JOIN_FAILURE
+		res = pb_participant.DisconnectReason_JOIN_FAILURE
 	}
 	r.listener.OnDisconnectedWithReason(res)
 }
@@ -215,13 +214,13 @@ func (r *Room) onIsSpeakingChanged(p lksdk.Participant) {
 }
 
 func (r *Room) onConnectionQualityChanged(update *livekit.ConnectionQualityInfo, p lksdk.Participant) {
-	quality := pb_common.ConnectionQuality_QUALITY_POOR
+	quality := pb_room.ConnectionQuality_QUALITY_POOR
 	if update.Quality == livekit.ConnectionQuality_EXCELLENT {
-		quality = pb_common.ConnectionQuality_QUALITY_EXCELLENT
+		quality = pb_room.ConnectionQuality_QUALITY_EXCELLENT
 	} else if update.Quality == livekit.ConnectionQuality_GOOD {
-		quality = pb_common.ConnectionQuality_QUALITY_GOOD
+		quality = pb_room.ConnectionQuality_QUALITY_GOOD
 	} else if update.Quality == livekit.ConnectionQuality_LOST {
-		quality = pb_common.ConnectionQuality_QUALITY_LOST
+		quality = pb_room.ConnectionQuality_QUALITY_LOST
 	}
 	r.listener.OnConnectionQualityChanged(p.Identity(), quality)
 }
@@ -254,7 +253,8 @@ func (r *Room) onDataPacket(data lksdk.DataPacket, params lksdk.DataReceiveParam
 	if user, ok := packet.Value.(*livekit.DataPacket_User); ok {
 		value = &pb_room.UserPacket{
 			Topic: *user.User.Topic,
-			Data:  user.User.Payload,
+			// TODO
+			// Data:  user.User.Payload,
 		}
 	}
 	if sipDtmf, ok := packet.Value.(*livekit.DataPacket_SipDtmf); ok {
@@ -268,9 +268,9 @@ func (r *Room) onDataPacket(data lksdk.DataPacket, params lksdk.DataReceiveParam
 	}
 }
 func (r *Room) onTranscriptionReceived(transcriptionSegments []*lksdk.TranscriptionSegment, p lksdk.Participant, publication lksdk.TrackPublication) {
-	segments := make([]*pb_participant.TranscriptionSegment, len(transcriptionSegments))
+	segments := make([]*pb_room.TranscriptionSegment, len(transcriptionSegments))
 	for i, segment := range transcriptionSegments {
-		segments[i] = &pb_participant.TranscriptionSegment{
+		segments[i] = &pb_room.TranscriptionSegment{
 			Id:        segment.ID,
 			Text:      segment.Text,
 			StartTime: segment.StartTime,

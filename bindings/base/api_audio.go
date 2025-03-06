@@ -2,18 +2,19 @@ package base
 
 import (
 	// lksdk "github.com/livekit/server-sdk-go/v2"
-	pb_audio "github.com/openimsdk/openim-rtc/proto/go/audio"
+	pb_audio "github.com/openimsdk/openim-rtc/proto/go/audio_frame"
+	pb_handle "github.com/openimsdk/openim-rtc/proto/go/handle"
 	"github.com/openimsdk/openim-rtc/sdk"
 )
 
 // Audio
-func (api *API) NewAudioStream(req *pb_audio.NewAudioStreamReq) (*pb_audio.NewAudioStreamRes, error) {
+func (api *API) NewAudioStream(req *pb_audio.NewAudioStreamRequest) (*pb_audio.NewAudioStreamResponse, error) {
 	track := api.getLocalTrack(req.TrackHandle)
 	audioStream := sdk.NewAudioStreamByTrack(track, req.Type, req.SampleRate, req.NumChannels)
 	streamHandle := api.storeObj(audioStream)
-	res := &pb_audio.NewAudioStreamRes{
+	res := &pb_audio.NewAudioStreamResponse{
 		Stream: &pb_audio.OwnedAudioStream{
-			Handle: streamHandle,
+			Handle: &pb_handle.FfiOwnedHandle{Id: streamHandle},
 			Info: &pb_audio.AudioStreamInfo{
 				Type: audioStream.StreamType,
 			},
@@ -21,12 +22,12 @@ func (api *API) NewAudioStream(req *pb_audio.NewAudioStreamReq) (*pb_audio.NewAu
 	}
 	return res, nil
 }
-func (api *API) NewAudioSource(req *pb_audio.NewAudioSourceReq) (*pb_audio.NewAudioSourceRes, error) {
+func (api *API) NewAudioSource(req *pb_audio.NewAudioSourceRequest) (*pb_audio.NewAudioSourceResponse, error) {
 	audioSource := sdk.NewAudioSource(req.Type, req.SampleRate, req.NumChannels, req.QueueSizeMs)
 	sourceHandle := api.storeObj(audioSource)
-	res := &pb_audio.NewAudioSourceRes{
+	res := &pb_audio.NewAudioSourceResponse{
 		Source: &pb_audio.OwnedAudioSource{
-			Handle: sourceHandle,
+			Handle: &pb_handle.FfiOwnedHandle{Id: sourceHandle},
 			Info: &pb_audio.AudioSourceInfo{
 				Type: audioSource.SourceType,
 			},
@@ -34,29 +35,29 @@ func (api *API) NewAudioSource(req *pb_audio.NewAudioSourceReq) (*pb_audio.NewAu
 	}
 	return res, nil
 }
-func (api *API) CaptureAudioFrame(req *pb_audio.CaptureAudioFrameReq) (*pb_audio.CaptureAudioFrameRes, error) {
+func (api *API) CaptureAudioFrame(req *pb_audio.CaptureAudioFrameRequest) (*pb_audio.CaptureAudioFrameResponse, error) {
 	audioSource := api.getAudioSource(req.SourceHandle)
 	buffer := req.Buffer
 	length := buffer.NumChannels * buffer.SampleRate * 2
 	data := cPointerToGoByteSliceNoCopyFunc(req.Buffer.DataPtr, length)
 	audioSource.CaptureFrame(data)
-	res := &pb_audio.CaptureAudioFrameRes{}
+	res := &pb_audio.CaptureAudioFrameResponse{}
 	return res, nil
 }
-func (api *API) ClearAudioBuffer(req *pb_audio.ClearAudioBufferReq) (*pb_audio.ClearAudioBufferRes, error) {
+func (api *API) ClearAudioBuffer(req *pb_audio.ClearAudioBufferRequest) (*pb_audio.ClearAudioBufferResponse, error) {
 	audioSource := api.getAudioSource(req.SourceHandle)
 	audioSource.ClearBuffer()
-	res := &pb_audio.ClearAudioBufferRes{}
+	res := &pb_audio.ClearAudioBufferResponse{}
 	return res, nil
 }
 
 // TODO
-func (api *API) NewAudioResampler(req *pb_audio.NewAudioResamplerReq) (*pb_audio.NewAudioResamplerRes, error) {
+func (api *API) NewAudioResampler(req *pb_audio.NewAudioResamplerRequest) (*pb_audio.NewAudioResamplerResponse, error) {
 	return nil, nil
 }
-func (api *API) RemixAndResample(req *pb_audio.RemixAndResampleReq) (*pb_audio.RemixAndResampleRes, error) {
+func (api *API) RemixAndResample(req *pb_audio.RemixAndResampleRequest) (*pb_audio.RemixAndResampleResponse, error) {
 	return nil, nil
 }
-func (api *API) AudioStreamFromParticipant(req *pb_audio.AudioStreamFromParticipantReq) (*pb_audio.AudioStreamFromParticipantRes, error) {
+func (api *API) AudioStreamFromParticipant(req *pb_audio.AudioStreamFromParticipantRequest) (*pb_audio.AudioStreamFromParticipantResponse, error) {
 	return nil, nil
 }

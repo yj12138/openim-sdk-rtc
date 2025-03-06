@@ -2,7 +2,6 @@ package base
 
 import (
 	"fmt"
-	pb_common "github.com/openimsdk/openim-rtc/proto/go/common"
 	"github.com/openimsdk/openim-rtc/sdk"
 	"sync"
 	"sync/atomic"
@@ -35,16 +34,14 @@ func NewAPI() *API {
 	}
 }
 
-func (api *API) storeObj(value any) *pb_common.FfiOwnedHandle {
+func (api *API) storeObj(value any) uint64 {
 	handle := api.counter.Add(1)
 	api.objMap.Store(handle, value)
-	return &pb_common.FfiOwnedHandle{
-		Id: handle,
-	}
+	return handle
 }
 
-func (api *API) getRoom(handle *pb_common.FfiOwnedHandle) *sdk.Room {
-	if value, ok := api.objMap.Load(handle.Id); ok {
+func (api *API) getRoom(handle uint64) *sdk.Room {
+	if value, ok := api.objMap.Load(handle); ok {
 		if r, ok := value.(*sdk.Room); ok {
 			return r
 		} else {
@@ -54,8 +51,8 @@ func (api *API) getRoom(handle *pb_common.FfiOwnedHandle) *sdk.Room {
 	panic(fmt.Sprintf("not find handle:%d", handle))
 }
 
-func (api *API) getLocalParticipant(handle *pb_common.FfiOwnedHandle) *sdk.LocalParticipant {
-	if value, ok := api.objMap.Load(handle.Id); ok {
+func (api *API) getLocalParticipant(handle uint64) *sdk.LocalParticipant {
+	if value, ok := api.objMap.Load(handle); ok {
 		if r, ok := value.(*sdk.LocalParticipant); ok {
 			return r
 		} else {
@@ -65,8 +62,8 @@ func (api *API) getLocalParticipant(handle *pb_common.FfiOwnedHandle) *sdk.Local
 	panic(fmt.Sprintf("not find handle:%d", handle))
 }
 
-func (api *API) getRemoteParticipant(handle *pb_common.FfiOwnedHandle) *sdk.RemoteParticipant {
-	if value, ok := api.objMap.Load(handle.Id); ok {
+func (api *API) getRemoteParticipant(handle uint64) *sdk.RemoteParticipant {
+	if value, ok := api.objMap.Load(handle); ok {
 		if r, ok := value.(*sdk.RemoteParticipant); ok {
 			return r
 		} else {
@@ -76,8 +73,8 @@ func (api *API) getRemoteParticipant(handle *pb_common.FfiOwnedHandle) *sdk.Remo
 	panic(fmt.Sprintf("not find handle:%d", handle))
 }
 
-func (api *API) getLocalTrack(handle *pb_common.FfiOwnedHandle) *sdk.LocalTrack {
-	if value, ok := api.objMap.Load(handle.Id); ok {
+func (api *API) getLocalTrack(handle uint64) *sdk.LocalTrack {
+	if value, ok := api.objMap.Load(handle); ok {
 		if r, ok := value.(*sdk.LocalTrack); ok {
 			return r
 		} else {
@@ -87,8 +84,8 @@ func (api *API) getLocalTrack(handle *pb_common.FfiOwnedHandle) *sdk.LocalTrack 
 	panic(fmt.Sprintf("not find handle:%d", handle))
 }
 
-func (api *API) getRemoteTrack(handle *pb_common.FfiOwnedHandle) *sdk.RemoteTrack {
-	if value, ok := api.objMap.Load(handle.Id); ok {
+func (api *API) getRemoteTrack(handle uint64) *sdk.RemoteTrack {
+	if value, ok := api.objMap.Load(handle); ok {
 		if r, ok := value.(*sdk.RemoteTrack); ok {
 			return r
 		} else {
@@ -98,8 +95,8 @@ func (api *API) getRemoteTrack(handle *pb_common.FfiOwnedHandle) *sdk.RemoteTrac
 	panic(fmt.Sprintf("not find handle:%d", handle))
 }
 
-func (api *API) getAudioStream(handle *pb_common.FfiOwnedHandle) *sdk.AudioStream {
-	if value, ok := api.objMap.Load(handle.Id); ok {
+func (api *API) getAudioStream(handle uint64) *sdk.AudioStream {
+	if value, ok := api.objMap.Load(handle); ok {
 		if r, ok := value.(*sdk.AudioStream); ok {
 			return r
 		} else {
@@ -109,8 +106,8 @@ func (api *API) getAudioStream(handle *pb_common.FfiOwnedHandle) *sdk.AudioStrea
 	panic(fmt.Sprintf("not find handle:%d", handle))
 }
 
-func (api *API) getAudioSource(handle *pb_common.FfiOwnedHandle) *sdk.AudioSource {
-	if value, ok := api.objMap.Load(handle.Id); ok {
+func (api *API) getAudioSource(handle uint64) *sdk.AudioSource {
+	if value, ok := api.objMap.Load(handle); ok {
 		if r, ok := value.(*sdk.AudioSource); ok {
 			return r
 		} else {

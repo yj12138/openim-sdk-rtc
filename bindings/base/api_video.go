@@ -1,28 +1,28 @@
 package base
 
 import (
-	pb_video "github.com/openimsdk/openim-rtc/proto/go/video"
+	pb_video "github.com/openimsdk/openim-rtc/proto/go/video_frame"
 )
 
 // Video
-func (api *API) NewVideoStream(req *pb_video.NewVideoStreamReq) (*pb_video.NewVideoStreamRes, error) {
+func (api *API) NewVideoStream(req *pb_video.NewVideoStreamRequest) (*pb_video.NewVideoStreamResponse, error) {
 	return nil, nil
 }
-func (api *API) NewVideoSource(req *pb_video.NewVideoSourceReq) (*pb_video.NewVideoSourceRes, error) {
-
-	return nil, nil
-}
-
-func (api *API) CaptureVideoFrame(req *pb_video.CaptureVideoFrameReq) (*pb_video.CaptureVideoFrameRes, error) {
+func (api *API) NewVideoSource(req *pb_video.NewVideoSourceRequest) (*pb_video.NewVideoSourceResponse, error) {
 
 	return nil, nil
 }
 
-func (api *API) VideoConvert(req *pb_video.VideoConvertReq) (*pb_video.VideoConvertRes, error) {
+func (api *API) CaptureVideoFrame(req *pb_video.CaptureVideoFrameRequest) (*pb_video.CaptureVideoFrameResponse, error) {
 
 	return nil, nil
 }
-func (api *API) VideoStreamFromParticipan(req *pb_video.VideoStreamFromParticipanReq) (*pb_video.VideoStreamFromParticipanRes, error) {
+
+func (api *API) VideoConvert(req *pb_video.VideoConvertRequest) (*pb_video.VideoConvertResponse, error) {
+
+	return nil, nil
+}
+func (api *API) VideoStreamFromParticipan(req *pb_video.VideoStreamFromParticipantRequest) (*pb_video.VideoStreamFromParticipantResponse, error) {
 
 	return nil, nil
 }

@@ -1,7 +1,7 @@
 package sdk
 
 import (
-	pb_audio "github.com/openimsdk/openim-rtc/proto/go/audio"
+	pb_audio "github.com/openimsdk/openim-rtc/proto/go/audio_frame"
 )
 
 type AudioSource struct {

@@ -7,7 +7,8 @@ import (
 	"github.com/livekit/protocol/livekit"
 	lksdk "github.com/livekit/server-sdk-go/v2"
 
-	pb_participant "github.com/openimsdk/openim-rtc/proto/go/participant"
+	pb_room "github.com/openimsdk/openim-rtc/proto/go/room"
+	pb_track "github.com/openimsdk/openim-rtc/proto/go/track"
 )
 
 type LocalParticipant struct {
@@ -47,7 +48,7 @@ func (p *LocalParticipant) UnpublishTrack(track *LocalTrack) {
 	}
 }
 
-func (p *LocalParticipant) SetSubscriptionPermission(allParticipants bool, permissions []*pb_participant.ParticipantTrackPermission) {
+func (p *LocalParticipant) SetSubscriptionPermission(allParticipants bool, permissions []*pb_track.ParticipantTrackPermission) {
 	trackPermissions := make([]*livekit.TrackPermission, 0)
 	for _, permission := range permissions {
 		trackPermissions = append(trackPermissions, &livekit.TrackPermission{
@@ -72,24 +73,24 @@ func (p *LocalParticipant) SendData(topic string, data []byte, reliable bool, id
 	)
 }
 
-func (p *LocalParticipant) SendTranscription(identify string, trackId string, segments []*pb_participant.TranscriptionSegment) {
+func (p *LocalParticipant) SendTranscription(identify string, trackId string, segments []*pb_room.TranscriptionSegment) {
 	packet := ConvertTranscriptionDataPacket(identify, trackId, segments)
 	p.LiveKitLocalParticipant.PublishDataPacket(packet)
 }
 
-func (p *LocalParticipant) SendStreamHeader(senderIdentity string, destinationIdentities []string, header *pb_participant.DataStream_Header) {
+func (p *LocalParticipant) SendStreamHeader(senderIdentity string, destinationIdentities []string, header *pb_room.DataStream_Header) {
 	packet := ConvertStreamHeaderPacket(header)
 	p.LiveKitLocalParticipant.PublishDataPacket(packet)
 }
-func (p *LocalParticipant) SendStreamChunk(senderIdentity string, destinationIdentities string, chunk *pb_participant.DataStream_Chunk) {
+func (p *LocalParticipant) SendStreamChunk(senderIdentity string, destinationIdentities []string, chunk *pb_room.DataStream_Chunk) {
 	packet := ConvertStreamChunkPacket(chunk)
 	p.LiveKitLocalParticipant.PublishDataPacket(packet)
 }
-func (p *LocalParticipant) SendStreamTrailer(senderIdentity string, destinationIdentities string, trailer *pb_participant.DataStream_Trailer) {
+func (p *LocalParticipant) SendStreamTrailer(senderIdentity string, destinationIdentities []string, trailer *pb_room.DataStream_Trailer) {
 	packet := ConvertStreamTrailerPacket(trailer)
 	p.LiveKitLocalParticipant.PublishDataPacket(packet)
 }
-func (p *LocalParticipant) SendChatMessage(senderIdentity string, destinationIdentities string, message string) {
+func (p *LocalParticipant) SendChatMessage(senderIdentity string, destinationIdentities []string, message string) {
 	packet := &ChatMessagePacket{
 		Id:        "",
 		Timestamp: time.Now().Unix(),
@@ -99,7 +100,7 @@ func (p *LocalParticipant) SendChatMessage(senderIdentity string, destinationIde
 	}
 	p.LiveKitLocalParticipant.PublishDataPacket(packet)
 }
-func (p *LocalParticipant) EditChatMessage(senderIdentity string, destinationIdentities string, editText string, originalMessage *pb_participant.ChatMessage) {
+func (p *LocalParticipant) EditChatMessage(senderIdentity string, destinationIdentities []string, editText string, originalMessage *pb_room.ChatMessage) {
 	packet := &ChatMessagePacket{
 		Id:        "",
 		Timestamp: time.Now().Unix(),

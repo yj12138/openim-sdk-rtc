@@ -6,31 +6,30 @@ import (
 	"github.com/openimsdk/openim-rtc/sdk"
 )
 
-func (api *API) Connect(req *pb_room.ConnectReq) (*pb_room.ConnectRes, error) {
+func (api *API) Connect(req *pb_room.ConnectRequest) (*pb_room.ConnectResponse, error) {
 	listener := NewRoomListener()
 	r := sdk.NewRoom(listener)
 	roomHandle := api.storeObj(r)
 	listener.RoomHandle = roomHandle
 	r.ConnectByToken(req.Url, req.Token)
-	participant := sdk.NewLocalParticipant(r.GetLocalParticipant())
-	localParticipantHandle := api.storeObj(participant)
-	res := &pb_room.ConnectRes{
-		RoomHandle:             roomHandle,
-		LocalParticipantHandle: localParticipantHandle,
+	// participant := sdk.NewLocalParticipant(r.GetLocalParticipant())
+	// localParticipantHandle := api.storeObj(participant)
+	res := &pb_room.ConnectResponse{
+		AsyncId: 0,
 	}
 	return res, nil
 }
 
-func (api *API) Disconnect(req *pb_room.DisconnectReq) (*pb_room.DisconnectRes, error) {
+func (api *API) Disconnect(req *pb_room.DisconnectRequest) (*pb_room.DisconnectResponse, error) {
 	room := api.getRoom(req.RoomHandle)
 	room.Disconnect()
-	return &pb_room.DisconnectRes{}, nil
+	return &pb_room.DisconnectResponse{}, nil
 }
 
-func (api *API) GetConnectState(req *pb_room.GetConnectStateReq) (*pb_room.GetConnectStateRes, error) {
-	room := api.getRoom(req.RoomHandle)
-	res := &pb_room.GetConnectStateRes{
-		State: room.GetConnectState(),
+func (api *API) GetSessionStats(req *pb_room.GetSessionStatsRequest) (*pb_room.GetSessionStatsResponse, error) {
+	// room := api.getRoom(req.RoomHandle)
+	res := &pb_room.GetSessionStatsResponse{
+		// State: room.GetConnectState(),
 	}
 	return res, nil
 }

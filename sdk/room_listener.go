@@ -1,13 +1,13 @@
 package sdk
 
 import (
-	pb_common "github.com/openimsdk/openim-rtc/proto/go/common"
 	pb_participant "github.com/openimsdk/openim-rtc/proto/go/participant"
+	pb_room "github.com/openimsdk/openim-rtc/proto/go/room"
 )
 
 type OnRoomListener interface {
 	// room
-	OnDisconnectedWithReason(pb_common.DisconnectReason)
+	OnDisconnectedWithReason(pb_participant.DisconnectReason)
 	OnParticipantConnected(*RemoteParticipant)
 	OnParticipantDisconnected(*RemoteParticipant)
 	OnActiveSpeakersChanged([]string)
@@ -24,7 +24,7 @@ type OnRoomListener interface {
 	OnParticipantMetadataChanged(participantIdentify string, metadata string)
 	OnParticipantAttributesChanged(participantIdentify string, changed map[string]string)
 	OnIsSpeakingChanged(participantIdentify []string)
-	OnConnectionQualityChanged(participantIdentify string, quality pb_common.ConnectionQuality)
+	OnConnectionQualityChanged(participantIdentify string, quality pb_room.ConnectionQuality)
 
 	// for remote participants
 	OnTrackSubscribed(participantIdentify string, track *RemoteTrack)
@@ -33,5 +33,5 @@ type OnRoomListener interface {
 	OnTrackPublished(participantIdentify string, track *RemoteTrack)
 	OnTrackUnpublished(participantIdentify string, publicationSid string)
 	OnDataPacket(participantIdentify string, value interface{})
-	OnTranscriptionReceived(participantIdentify string, trackSid string, segments []*pb_participant.TranscriptionSegment)
+	OnTranscriptionReceived(participantIdentify string, trackSid string, segments []*pb_room.TranscriptionSegment)
 }
