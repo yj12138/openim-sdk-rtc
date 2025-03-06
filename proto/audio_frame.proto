@@ -1,6 +1,6 @@
 syntax = "proto3";
 package openim.rtc.proto;
-option csharp_namespace = "OpenIM.RTC.Proto";
+option csharp_namespace = "LiveKit.Proto";
 option go_package = "github.com/openimsdk/openim-rtc/proto/go/audio_frame";
 
 import "handle.proto";

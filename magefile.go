@@ -44,7 +44,7 @@ var Aliases = map[string]any{
 const (
 	GO     = "go"
 	JAVA   = "java"
-	CSharp = "csharp"
+	CSharp = "csharp/Proto"
 	JS     = "js"
 	TS     = "ts"
 	RS     = "rust"
@@ -231,15 +231,13 @@ func GenCSharp() error {
 	if err != nil {
 		return err
 	}
-
+	if err := os.MkdirAll(csharpOutDir, 0755); err != nil {
+		return err
+	}
 	for _, module := range protoModules {
-		if err := os.MkdirAll(filepath.Join(csharpOutDir, module), 0755); err != nil {
-			return err
-		}
-
 		args := []string{
 			"--proto_path=" + protoDir,
-			"--csharp_out=" + filepath.Join(csharpOutDir, module),
+			"--csharp_out=" + csharpOutDir,
 			filepath.Join("proto", module) + ".proto",
 		}
 
