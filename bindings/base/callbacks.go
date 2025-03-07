@@ -1,7 +1,7 @@
 package base
 
 import (
-	// lksdk "github.com/livekit/server-sdk-go/v2"
+	lksdk "github.com/livekit/server-sdk-go/v2"
 	pb_ffi "github.com/openimsdk/openim-rtc/proto/go/ffi"
 	pb_handle "github.com/openimsdk/openim-rtc/proto/go/handle"
 	pb_participant "github.com/openimsdk/openim-rtc/proto/go/participant"
@@ -28,7 +28,7 @@ func (l *RoomListener) OnDisconnectedWithReason(reason pb_participant.Disconnect
 	}
 	dispatchEvent(&pb_ffi.FfiEvent{Message: msg})
 }
-func (l *RoomListener) OnParticipantConnected(rp *sdk.RemoteParticipant) {
+func (l *RoomListener) OnParticipantConnected(rp *lksdk.RemoteParticipant) {
 	handle := api.storeObj(rp)
 	msg := &pb_ffi.FfiEvent_RoomEvent{
 		RoomEvent: &pb_room.RoomEvent{
@@ -45,7 +45,7 @@ func (l *RoomListener) OnParticipantConnected(rp *sdk.RemoteParticipant) {
 	}
 	dispatchEvent(&pb_ffi.FfiEvent{Message: msg})
 }
-func (l *RoomListener) OnParticipantDisconnected(rp *sdk.RemoteParticipant) {
+func (l *RoomListener) OnParticipantDisconnected(rp *lksdk.RemoteParticipant) {
 	msg := &pb_ffi.FfiEvent_RoomEvent{
 		RoomEvent: &pb_room.RoomEvent{
 			RoomHandle: l.RoomHandle,
@@ -228,14 +228,13 @@ func (l *RoomListener) OnConnectionQualityChanged(participantIdentify string, qu
 }
 
 // for remote participants
-func (l *RoomListener) OnTrackSubscribed(participantIdentify string, track *sdk.RemoteTrack) {
-
+func (l *RoomListener) OnTrackSubscribed(participantIdentify string, publication *lksdk.RemoteTrackPublication) {
 	info := &pb_track.TrackInfo{
-		Sid:         track.Publication.SID(),
-		Name:        track.Publication.Name(),
-		Kind:        sdk.ConvertTrackKind(track.Publication.Kind()),
+		Sid:         publication.SID(),
+		Name:        publication.Name(),
+		Kind:        sdk.ConvertTrackKind(publication.Kind()),
 		StreamState: pb_track.StreamState_STATE_UNKNOWN,
-		Muted:       track.Publication.IsMuted(),
+		Muted:       publication.IsMuted(),
 		Remote:      true,
 	}
 	msg := &pb_ffi.FfiEvent_RoomEvent{
@@ -285,7 +284,7 @@ func (l *RoomListener) OnTrackSubscriptionFailed(participantIdentify string, tra
 	dispatchEvent(&pb_ffi.FfiEvent{Message: msg})
 }
 
-func (l *RoomListener) OnTrackPublished(participantIdentify string, remoteTrack *sdk.RemoteTrack) {
+func (l *RoomListener) OnTrackPublished(participantIdentify string, publication *lksdk.RemoteTrackPublication) {
 	msg := &pb_ffi.FfiEvent_RoomEvent{
 		RoomEvent: &pb_room.RoomEvent{
 			RoomHandle: l.RoomHandle,
@@ -296,15 +295,15 @@ func (l *RoomListener) OnTrackPublished(participantIdentify string, remoteTrack 
 						// TODO
 						// Handle: &pb_common.FfiOwnedHandle{Id: api.storeObj(remoteTrack)},
 						Info: &pb_track.TrackPublicationInfo{
-							Sid:         remoteTrack.Publication.SID(),
-							Name:        remoteTrack.Publication.Name(),
-							Kind:        sdk.ConvertTrackKind(remoteTrack.Publication.Kind()),
-							Source:      pb_track.TrackSource(remoteTrack.Publication.Source()),
-							Simulcasted: remoteTrack.Publication.TrackInfo().GetSimulcast(),
-							Width:       remoteTrack.Publication.TrackInfo().Height,
-							Height:      remoteTrack.Publication.TrackInfo().Height,
-							MimeType:    remoteTrack.Publication.MimeType(),
-							Muted:       remoteTrack.Publication.IsMuted(),
+							Sid:         publication.SID(),
+							Name:        publication.Name(),
+							Kind:        sdk.ConvertTrackKind(publication.Kind()),
+							Source:      pb_track.TrackSource(publication.Source()),
+							Simulcasted: publication.TrackInfo().GetSimulcast(),
+							Width:       publication.TrackInfo().Height,
+							Height:      publication.TrackInfo().Height,
+							MimeType:    publication.MimeType(),
+							Muted:       publication.IsMuted(),
 							Remote:      true,
 						},
 					},

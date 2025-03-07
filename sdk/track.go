@@ -1,82 +1,41 @@
 package sdk
 
 import (
-	"log"
-	"time"
-
 	lksdk "github.com/livekit/server-sdk-go/v2"
 	pb_track "github.com/openimsdk/openim-rtc/proto/go/track"
 	"github.com/pion/webrtc/v4"
+	"log"
 )
 
 const (
 	MimeTypeOpus = "audio/opus"
 )
 
-type RemoteTrack struct {
-	Track       *webrtc.TrackRemote
-	Participant *lksdk.RemoteParticipant
-	Publication *lksdk.RemoteTrackPublication
-}
-
-func (rt *RemoteTrack) SetEnable(enable bool) {
-	rt.Publication.SetEnabled(enable)
-}
-func (rt *RemoteTrack) SetSubscribed(publicationId string, subscribe bool) {
-	rt.Publication.SetSubscribed(subscribe)
-}
-
-func (rt *RemoteTrack) EnableTrackPubliciation(remotetrackPublicationSid string, enable bool) {
-	rt.Publication.SetEnabled(enable)
-}
-
-func (rt *RemoteTrack) UpdatePublicationDimension(remotetrackPublicationSid string, width uint32, height uint32) {
-	rt.Publication.SetVideoDimensions(width, height)
-}
-
-func NewRemoteTrack(track *webrtc.TrackRemote, remoteParticipant *lksdk.RemoteParticipant, remoteTrackPublication *lksdk.RemoteTrackPublication) *RemoteTrack {
-	return &RemoteTrack{
-		Track:       track,
-		Participant: remoteParticipant,
-		Publication: remoteTrackPublication,
-	}
-}
-
 type LocalTrack struct {
-	Name                  string
-	MimeType              string
-	VideoWidth            int
-	VideoHeight           int
-	SampleProvider        *RealSampleProvider
-	LiveKitTrack          *lksdk.LocalTrack
-	LocalTrackPublication *lksdk.LocalTrackPublication
+	*lksdk.LocalTrack
+	// MimeType    string
+	VideoWidth  int
+	VideoHeight int
 }
 
-func (t *LocalTrack) WriteData(data []byte, duration time.Duration) {
-	t.SampleProvider.WriteData(data, duration)
-}
-
-func NewAudioTrack(name string) *LocalTrack {
-	mimeType := MimeTypeOpus
-	provider := NewRealSampleProvider(mimeType)
+func NewAudioTrack(name string, source *AudioSource) *LocalTrack {
+	// mimeType := MimeTypeOpus
 	liveKitTrack, err := lksdk.NewLocalTrack(webrtc.RTPCodecCapability{
-		MimeType: provider.mime,
+		MimeType: source.mime,
 	})
 	if err != nil {
 		log.Panic(err.Error())
 	}
 	liveKitTrack.OnBind(func() {
-		if err := liveKitTrack.StartWrite(provider, provider.onWriteComplete); err != nil {
+		if err := liveKitTrack.StartWrite(source, source.onWriteComplete); err != nil {
 			log.Panic(err.Error())
 		}
 	})
 	track := &LocalTrack{
-		Name:           name,
-		MimeType:       mimeType,
-		LiveKitTrack:   liveKitTrack,
-		VideoWidth:     0,
-		VideoHeight:    0,
-		SampleProvider: provider,
+		LocalTrack: liveKitTrack,
+		// MimeType:    mimeType,
+		VideoWidth:  0,
+		VideoHeight: 0,
 	}
 	return track
 }

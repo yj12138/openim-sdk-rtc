@@ -23,19 +23,24 @@ func SetCPointerToGoByteSliceNoCopyFunc(f CPointerToGoByteSliceNoCopyFunc) {
 }
 
 type API struct {
-	objMap  sync.Map
-	counter atomic.Uint64
+	objMap         sync.Map
+	handleCounter  atomic.Uint64
+	asyncIdCounter atomic.Uint64
 }
 
 func NewAPI() *API {
 	return &API{
-		objMap:  sync.Map{},
-		counter: atomic.Uint64{},
+		objMap:        sync.Map{},
+		handleCounter: atomic.Uint64{},
 	}
 }
 
+func (api *API) GenAsyncId() uint64 {
+	return api.asyncIdCounter.Add(1)
+}
+
 func (api *API) storeObj(value any) uint64 {
-	handle := api.counter.Add(1)
+	handle := api.handleCounter.Add(1)
 	api.objMap.Store(handle, value)
 	return handle
 }
@@ -65,31 +70,9 @@ func (api *API) getLocalParticipant(handle uint64) *sdk.LocalParticipant {
 	panic(fmt.Sprintf("not find handle:%d", handle))
 }
 
-func (api *API) getRemoteParticipant(handle uint64) *sdk.RemoteParticipant {
-	if value, ok := api.objMap.Load(handle); ok {
-		if r, ok := value.(*sdk.RemoteParticipant); ok {
-			return r
-		} else {
-			panic(fmt.Sprintf("handle:%d is not sdk.RemoteParticipant type", handle))
-		}
-	}
-	panic(fmt.Sprintf("not find handle:%d", handle))
-}
-
 func (api *API) getLocalTrack(handle uint64) *sdk.LocalTrack {
 	if value, ok := api.objMap.Load(handle); ok {
 		if r, ok := value.(*sdk.LocalTrack); ok {
-			return r
-		} else {
-			panic(fmt.Sprintf("handle:%d is not sdk.LocalTrack type", handle))
-		}
-	}
-	panic(fmt.Sprintf("not find handle:%d", handle))
-}
-
-func (api *API) getRemoteTrack(handle uint64) *sdk.RemoteTrack {
-	if value, ok := api.objMap.Load(handle); ok {
-		if r, ok := value.(*sdk.RemoteTrack); ok {
 			return r
 		} else {
 			panic(fmt.Sprintf("handle:%d is not sdk.LocalTrack type", handle))

@@ -1,6 +1,7 @@
 package base
 
 import (
+	lksdk "github.com/livekit/server-sdk-go/v2"
 	pb_room "github.com/openimsdk/openim-rtc/proto/go/room"
 	pb_track "github.com/openimsdk/openim-rtc/proto/go/track"
 )
@@ -8,7 +9,7 @@ import (
 func (api *API) PublishTrack(req *pb_room.PublishTrackRequest) (*pb_room.PublishTrackResponse, error) {
 	participant := api.getLocalParticipant(req.LocalParticipantHandle)
 	track := api.getLocalTrack(req.TrackHandle)
-	participant.PublicTrack(track)
+	participant.PublishTrack(track, &lksdk.TrackPublicationOptions{})
 	res := &pb_room.PublishTrackResponse{}
 	return res, nil
 }
@@ -26,7 +27,10 @@ func (api *API) PublishData(req *pb_room.PublishDataRequest) (*pb_room.PublishDa
 	res := &pb_room.PublishDataResponse{}
 	return res, nil
 }
-
+func (api *API) PublishSipDtmf(req *pb_room.PublishSipDtmfRequest) (*pb_room.PublishSipDtmfResponse, error) {
+	res := &pb_room.PublishSipDtmfResponse{}
+	return res, nil
+}
 func (api *API) SetLocalMetadata(req *pb_room.SetLocalMetadataRequest) (*pb_room.SetLocalMetadataResponse, error) {
 	participant := api.getLocalParticipant(req.LocalParticipantHandle)
 	participant.SetMetadata(req.Metadata)
@@ -94,7 +98,12 @@ func (api *API) SendStreamTrailer(req *pb_room.SendStreamTrailerRequest) (*pb_ro
 
 func (api *API) SetTrackSubscriptionPermissions(req *pb_track.SetTrackSubscriptionPermissionsRequest) (*pb_track.SetTrackSubscriptionPermissionsResponse, error) {
 	participant := api.getLocalParticipant(req.LocalParticipantHandle)
-	participant.SetSubscriptionPermission(req.AllParticipantsAllowed, req.Permissions)
+	participant.SetSubscriptionPermissionWrap(req.AllParticipantsAllowed, req.Permissions)
 	res := &pb_track.SetTrackSubscriptionPermissionsResponse{}
+	return res, nil
+}
+
+func (api *API) SetDataChannelBufferedAmountLowThreshold(req *pb_room.SetDataChannelBufferedAmountLowThresholdRequest) (*pb_room.SetDataChannelBufferedAmountLowThresholdResponse, error) {
+	res := &pb_room.SetDataChannelBufferedAmountLowThresholdResponse{}
 	return res, nil
 }

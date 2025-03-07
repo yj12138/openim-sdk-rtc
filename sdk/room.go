@@ -12,21 +12,8 @@ import (
 )
 
 type Room struct {
-	host               string
-	token              string
-	livekitRoom        *lksdk.Room
-	listener           OnRoomListener
-	remoteParticipants map[string]*RemoteParticipant
-	remoteTracks       map[string]*RemoteTrack
-}
-
-func NewRoom(listener OnRoomListener) *Room {
-	r := &Room{
-		listener:           listener,
-		remoteParticipants: make(map[string]*RemoteParticipant),
-		remoteTracks:       make(map[string]*RemoteTrack),
-	}
-	return r
+	*lksdk.Room
+	listener OnRoomListener
 }
 
 func (r *Room) createCallBack() *lksdk.RoomCallback {
@@ -67,75 +54,23 @@ func (r *Room) createCallBack() *lksdk.RoomCallback {
 	return callBack
 }
 
-func (r *Room) ConnectByToken(host, token string) {
-	r.host = host
-	r.token = token
-	livekitRoom, err := lksdk.ConnectToRoomWithToken(host, token, r.createCallBack(), lksdk.WithAutoSubscribe(true))
-	if err != nil {
-		log.Println(err.Error())
-		return
-	}
-	r.livekitRoom = livekitRoom
-}
-
-func (r *Room) ConnectBySecret(host, apiKey, apiSecret, roomName, identify string) {
-	room, err := lksdk.ConnectToRoom(host, lksdk.ConnectInfo{
-		APIKey:              apiKey,
-		APISecret:           apiSecret,
-		RoomName:            roomName,
-		ParticipantIdentity: identify,
-	}, r.createCallBack(), lksdk.WithAutoSubscribe(true))
-	if err != nil {
-		panic(err)
-	}
-	r.livekitRoom = room
-}
-
-func (r *Room) Disconnect() {
-	if r.livekitRoom != nil {
-		r.livekitRoom.Disconnect()
-	}
-	r.livekitRoom = nil
-}
-
 func (r *Room) GetConnectState() pb_room.ConnectionState {
-	if r.livekitRoom != nil {
-		state := r.livekitRoom.ConnectionState()
-		if state == lksdk.ConnectionStateConnected {
-			return pb_room.ConnectionState_CONN_CONNECTED
-		} else if state == lksdk.ConnectionStateDisconnected {
-			return pb_room.ConnectionState_CONN_DISCONNECTED
-		} else if state == lksdk.ConnectionStateReconnecting {
-			return pb_room.ConnectionState_CONN_RECONNECTING
-		}
+	state := r.ConnectionState()
+	if state == lksdk.ConnectionStateConnected {
+		return pb_room.ConnectionState_CONN_CONNECTED
+	} else if state == lksdk.ConnectionStateDisconnected {
+		return pb_room.ConnectionState_CONN_DISCONNECTED
+	} else if state == lksdk.ConnectionStateReconnecting {
+		return pb_room.ConnectionState_CONN_RECONNECTING
 	}
 	return pb_room.ConnectionState_CONN_DISCONNECTED
 }
 
-func (r *Room) IsConnSuc() bool {
-	return r.livekitRoom != nil
-}
-
-func (r *Room) checkConn() bool {
-	if r.IsConnSuc() {
-		return true
-	} else {
-		log.Panic("not connect to room")
-		return false
-	}
-}
-
-func (r *Room) GetLocalParticipant() *lksdk.LocalParticipant {
-	return r.livekitRoom.LocalParticipant
-}
-
-func (r *Room) GetAllParticipantId() []string {
+func (r *Room) GetAllParticipantIdentifys() []string {
 	res := make([]string, 0)
-	if r.checkConn() {
-		rps := r.livekitRoom.GetRemoteParticipants()
-		for _, rp := range rps {
-			res = append(res, rp.Identity())
-		}
+	rps := r.GetRemoteParticipants()
+	for _, rp := range rps {
+		res = append(res, rp.Identity())
 	}
 	return res
 }
@@ -158,18 +93,10 @@ func (r *Room) onDisconnectedWithReason(reason lksdk.DisconnectionReason) {
 	r.listener.OnDisconnectedWithReason(res)
 }
 func (r *Room) onParticipantConnected(rp *lksdk.RemoteParticipant) {
-	remoteParticipant := NewRemoteParticipant(rp)
-	r.remoteParticipants[remoteParticipant.LiveKitRemoteParticipant.Identity()] = remoteParticipant
-	r.listener.OnParticipantConnected(remoteParticipant)
+	r.listener.OnParticipantConnected(rp)
 }
 func (r *Room) onParticipantDisconnected(rp *lksdk.RemoteParticipant) {
-	remoteParticipant, ok := r.remoteParticipants[rp.Identity()]
-	if ok {
-		r.listener.OnParticipantDisconnected(remoteParticipant)
-		delete(r.remoteParticipants, rp.Identity())
-	} else {
-		log.Printf("not find participant %s", rp.Identity())
-	}
+	r.listener.OnParticipantDisconnected(rp)
 }
 func (r *Room) onActiveSpeakersChanged(ps []lksdk.Participant) {
 	participantIdentities := make([]string, len(ps))
@@ -226,10 +153,7 @@ func (r *Room) onConnectionQualityChanged(update *livekit.ConnectionQualityInfo,
 }
 
 func (r *Room) onTrackSubscribed(track *webrtc.TrackRemote, publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
-	log.Println("onTrackSubscribed")
-	remoteTrack := NewRemoteTrack(track, rp, publication)
-	r.remoteTracks[remoteTrack.Publication.SID()] = remoteTrack
-	r.listener.OnTrackSubscribed(rp.Identity(), remoteTrack)
+	r.listener.OnTrackSubscribed(rp.Identity(), publication)
 }
 func (r *Room) onTrackUnsubscribed(track *webrtc.TrackRemote, publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
 	r.listener.OnTrackUnsubscribed(rp.Identity(), publication.SID())
@@ -238,11 +162,7 @@ func (r *Room) onTrackSubscriptionFailed(sid string, rp *lksdk.RemoteParticipant
 	r.listener.OnTrackSubscriptionFailed(rp.Identity(), sid, "TODO")
 }
 func (r *Room) onTrackPublished(publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
-	log.Println("onTrackPublished")
-	remoteTrack, ok := r.remoteTracks[publication.SID()]
-	if ok {
-		r.listener.OnTrackPublished(rp.Identity(), remoteTrack)
-	}
+	r.listener.OnTrackPublished(rp.Identity(), publication)
 }
 func (r *Room) onTrackUnpublished(publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
 	r.listener.OnTrackUnpublished(rp.Identity(), publication.SID())
@@ -281,4 +201,32 @@ func (r *Room) onTranscriptionReceived(transcriptionSegments []*lksdk.Transcript
 	}
 
 	r.listener.OnTranscriptionReceived(p.Identity(), publication.SID(), segments)
+}
+
+func ConnectByToken(host, token string, listener OnRoomListener) *Room {
+	room := &Room{}
+	room.listener = listener
+	livekitRoom, err := lksdk.ConnectToRoomWithToken(host, token, room.createCallBack(), lksdk.WithAutoSubscribe(true))
+	if err != nil {
+		log.Println(err.Error())
+		return nil
+	}
+	room.Room = livekitRoom
+	return room
+}
+
+func ConnectBySecret(host, apiKey, apiSecret, roomName, identify string, listener OnRoomListener) *Room {
+	room := &Room{}
+	room.listener = listener
+	livekitRoom, err := lksdk.ConnectToRoom(host, lksdk.ConnectInfo{
+		APIKey:              apiKey,
+		APISecret:           apiSecret,
+		RoomName:            roomName,
+		ParticipantIdentity: identify,
+	}, room.createCallBack(), lksdk.WithAutoSubscribe(true))
+	if err != nil {
+		panic(err)
+	}
+	room.Room = livekitRoom
+	return room
 }

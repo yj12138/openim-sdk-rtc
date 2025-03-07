@@ -15,44 +15,45 @@ func (api *API) CreateVideoTrack(req *pb_track.CreateVideoTrackRequest) (*pb_tra
 		Track: &pb_track.OwnedTrack{
 			Handle: &pb_handle.FfiOwnedHandle{Id: trackHandle},
 			Info: &pb_track.TrackInfo{
-				Sid:         track.LocalTrackPublication.SID(),
-				Name:        track.LocalTrackPublication.Name(),
-				Kind:        sdk.ConvertTrackKind(track.LocalTrackPublication.Kind()),
-				StreamState: pb_track.StreamState_STATE_ACTIVE,
-				Muted:       track.LocalTrackPublication.IsMuted(),
-				Remote:      false,
+				// Sid:         track.LocalTrackPublication.SID(),
+				// Name:        track.LocalTrackPublication.Name(),
+				// Kind:        sdk.ConvertTrackKind(track.LocalTrackPublication.Kind()),
+				// StreamState: pb_track.StreamState_STATE_ACTIVE,
+				// Muted:       track.LocalTrackPublication.IsMuted(),
+				Remote: false,
 			},
 		},
 	}
 	return res, nil
 }
 func (api *API) CreateAudioTrack(req *pb_track.CreateAudioTrackRequest) (*pb_track.CreateAudioTrackResponse, error) {
-	track := sdk.NewAudioTrack(req.Name)
+	source := api.getAudioSource(req.SourceHandle)
+	track := sdk.NewAudioTrack(req.Name, source)
 	trackHandle := api.storeObj(track)
 	res := &pb_track.CreateAudioTrackResponse{
 		Track: &pb_track.OwnedTrack{
 			Handle: &pb_handle.FfiOwnedHandle{Id: trackHandle},
 			Info: &pb_track.TrackInfo{
-				Sid:         track.LocalTrackPublication.SID(),
-				Name:        track.LocalTrackPublication.Name(),
-				Kind:        sdk.ConvertTrackKind(track.LocalTrackPublication.Kind()),
-				StreamState: pb_track.StreamState_STATE_ACTIVE,
-				Muted:       track.LocalTrackPublication.IsMuted(),
-				Remote:      false,
+				// Sid:         track.StreamID(),
+				// Name:        track.Name(),
+				// Kind:        sdk.ConvertTrackKind(track.LocalTrackPublication.Kind()),
+				// StreamState: pb_track.StreamState_STATE_ACTIVE,
+				// Muted:       track.LocalTrackPublication.IsMuted(),
+				Remote: false,
 			},
 		},
 	}
 	return res, nil
 }
 func (api *API) LocalTrackMute(req *pb_track.LocalTrackMuteRequest) (*pb_track.LocalTrackMuteResponse, error) {
-	track := api.getLocalTrack(req.TrackHandle)
-	track.LocalTrackPublication.SetMuted(req.Mute)
+	// track := api.getLocalTrack(req.TrackHandle)
+	// track.SetMuted(req.Mute)
 	res := &pb_track.LocalTrackMuteResponse{}
 	return res, nil
 }
 func (api *API) EnableRemoteTrack(req *pb_track.EnableRemoteTrackRequest) (*pb_track.EnableRemoteTrackResponse, error) {
-	track := api.getRemoteTrack(req.TrackHandle)
-	track.SetEnable(req.Enabled)
+	// track := api.getRemoteTrack(req.TrackHandle)
+	// track.SetEnable(req.Enabled)
 	res := &pb_track.EnableRemoteTrackResponse{}
 	return res, nil
 }
@@ -74,5 +75,11 @@ func (api *API) UpdateRemoteTrackPublicationDimension(req *pb_track_publication.
 func (api *API) SetSubscribed(req *pb_room.SetSubscribedRequest) (*pb_room.SetSubscribedResponse, error) {
 	// track := api.get(req.PublicationHandle)
 	// track.SetSubscribed(req.PublicationSid, req.Subscribe)
+	return nil, nil
+}
+
+func (api *API) GetStats(req *pb_track.GetStatsRequest) (*pb_track.GetStatsResponse, error) {
+	// track := api.get(req.PublicationHandle)
+	// track.GetStats(req.PublicationSid)
 	return nil, nil
 }

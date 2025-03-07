@@ -1,54 +1,24 @@
 package sdk
 
 import (
-	"log"
-	"time"
-
 	"github.com/livekit/protocol/livekit"
 	lksdk "github.com/livekit/server-sdk-go/v2"
-
 	pb_room "github.com/openimsdk/openim-rtc/proto/go/room"
 	pb_track "github.com/openimsdk/openim-rtc/proto/go/track"
+	"time"
 )
 
 type LocalParticipant struct {
-	LiveKitLocalParticipant *lksdk.LocalParticipant
+	*lksdk.LocalParticipant
 }
 
 func NewLocalParticipant(localParticipant *lksdk.LocalParticipant) *LocalParticipant {
 	return &LocalParticipant{
-		LiveKitLocalParticipant: localParticipant,
+		LocalParticipant: localParticipant,
 	}
 }
 
-func (p *LocalParticipant) PublicTrack(track *LocalTrack) {
-	if track.LiveKitTrack == nil {
-		log.Panic("track is nil")
-		return
-	}
-	trackPublication, err := p.LiveKitLocalParticipant.PublishTrack(track.LiveKitTrack, &lksdk.TrackPublicationOptions{
-		VideoWidth:  track.VideoWidth,
-		VideoHeight: track.VideoHeight,
-		Name:        track.Name,
-	})
-	track.LocalTrackPublication = trackPublication
-	if err != nil {
-		log.Panic(err)
-	}
-}
-
-func (p *LocalParticipant) UnpublishTrack(track *LocalTrack) {
-	if track.LiveKitTrack == nil {
-		log.Panic("track is nil")
-		return
-	}
-	err := p.LiveKitLocalParticipant.UnpublishTrack(track.LocalTrackPublication.SID())
-	if err != nil {
-		log.Println(err)
-	}
-}
-
-func (p *LocalParticipant) SetSubscriptionPermission(allParticipants bool, permissions []*pb_track.ParticipantTrackPermission) {
+func (p *LocalParticipant) SetSubscriptionPermissionWrap(allParticipants bool, permissions []*pb_track.ParticipantTrackPermission) {
 	trackPermissions := make([]*livekit.TrackPermission, 0)
 	for _, permission := range permissions {
 		trackPermissions = append(trackPermissions, &livekit.TrackPermission{
@@ -61,11 +31,11 @@ func (p *LocalParticipant) SetSubscriptionPermission(allParticipants bool, permi
 		AllParticipants:  allParticipants,
 		TrackPermissions: trackPermissions,
 	}
-	p.LiveKitLocalParticipant.SetSubscriptionPermission(sp)
+	p.SetSubscriptionPermission(sp)
 }
 
 func (p *LocalParticipant) SendData(topic string, data []byte, reliable bool, identifies []string) {
-	p.LiveKitLocalParticipant.PublishDataPacket(
+	p.PublishDataPacket(
 		lksdk.UserData([]byte(data)),
 		lksdk.WithDataPublishReliable(reliable),
 		lksdk.WithDataPublishTopic(topic),
@@ -75,20 +45,20 @@ func (p *LocalParticipant) SendData(topic string, data []byte, reliable bool, id
 
 func (p *LocalParticipant) SendTranscription(identify string, trackId string, segments []*pb_room.TranscriptionSegment) {
 	packet := ConvertTranscriptionDataPacket(identify, trackId, segments)
-	p.LiveKitLocalParticipant.PublishDataPacket(packet)
+	p.PublishDataPacket(packet)
 }
 
 func (p *LocalParticipant) SendStreamHeader(senderIdentity string, destinationIdentities []string, header *pb_room.DataStream_Header) {
 	packet := ConvertStreamHeaderPacket(header)
-	p.LiveKitLocalParticipant.PublishDataPacket(packet)
+	p.PublishDataPacket(packet)
 }
 func (p *LocalParticipant) SendStreamChunk(senderIdentity string, destinationIdentities []string, chunk *pb_room.DataStream_Chunk) {
 	packet := ConvertStreamChunkPacket(chunk)
-	p.LiveKitLocalParticipant.PublishDataPacket(packet)
+	p.PublishDataPacket(packet)
 }
 func (p *LocalParticipant) SendStreamTrailer(senderIdentity string, destinationIdentities []string, trailer *pb_room.DataStream_Trailer) {
 	packet := ConvertStreamTrailerPacket(trailer)
-	p.LiveKitLocalParticipant.PublishDataPacket(packet)
+	p.PublishDataPacket(packet)
 }
 func (p *LocalParticipant) SendChatMessage(senderIdentity string, destinationIdentities []string, message string) {
 	packet := &ChatMessagePacket{
@@ -98,7 +68,7 @@ func (p *LocalParticipant) SendChatMessage(senderIdentity string, destinationIde
 		Deleted:   false,
 		Generated: true,
 	}
-	p.LiveKitLocalParticipant.PublishDataPacket(packet)
+	p.PublishDataPacket(packet)
 }
 func (p *LocalParticipant) EditChatMessage(senderIdentity string, destinationIdentities []string, editText string, originalMessage *pb_room.ChatMessage) {
 	packet := &ChatMessagePacket{
@@ -108,27 +78,5 @@ func (p *LocalParticipant) EditChatMessage(senderIdentity string, destinationIde
 		Deleted:   false,
 		Generated: false,
 	}
-	p.LiveKitLocalParticipant.PublishDataPacket(packet)
-}
-
-func (p *LocalParticipant) SetMetadata(metaData string) {
-	p.LiveKitLocalParticipant.SetMetadata(metaData)
-}
-
-func (p *LocalParticipant) SetName(name string) {
-	p.LiveKitLocalParticipant.SetName(name)
-}
-
-func (p *LocalParticipant) SetAttributes(attributes map[string]string) {
-	p.LiveKitLocalParticipant.SetAttributes(attributes)
-}
-
-type RemoteParticipant struct {
-	LiveKitRemoteParticipant *lksdk.RemoteParticipant
-}
-
-func NewRemoteParticipant(remoteParticipant *lksdk.RemoteParticipant) *RemoteParticipant {
-	return &RemoteParticipant{
-		LiveKitRemoteParticipant: remoteParticipant,
-	}
+	p.PublishDataPacket(packet)
 }

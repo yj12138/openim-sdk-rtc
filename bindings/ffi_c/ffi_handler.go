@@ -56,15 +56,15 @@ func openim_rtc_ffi_init(event C.CallBack) int64 {
 func openim_rtc_ffi_request(data *C.void, length C.int, dataPtr **C.void, dataLen *C.size_t) C.int64_t {
 	call := &base.FFICall{}
 	// TODO 可以使用无拷贝复制
-	call.ReqDataPtr = unsafe.Pointer(data)
-	call.ReqData = C.GoBytes(call.ReqDataPtr, length)
+	call.RequestDataPtr = unsafe.Pointer(data)
+	call.RequestData = C.GoBytes(call.RequestDataPtr, length)
 
 	base.Request(call)
 
-	if call.ReqData == nil {
+	if call.ResponseData == nil {
 		return 0
 	}
-	len := len(call.ResData)
+	len := len(call.ResponseData)
 	if len == 0 {
 		return 0
 	}
@@ -72,23 +72,23 @@ func openim_rtc_ffi_request(data *C.void, length C.int, dataPtr **C.void, dataLe
 	if ptr == nil {
 		return 0
 	}
-	call.ResDataPtr = unsafe.Pointer(ptr)
-	C.memcpy(ptr, unsafe.Pointer(&call.ResData[0]), C.size_t(len))
+	call.ResponseDataPtr = unsafe.Pointer(ptr)
+	C.memcpy(ptr, unsafe.Pointer(&call.ResponseData[0]), C.size_t(len))
 	*dataPtr = (*C.void)(ptr)
 	*dataLen = C.size_t(len)
-	return C.int64_t(call.HandleId)
+	return C.int64_t(call.Id)
 }
 
 //export openim_rtc_ffi_drop_handle
 func openim_rtc_ffi_drop_handle(handleId uint64) {
 	call := base.GetFFICall(handleId)
 	if call != nil {
-		C.free(unsafe.Pointer(call.ReqDataPtr))
-		C.free(unsafe.Pointer(call.ResDataPtr))
+		C.free(unsafe.Pointer(call.RequestDataPtr))
+		C.free(unsafe.Pointer(call.ResponseDataPtr))
 	}
 	event := base.GetFFIEvent(handleId)
 	if event != nil {
 		C.free(unsafe.Pointer(event.DataPtr))
 	}
-	base.RemoteHandle(handleId)
+	base.RemoteHandle(call.Id)
 }

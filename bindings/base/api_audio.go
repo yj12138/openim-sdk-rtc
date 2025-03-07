@@ -61,3 +61,19 @@ func (api *API) RemixAndResample(req *pb_audio.RemixAndResampleRequest) (*pb_aud
 func (api *API) AudioStreamFromParticipant(req *pb_audio.AudioStreamFromParticipantRequest) (*pb_audio.AudioStreamFromParticipantResponse, error) {
 	return nil, nil
 }
+
+func (api *API) NewSoxResampler(req *pb_audio.NewSoxResamplerRequest) (*pb_audio.NewSoxResamplerResponse, error) {
+	return nil, nil
+}
+
+func (api *API) PushSoxResampler(req *pb_audio.PushSoxResamplerRequest) (*pb_audio.PushSoxResamplerResponse, error) {
+	return nil, nil
+}
+
+func (api *API) FlushSoxResampler(req *pb_audio.FlushSoxResamplerRequest) (*pb_audio.FlushSoxResamplerResponse, error) {
+	return nil, nil
+}
+
+func (api *API) LoadAudioFilterPlugin(req *pb_audio.LoadAudioFilterPluginRequest) (*pb_audio.LoadAudioFilterPluginResponse, error) {
+	return nil, nil
+}
