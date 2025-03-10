@@ -1,6 +1,8 @@
 package base
 
 import (
+	"log"
+
 	pb_handle "github.com/openimsdk/openim-rtc/proto/go/handle"
 	pb_room "github.com/openimsdk/openim-rtc/proto/go/room"
 	pb_track "github.com/openimsdk/openim-rtc/proto/go/track"
@@ -10,10 +12,9 @@ import (
 
 func (api *API) CreateVideoTrack(req *pb_track.CreateVideoTrackRequest) (*pb_track.CreateVideoTrackResponse, error) {
 	track := sdk.NewVideoTrack()
-	trackHandle := api.storeObj(track)
 	res := &pb_track.CreateVideoTrackResponse{
 		Track: &pb_track.OwnedTrack{
-			Handle: &pb_handle.FfiOwnedHandle{Id: trackHandle},
+			Handle: &pb_handle.FfiOwnedHandle{Id: api.storeObj(track)},
 			Info: &pb_track.TrackInfo{
 				// Sid:         track.LocalTrackPublication.SID(),
 				// Name:        track.LocalTrackPublication.Name(),
@@ -46,40 +47,49 @@ func (api *API) CreateAudioTrack(req *pb_track.CreateAudioTrackRequest) (*pb_tra
 	return res, nil
 }
 func (api *API) LocalTrackMute(req *pb_track.LocalTrackMuteRequest) (*pb_track.LocalTrackMuteResponse, error) {
-	// track := api.getLocalTrack(req.TrackHandle)
-	// track.SetMuted(req.Mute)
-	res := &pb_track.LocalTrackMuteResponse{}
+	track := api.getLocalTrack(req.TrackHandle)
+	track.Publication.SetMuted(req.Mute)
+	res := &pb_track.LocalTrackMuteResponse{
+		Muted: track.Publication.IsMuted(),
+	}
 	return res, nil
 }
 func (api *API) EnableRemoteTrack(req *pb_track.EnableRemoteTrackRequest) (*pb_track.EnableRemoteTrackResponse, error) {
-	// track := api.getRemoteTrack(req.TrackHandle)
-	// track.SetEnable(req.Enabled)
-	res := &pb_track.EnableRemoteTrackResponse{}
+	pub := api.getRemoteTackPublication(req.TrackHandle)
+	pub.SetEnabled(req.Enabled)
+	res := &pb_track.EnableRemoteTrackResponse{
+		Enabled: pub.IsEnabled(),
+	}
 	return res, nil
 }
 
 func (api *API) EnableRemoteTrackPublication(req *pb_track_publication.EnableRemoteTrackPublicationRequest) (*pb_track_publication.EnableRemoteTrackPublicationResponse, error) {
-	// track := api.GetTrackPublished(req.)
-	// track.EnableTrackPubliciation(req.TrackPublicationSid, req.Enabled)
+
 	res := &pb_track_publication.EnableRemoteTrackPublicationResponse{}
 	return res, nil
 }
 
 func (api *API) UpdateRemoteTrackPublicationDimension(req *pb_track_publication.UpdateRemoteTrackPublicationDimensionRequest) (*pb_track_publication.UpdateRemoteTrackPublicationDimensionResponse, error) {
-	// track := api.getRemoteTrack(req.RemoteTrackHandle)
-	// track.UpdatePublicationDimension(req.TrackPublicationSid, req.Width, req.Height)
+	pub := api.getRemoteTackPublication(req.TrackPublicationHandle)
+	pub.SetVideoDimensions(req.Width, req.Height)
 	res := &pb_track_publication.UpdateRemoteTrackPublicationDimensionResponse{}
 	return res, nil
 }
 
 func (api *API) SetSubscribed(req *pb_room.SetSubscribedRequest) (*pb_room.SetSubscribedResponse, error) {
-	// track := api.get(req.PublicationHandle)
-	// track.SetSubscribed(req.PublicationSid, req.Subscribe)
-	return nil, nil
+	track := api.getRemoteTackPublication(req.PublicationHandle)
+	err := track.SetSubscribed(req.Subscribe)
+	if err != nil {
+		log.Println("SetSubscribed error:", err)
+	}
+	return &pb_room.SetSubscribedResponse{}, nil
 }
 
 func (api *API) GetStats(req *pb_track.GetStatsRequest) (*pb_track.GetStatsResponse, error) {
-	// track := api.get(req.PublicationHandle)
-	// track.GetStats(req.PublicationSid)
-	return nil, nil
+	asyncId := api.nextAsyncId()
+	go func() {
+	}()
+	return &pb_track.GetStatsResponse{
+		AsyncId: asyncId,
+	}, nil
 }

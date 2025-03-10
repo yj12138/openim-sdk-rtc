@@ -2,7 +2,6 @@ package sdk
 
 import (
 	lksdk "github.com/livekit/server-sdk-go/v2"
-	pb_track "github.com/openimsdk/openim-rtc/proto/go/track"
 	"github.com/pion/webrtc/v4"
 	"log"
 )
@@ -16,6 +15,8 @@ type LocalTrack struct {
 	// MimeType    string
 	VideoWidth  int
 	VideoHeight int
+	Souce       *AudioSource
+	Publication *lksdk.LocalTrackPublication
 }
 
 func NewAudioTrack(name string, source *AudioSource) *LocalTrack {
@@ -33,20 +34,12 @@ func NewAudioTrack(name string, source *AudioSource) *LocalTrack {
 	})
 	track := &LocalTrack{
 		LocalTrack: liveKitTrack,
+		Souce:      source,
 		// MimeType:    mimeType,
 		VideoWidth:  0,
 		VideoHeight: 0,
 	}
 	return track
-}
-
-func ConvertTrackKind(kind lksdk.TrackKind) pb_track.TrackKind {
-	if kind == lksdk.TrackKindVideo {
-		return pb_track.TrackKind_KIND_VIDEO
-	} else if kind == lksdk.TrackKindAudio {
-		return pb_track.TrackKind_KIND_AUDIO
-	}
-	return pb_track.TrackKind_KIND_UNKNOWN
 }
 
 func NewVideoTrack() *LocalTrack {

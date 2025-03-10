@@ -2,7 +2,6 @@ package sdk
 
 import (
 	"github.com/livekit/protocol/livekit"
-	pb_room "github.com/openimsdk/openim-rtc/proto/go/room"
 )
 
 type TranscriptionDataPacket struct {
@@ -21,23 +20,18 @@ func (p *TranscriptionDataPacket) ToProto() *livekit.DataPacket {
 	}}
 }
 
-func ConvertTranscriptionDataPacket(identify string, trackid string, _segments []*pb_room.TranscriptionSegment) *TranscriptionDataPacket {
-	segments := make([]*livekit.TranscriptionSegment, len(_segments))
-	for i, s := range _segments {
-		segments[i] = &livekit.TranscriptionSegment{
-			Id:        s.Id,
-			Text:      s.Text,
-			StartTime: s.StartTime,
-			EndTime:   s.EndTime,
-			Final:     s.Final,
-			Language:  s.Language,
-		}
-	}
-	return &TranscriptionDataPacket{
-		ParticipantIdentify: identify,
-		TrackId:             trackid,
-		Segments:            segments,
-	}
+type SipDTMFPacket struct {
+	Code  uint32
+	Digit string
+}
+
+func (s *SipDTMFPacket) ToProto() *livekit.DataPacket {
+	return &livekit.DataPacket{Value: &livekit.DataPacket_SipDtmf{
+		SipDtmf: &livekit.SipDTMF{
+			Code:  s.Code,
+			Digit: s.Digit,
+		},
+	}}
 }
 
 type ChatMessagePacket struct {
@@ -78,17 +72,6 @@ func (p *StreamHeaderPacket) ToProto() *livekit.DataPacket {
 		},
 	}}
 }
-func ConvertStreamHeaderPacket(header *pb_room.DataStream_Header) *StreamHeaderPacket {
-	return &StreamHeaderPacket{
-		StreamId:       header.StreamId,
-		Timestamp:      header.Timestamp,
-		Topic:          header.Topic,
-		MimeType:       header.MimeType,
-		TotalLength:    &header.TotalLength,
-		EncryptionType: livekit.Encryption_NONE,
-		Attributes:     header.Attributes,
-	}
-}
 
 type StreamChunkPacket struct {
 	StreamId   string
@@ -109,15 +92,6 @@ func (p *StreamChunkPacket) ToProto() *livekit.DataPacket {
 		},
 	}}
 }
-func ConvertStreamChunkPacket(chunk *pb_room.DataStream_Chunk) *StreamChunkPacket {
-	return &StreamChunkPacket{
-		StreamId:   chunk.StreamId,
-		ChunkIndex: chunk.ChunkIndex,
-		Content:    chunk.Content,
-		Version:    chunk.Version,
-		Iv:         chunk.Iv,
-	}
-}
 
 type StreamTrailerPacket struct {
 	StreamId   string
@@ -135,10 +109,69 @@ func (p *StreamTrailerPacket) ToProto() *livekit.DataPacket {
 	}}
 }
 
-func ConvertStreamTrailerPacket(trailer *pb_room.DataStream_Trailer) *StreamTrailerPacket {
-	return &StreamTrailerPacket{
-		StreamId:   trailer.StreamId,
-		Reason:     trailer.Reason,
-		Attributes: trailer.Attributes,
+type RpcRequestPacket struct {
+	Id                string
+	Method            string
+	Payload           string
+	ResponseTimeoutMs uint32
+	Version           uint32
+}
+
+func (p *RpcRequestPacket) ToProto() *livekit.DataPacket {
+	return &livekit.DataPacket{Value: &livekit.DataPacket_RpcRequest{
+		RpcRequest: &livekit.RpcRequest{
+			Id:                p.Id,
+			Method:            p.Method,
+			Payload:           p.Payload,
+			ResponseTimeoutMs: p.ResponseTimeoutMs,
+			Version:           p.Version,
+		},
+	}}
+}
+
+type RpcAckPacket struct {
+	RequestId string
+}
+
+func (p *RpcAckPacket) ToProto() *livekit.DataPacket {
+	return &livekit.DataPacket{Value: &livekit.DataPacket_RpcAck{
+		RpcAck: &livekit.RpcAck{
+			RequestId: p.RequestId,
+		},
+	}}
+}
+
+type RpcResponsePacket struct {
+	RequestId string
+	Payload   string
+	Code      uint32
+	Message   string
+	Data      string
+}
+
+func (p *RpcResponsePacket) ToProto() *livekit.DataPacket {
+	if p.Code > 0 {
+		return &livekit.DataPacket{Value: &livekit.DataPacket_RpcResponse{
+			RpcResponse: &livekit.RpcResponse{
+				RequestId: p.RequestId,
+				Value: &livekit.RpcResponse_Payload{
+					Payload: p.Payload,
+				},
+			},
+		}}
+	} else {
+		return &livekit.DataPacket{Value: &livekit.DataPacket_RpcResponse{
+			RpcResponse: &livekit.RpcResponse{
+				RequestId: p.RequestId,
+				Value: &livekit.RpcResponse_Error{
+					Error: &livekit.RpcError{
+						Code:    p.Code,
+						Message: p.Message,
+						Data:    p.Data,
+					},
+				},
+			},
+		}}
 	}
+
 }

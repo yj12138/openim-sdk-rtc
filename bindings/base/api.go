@@ -2,12 +2,14 @@ package base
 
 import (
 	"fmt"
-	"github.com/openimsdk/openim-rtc/sdk"
 	"sync"
 	"sync/atomic"
+
+	lksdk "github.com/livekit/server-sdk-go/v2"
+	"github.com/openimsdk/openim-rtc/sdk"
 )
 
-type CPointerToGoByteSliceNoCopyFunc func(cPointer uint64, length uint32) []byte
+type CPointerToGoByteSliceNoCopyFunc func(cPointer uint64, length uint64) []byte
 
 var (
 	api                             *API
@@ -35,7 +37,7 @@ func NewAPI() *API {
 	}
 }
 
-func (api *API) GenAsyncId() uint64 {
+func (api *API) nextAsyncId() uint64 {
 	return api.asyncIdCounter.Add(1)
 }
 
@@ -76,6 +78,17 @@ func (api *API) getLocalTrack(handle uint64) *sdk.LocalTrack {
 			return r
 		} else {
 			panic(fmt.Sprintf("handle:%d is not sdk.LocalTrack type", handle))
+		}
+	}
+	panic(fmt.Sprintf("not find handle:%d", handle))
+}
+
+func (api *API) getRemoteTackPublication(handle uint64) *lksdk.RemoteTrackPublication {
+	if value, ok := api.objMap.Load(handle); ok {
+		if r, ok := value.(*lksdk.RemoteTrackPublication); ok {
+			return r
+		} else {
+			panic(fmt.Sprintf("handle:%d is not lksdk.RemoteTrackPublication type", handle))
 		}
 	}
 	panic(fmt.Sprintf("not find handle:%d", handle))

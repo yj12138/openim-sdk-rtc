@@ -12,8 +12,8 @@ import (
 )
 
 func (api *API) Connect(req *pb_room.ConnectRequest) (*pb_room.ConnectResponse, error) {
-	asyncId := api.GenAsyncId()
-	go func(_asyncId uint64) {
+	asyncId := api.nextAsyncId()
+	go func() {
 		listener := NewRoomListener()
 		room := sdk.ConnectByToken(req.Url, req.Token, listener)
 		roomHandle := api.storeObj(room)
@@ -60,7 +60,7 @@ func (api *API) Connect(req *pb_room.ConnectRequest) (*pb_room.ConnectResponse, 
 		dispatchEvent(&pb_ffi.FfiEvent{
 			Message: &pb_ffi.FfiEvent_Connect{
 				Connect: &pb_room.ConnectCallback{
-					AsyncId: _asyncId,
+					AsyncId: asyncId,
 					Message: &pb_room.ConnectCallback_Result_{
 						Result: &pb_room.ConnectCallback_Result{
 							Room: &pb_room.OwnedRoom{
@@ -86,7 +86,7 @@ func (api *API) Connect(req *pb_room.ConnectRequest) (*pb_room.ConnectResponse, 
 				},
 			},
 		})
-	}(asyncId)
+	}()
 
 	res := &pb_room.ConnectResponse{
 		AsyncId: asyncId,
@@ -95,10 +95,17 @@ func (api *API) Connect(req *pb_room.ConnectRequest) (*pb_room.ConnectResponse, 
 }
 
 func (api *API) Disconnect(req *pb_room.DisconnectRequest) (*pb_room.DisconnectResponse, error) {
+	asyncId := api.nextAsyncId()
 	room := api.getRoom(req.RoomHandle)
-	asyncId := api.GenAsyncId()
 	go func() {
 		room.Disconnect()
+		dispatchEvent(&pb_ffi.FfiEvent{
+			Message: &pb_ffi.FfiEvent_Disconnect{
+				Disconnect: &pb_room.DisconnectCallback{
+					AsyncId: asyncId,
+				},
+			},
+		})
 	}()
 	return &pb_room.DisconnectResponse{
 		AsyncId: asyncId,
@@ -106,10 +113,21 @@ func (api *API) Disconnect(req *pb_room.DisconnectRequest) (*pb_room.DisconnectR
 }
 
 func (api *API) GetSessionStats(req *pb_room.GetSessionStatsRequest) (*pb_room.GetSessionStatsResponse, error) {
+	asyncId := api.nextAsyncId()
 	room := api.getRoom(req.RoomHandle)
-	asyncId := api.GenAsyncId()
 	go func() {
+		// TODO
 		room.GetConnectState()
+		dispatchEvent(&pb_ffi.FfiEvent{
+			Message: &pb_ffi.FfiEvent_GetSessionStats{
+				GetSessionStats: &pb_room.GetSessionStatsCallback{
+					AsyncId: asyncId,
+					Message: &pb_room.GetSessionStatsCallback_Result_{
+						Result: &pb_room.GetSessionStatsCallback_Result{},
+					},
+				},
+			},
+		})
 	}()
 	res := &pb_room.GetSessionStatsResponse{
 		AsyncId: asyncId,
@@ -118,6 +136,11 @@ func (api *API) GetSessionStats(req *pb_room.GetSessionStatsRequest) (*pb_room.G
 }
 
 func (api *API) Dispose(req *pb_ffi.DisposeRequest) (*pb_ffi.DisposeResponse, error) {
-	// TODO
-	return &pb_ffi.DisposeResponse{}, nil
+	asyncId := api.nextAsyncId()
+	go func() {
+		// TODO
+	}()
+	return &pb_ffi.DisposeResponse{
+		AsyncId: asyncId,
+	}, nil
 }

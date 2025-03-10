@@ -67,8 +67,8 @@ func (s *AudioSource) NextSample(c context.Context) (media.Sample, error) {
 	return sample, nil
 }
 
-func (source *AudioSource) CaptureFrame(data []byte) {
-
+func (source *AudioSource) CaptureFrame(data []byte) error {
+	return nil
 }
 
 func (source *AudioSource) ClearBuffer() {
