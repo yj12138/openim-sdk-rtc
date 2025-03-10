@@ -1,8 +1,6 @@
 package base
 
 import (
-	"log"
-
 	lksdk "github.com/livekit/server-sdk-go/v2"
 	"github.com/openimsdk/openim-rtc/proto/go/e2ee"
 	pb_ffi "github.com/openimsdk/openim-rtc/proto/go/ffi"
@@ -70,10 +68,6 @@ func (api *API) UnpublishTrack(req *pb_room.UnpublishTrackRequest) (*pb_room.Unp
 	participant := api.getLocalParticipant(req.LocalParticipantHandle)
 	go func() {
 		err := participant.UnpublishTrack(req.TrackSid)
-		if err != nil {
-			log.Println("UnpublishTrack error:", err)
-			return
-		}
 		errStr := ""
 		if err != nil {
 			errStr = err.Error()

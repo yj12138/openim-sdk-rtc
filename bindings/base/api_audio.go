@@ -10,11 +10,35 @@ import (
 
 // Audio
 func (api *API) NewAudioStream(req *pb_audio.NewAudioStreamRequest) (*pb_audio.NewAudioStreamResponse, error) {
-	track := api.getLocalTrack(req.TrackHandle)
+	track := api.getRemoteTrack(req.TrackHandle)
 	audioStream := sdk.NewAudioStreamByTrack(track, req.Type, req.SampleRate, req.NumChannels)
+	streamHandle := api.storeObj(audioStream)
+	audioStream.CallBack = func(audioFrame *sdk.AudioFrame) {
+		dispatchEvent(&pb_ffi.FfiEvent{
+			Message: &pb_ffi.FfiEvent_AudioStreamEvent{
+				AudioStreamEvent: &pb_audio.AudioStreamEvent{
+					StreamHandle: streamHandle,
+					Message: &pb_audio.AudioStreamEvent_FrameReceived{
+						FrameReceived: &pb_audio.AudioFrameReceived{
+							Frame: &pb_audio.OwnedAudioFrameBuffer{
+								Handle: &pb_handle.FfiOwnedHandle{Id: api.storeObj(audioFrame)},
+								Info: &pb_audio.AudioFrameBufferInfo{
+									// TODO 所数据转成C指针
+									DataPtr:           0,
+									SampleRate:        audioFrame.SampleRate,
+									SamplesPerChannel: audioFrame.SamplesPerChannel,
+									NumChannels:       audioFrame.NumChannels,
+								},
+							},
+						},
+					},
+				},
+			},
+		})
+	}
 	res := &pb_audio.NewAudioStreamResponse{
 		Stream: &pb_audio.OwnedAudioStream{
-			Handle: &pb_handle.FfiOwnedHandle{Id: api.storeObj(audioStream)},
+			Handle: &pb_handle.FfiOwnedHandle{Id: streamHandle},
 			Info: &pb_audio.AudioStreamInfo{
 				Type: audioStream.StreamType,
 			},
@@ -70,6 +94,7 @@ func (api *API) NewAudioResampler(req *pb_audio.NewAudioResamplerRequest) (*pb_a
 	return nil, nil
 }
 func (api *API) RemixAndResample(req *pb_audio.RemixAndResampleRequest) (*pb_audio.RemixAndResampleResponse, error) {
+
 	return nil, nil
 }
 func (api *API) AudioStreamFromParticipant(req *pb_audio.AudioStreamFromParticipantRequest) (*pb_audio.AudioStreamFromParticipantResponse, error) {

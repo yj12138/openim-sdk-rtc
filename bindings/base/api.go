@@ -7,6 +7,7 @@ import (
 
 	lksdk "github.com/livekit/server-sdk-go/v2"
 	"github.com/openimsdk/openim-rtc/sdk"
+	"github.com/pion/webrtc/v4"
 )
 
 type CPointerToGoByteSliceNoCopyFunc func(cPointer uint64, length uint64) []byte
@@ -75,6 +76,17 @@ func (api *API) getLocalParticipant(handle uint64) *sdk.LocalParticipant {
 func (api *API) getLocalTrack(handle uint64) *sdk.LocalTrack {
 	if value, ok := api.objMap.Load(handle); ok {
 		if r, ok := value.(*sdk.LocalTrack); ok {
+			return r
+		} else {
+			panic(fmt.Sprintf("handle:%d is not sdk.LocalTrack type", handle))
+		}
+	}
+	panic(fmt.Sprintf("not find handle:%d", handle))
+}
+
+func (api *API) getRemoteTrack(handle uint64) *webrtc.TrackRemote {
+	if value, ok := api.objMap.Load(handle); ok {
+		if r, ok := value.(*webrtc.TrackRemote); ok {
 			return r
 		} else {
 			panic(fmt.Sprintf("handle:%d is not sdk.LocalTrack type", handle))
