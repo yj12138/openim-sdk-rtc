@@ -329,30 +329,16 @@ func (l *RoomListener) OnTrackUnpublished(participantIdentify string, publicatio
 	dispatchEvent(&pb_ffi.FfiEvent{Message: msg})
 }
 
-func (l *RoomListener) OnDataPacket(participantIdentify string, value interface{}) {
-	message := &pb_room.RoomEvent_DataPacketReceived{
-		DataPacketReceived: &pb_room.DataPacketReceived{
-			ParticipantIdentity: participantIdentify,
-			Value:               nil,
+func (l *RoomListener) OnDataPacket(participantIdentify string, packet lksdk.DataPacket) {
+	dispatchEvent(&pb_ffi.FfiEvent{
+		Message: &pb_ffi.FfiEvent_RoomEvent{
+			RoomEvent: &pb_room.RoomEvent{
+				Message: &pb_room.RoomEvent_DataPacketReceived{
+					DataPacketReceived: sdk.ConvertDataPacket(participantIdentify, packet.ToProto()),
+				},
+			},
 		},
-	}
-	if user, ok := value.(*pb_room.UserPacket); ok {
-		message.DataPacketReceived.Value = &pb_room.DataPacketReceived_User{
-			User: user,
-		}
-	}
-	if sipDtmf, ok := value.(*pb_room.SipDTMF); ok {
-		message.DataPacketReceived.Value = &pb_room.DataPacketReceived_SipDtmf{
-			SipDtmf: sipDtmf,
-		}
-	}
-	msg := &pb_ffi.FfiEvent_RoomEvent{
-		RoomEvent: &pb_room.RoomEvent{
-			RoomHandle: l.RoomHandle,
-			Message:    message,
-		},
-	}
-	dispatchEvent(&pb_ffi.FfiEvent{Message: msg})
+	})
 }
 
 func (l *RoomListener) OnTranscriptionReceived(participantIdentify string, trackSid string, segments []*pb_room.TranscriptionSegment) {

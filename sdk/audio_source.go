@@ -17,7 +17,6 @@ type AudioSource struct {
 	SourceType      pb_audio.AudioSourceType
 	SampleRate      uint32
 	NumChannels     uint32
-	QueueSizeMs     uint32
 	mime            string
 	onWriteComplete func()
 	dataCache       chan SampleData
@@ -44,43 +43,38 @@ func (s *AudioSource) CurrentAudioLevel() uint8 {
 	return 15
 }
 
-func (s *AudioSource) WriteData(data []byte, duration time.Duration) {
-	s.dataCache <- SampleData{
-		Duration: duration,
-		Data:     data,
-	}
-}
-
 func (s *AudioSource) NextSample(c context.Context) (media.Sample, error) {
 	sample := media.Sample{}
-	switch s.mime {
-	case MimeTypeOpus:
-		select {
-		case sampleData := <-s.dataCache:
-			sample.Data = sampleData.Data
-			sample.Duration = sampleData.Duration
-		default:
-			sample.Data = make([]byte, 0)
-			sample.Duration = 1 * time.Second
-		}
+	select {
+	case sampleData := <-s.dataCache:
+		sample.Data = sampleData.Data
+		sample.Duration = sampleData.Duration
+	default:
+		sample.Data = make([]byte, 0)
+		sample.Duration = 1 * time.Second
 	}
 	return sample, nil
 }
 
-func (source *AudioSource) CaptureFrame(data []byte) error {
+func (s *AudioSource) CaptureFrame(data []byte) error {
+	// 每两个字节表示一个采样
+	duration := time.Duration((len(data) / 2) * 1e9 / int(s.SampleRate))
+	s.dataCache <- SampleData{
+		Duration: duration,
+		Data:     data,
+	}
 	return nil
 }
 
-func (source *AudioSource) ClearBuffer() {
+func (s *AudioSource) ClearBuffer() {
 
 }
 
-func NewAudioSource(sourceType pb_audio.AudioSourceType, sampleRate uint32, numChannels uint32, queueSizeMs uint32) *AudioSource {
+func NewAudioSource(sourceType pb_audio.AudioSourceType, sampleRate uint32, numChannels uint32) *AudioSource {
 	return &AudioSource{
 		SourceType:  sourceType,
 		SampleRate:  sampleRate,
 		NumChannels: numChannels,
-		QueueSizeMs: queueSizeMs,
 		// TODO
 		mime:      MimeTypeOpus,
 		dataCache: make(chan SampleData, 10),

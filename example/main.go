@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 
 	"github.com/AllenDang/cimgui-go/backend"
@@ -10,8 +9,6 @@ import (
 	"github.com/AllenDang/cimgui-go/imgui"
 	"github.com/AllenDang/cimgui-go/implot"
 	"github.com/openimsdk/openim-rtc/example/ui"
-
-	"github.com/openimsdk/openim-rtc/example/core"
 )
 
 var currentBackend backend.Backend[ebitenbackend.EbitenBackendFlags]
@@ -20,39 +17,35 @@ func init() {
 	log.SetFlags(log.Llongfile)
 }
 
-func AfterCreateContext() {
-	implot.PlotCreateContext()
-}
-
-func BeforeDestroyContext() {
-	implot.PlotDestroyContext()
-}
-
 func main() {
-	host := flag.String("host", "http://127.0.0.1:7880", "livekit host url")
-	apiKey := flag.String("key", "APImMfGZ6ECRXbd", "livekit api key")
-	apiSecret := flag.String("secret", "3Uxe8kZorbAz59UDKQe23XjM5alE9T0OyCnSNXjQ9r9", "livekit api secret")
 	roomName := flag.String("r", "", "Room Name")
-	idenfify := flag.String("i", "", "Identify")
+	particiantName := flag.String("p", "", "Participant Name")
 	flag.Parse()
 
-	if *roomName == "" || *idenfify == "" {
+	if *roomName == "" || *particiantName == "" {
 		flag.Usage()
 		return
 	}
-
-	core.Init(*host, *apiKey, *apiSecret)
-	core.ConnectRoom(*roomName, *idenfify)
+	httpURL := "https://cloud-api.livekit.io/api/sandbox/connection-details"
+	x_sandbox_id := "contextual-shell-22mdn5"
+	ui.InitContext(httpURL, x_sandbox_id, *roomName, *particiantName)
 
 	currentBackend, _ = backend.CreateBackend(ebitenbackend.NewEbitenBackend())
-	currentBackend.SetAfterCreateContextHook(AfterCreateContext)
-	currentBackend.SetBeforeDestroyContextHook(BeforeDestroyContext)
+	currentBackend.SetAfterCreateContextHook(func() {
+		implot.PlotCreateContext()
+	})
+	currentBackend.SetBeforeDestroyContextHook(func() {
+		implot.PlotDestroyContext()
+	})
 	currentBackend.SetBgColor(imgui.NewVec4(0.45, 0.55, 0.6, 1.0))
-	currentBackend.CreateWindow(fmt.Sprintf("%s:%s", *roomName, *idenfify), 1000, 1000)
+	currentBackend.CreateWindow("OpenIM-Rtc-Demo", 1000, 800)
+	ui.SetTitleCallBack(func(title string) {
+		currentBackend.SetWindowTitle(title)
+	})
 	currentBackend.SetCloseCallback(func(b backend.Backend[ebitenbackend.EbitenBackendFlags]) {
 		ui.Destory()
 	})
 	currentBackend.Run(func() {
-		ui.GUILoop()
+		ui.Loop()
 	})
 }

@@ -44,6 +44,9 @@ type MicPhone struct {
 	sizeInBytes uint32
 
 	callbacks *MicPhoneCallbackList
+
+	SampleRate uint32
+	Channels   uint32
 }
 
 func (m *MicPhone) init() {
@@ -58,8 +61,8 @@ func (m *MicPhone) init() {
 
 	deviceConfig := malgo.DefaultDeviceConfig(malgo.Capture)
 	deviceConfig.Capture.Format = malgo.FormatS16
-	deviceConfig.Capture.Channels = 1
-	deviceConfig.SampleRate = 44100
+	deviceConfig.Capture.Channels = m.Channels
+	deviceConfig.SampleRate = m.SampleRate
 	deviceConfig.Alsa.NoMMap = 1
 	m.sizeInBytes = uint32(malgo.SampleSizeInBytes(deviceConfig.Capture.Format))
 	captureCallbacks := malgo.DeviceCallbacks{
@@ -128,9 +131,11 @@ func (m *MicPhone) AddCallBack(cb func(data []byte, frameCount uint32)) {
 	m.callbacks.Add(cb)
 }
 
-func NewMicPhone() *MicPhone {
+func NewMicPhone(sameleRate uint32, chnnels uint32) *MicPhone {
 	micPhone := &MicPhone{
-		callbacks: newMicPhoneCallbackList(),
+		SampleRate: sameleRate,
+		Channels:   chnnels,
+		callbacks:  newMicPhoneCallbackList(),
 	}
 	micPhone.init()
 	return micPhone

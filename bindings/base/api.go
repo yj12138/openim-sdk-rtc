@@ -17,7 +17,7 @@ var (
 )
 
 func init() {
-	api = NewAPI()
+	api = newAPI()
 }
 
 func SetCPointerToGoByteSliceNoCopyFunc(f CPointerToGoByteSliceNoCopyFunc) {
@@ -30,7 +30,7 @@ type API struct {
 	asyncIdCounter atomic.Uint64
 }
 
-func NewAPI() *API {
+func newAPI() *API {
 	return &API{
 		objMap:        sync.Map{},
 		handleCounter: atomic.Uint64{},

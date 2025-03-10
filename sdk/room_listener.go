@@ -33,6 +33,6 @@ type OnRoomListener interface {
 	OnTrackSubscriptionFailed(participantIdentify string, trackSid string, err string)
 	OnTrackPublished(participantIdentify string, track *lksdk.RemoteTrackPublication)
 	OnTrackUnpublished(participantIdentify string, publicationSid string)
-	OnDataPacket(participantIdentify string, value interface{})
+	OnDataPacket(participantIdentify string, packet lksdk.DataPacket)
 	OnTranscriptionReceived(participantIdentify string, trackSid string, segments []*pb_room.TranscriptionSegment)
 }

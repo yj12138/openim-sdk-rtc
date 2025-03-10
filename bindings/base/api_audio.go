@@ -23,7 +23,7 @@ func (api *API) NewAudioStream(req *pb_audio.NewAudioStreamRequest) (*pb_audio.N
 	return res, nil
 }
 func (api *API) NewAudioSource(req *pb_audio.NewAudioSourceRequest) (*pb_audio.NewAudioSourceResponse, error) {
-	audioSource := sdk.NewAudioSource(req.Type, req.SampleRate, req.NumChannels, req.QueueSizeMs)
+	audioSource := sdk.NewAudioSource(req.Type, req.SampleRate, req.NumChannels)
 	res := &pb_audio.NewAudioSourceResponse{
 		Source: &pb_audio.OwnedAudioSource{
 			Handle: &pb_handle.FfiOwnedHandle{Id: api.storeObj(audioSource)},

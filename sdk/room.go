@@ -167,25 +167,8 @@ func (r *Room) onTrackPublished(publication *lksdk.RemoteTrackPublication, rp *l
 func (r *Room) onTrackUnpublished(publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
 	r.listener.OnTrackUnpublished(rp.Identity(), publication.SID())
 }
-func (r *Room) onDataPacket(data lksdk.DataPacket, params lksdk.DataReceiveParams) {
-	packet := data.ToProto()
-	var value interface{} = nil
-	if user, ok := packet.Value.(*livekit.DataPacket_User); ok {
-		value = &pb_room.UserPacket{
-			Topic: *user.User.Topic,
-			// TODO
-			// Data:  user.User.Payload,
-		}
-	}
-	if sipDtmf, ok := packet.Value.(*livekit.DataPacket_SipDtmf); ok {
-		value = &pb_room.SipDTMF{
-			Digit: sipDtmf.SipDtmf.Digit,
-			Code:  sipDtmf.SipDtmf.Code,
-		}
-	}
-	if value != nil {
-		r.listener.OnDataPacket(packet.ParticipantIdentity, nil)
-	}
+func (r *Room) onDataPacket(packet lksdk.DataPacket, params lksdk.DataReceiveParams) {
+	r.listener.OnDataPacket(params.SenderIdentity, packet)
 }
 func (r *Room) onTranscriptionReceived(transcriptionSegments []*lksdk.TranscriptionSegment, p lksdk.Participant, publication lksdk.TrackPublication) {
 	segments := make([]*pb_room.TranscriptionSegment, len(transcriptionSegments))

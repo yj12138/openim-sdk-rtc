@@ -73,17 +73,15 @@ func dispatchEvent(pbFfiEvent *pb_ffi.FfiEvent) {
 	}
 	ffiEvent.Data = data
 	ffiEvent.Id = api.storeObj(ffiEvent)
+	if eventCallback == nil {
+		panic("eventCallback is nil")
+	}
 	eventCallback(ffiEvent)
 }
 
-func Request(call *FFICall) {
-	var req pb_ffi.FfiRequest
-	err := proto.Unmarshal(call.RequestData, &req)
-	if err != nil {
-		log.Println("unmarshal error:", err.Error())
-		return
-	}
+func execute(req *pb_ffi.FfiRequest) (proto.Message, error) {
 	var response proto.Message = nil
+	var err error = nil
 	switch v := req.Message.(type) {
 	case *pb_ffi.FfiRequest_Dispose:
 		response, err = api.Dispose(v.Dispose)
@@ -183,6 +181,17 @@ func Request(call *FFICall) {
 		response, err = api.LoadAudioFilterPlugin(v.LoadAudioFilterPlugin)
 	default:
 	}
+	return response, err
+}
+
+func Request(call *FFICall) {
+	var req pb_ffi.FfiRequest
+	err := proto.Unmarshal(call.RequestData, &req)
+	if err != nil {
+		log.Println("unmarshal error:", err.Error())
+		return
+	}
+	response, err := execute(&req)
 	if err != nil {
 		log.Println("Request Error:", err.Error())
 		return

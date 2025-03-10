@@ -13,6 +13,7 @@ const (
 type LocalTrack struct {
 	*lksdk.LocalTrack
 	// MimeType    string
+	Name        string
 	VideoWidth  int
 	VideoHeight int
 	Souce       *AudioSource
@@ -33,6 +34,7 @@ func NewAudioTrack(name string, source *AudioSource) *LocalTrack {
 		}
 	})
 	track := &LocalTrack{
+		Name:       name,
 		LocalTrack: liveKitTrack,
 		Souce:      source,
 		// MimeType:    mimeType,

@@ -1,9 +1,10 @@
 package ui
 
-func GUILoop() {
+func Loop() {
 	drawMainMenu()
 	drawMainWin()
 }
 
 func Destory() {
+
 }
