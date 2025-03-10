@@ -153,19 +153,19 @@ func (r *Room) onConnectionQualityChanged(update *livekit.ConnectionQualityInfo,
 }
 
 func (r *Room) onTrackSubscribed(track *webrtc.TrackRemote, publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
-	r.listener.OnTrackSubscribed(rp.Identity(), publication)
+	r.listener.OnTrackSubscribed(track, publication, rp)
 }
 func (r *Room) onTrackUnsubscribed(track *webrtc.TrackRemote, publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
-	r.listener.OnTrackUnsubscribed(rp.Identity(), publication.SID())
+	r.listener.OnTrackUnsubscribed(track, publication, rp)
 }
 func (r *Room) onTrackSubscriptionFailed(sid string, rp *lksdk.RemoteParticipant) {
 	r.listener.OnTrackSubscriptionFailed(rp.Identity(), sid, "TODO")
 }
 func (r *Room) onTrackPublished(publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
-	r.listener.OnTrackPublished(rp.Identity(), publication)
+	r.listener.OnTrackPublished(publication, rp)
 }
 func (r *Room) onTrackUnpublished(publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
-	r.listener.OnTrackUnpublished(rp.Identity(), publication.SID())
+	r.listener.OnTrackUnpublished(publication, rp)
 }
 func (r *Room) onDataPacket(packet lksdk.DataPacket, params lksdk.DataReceiveParams) {
 	r.listener.OnDataPacket(params.SenderIdentity, packet)

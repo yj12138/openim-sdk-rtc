@@ -3,9 +3,11 @@ package ui
 import (
 	"log"
 
+	"github.com/livekit/protocol/livekit"
 	lksdk "github.com/livekit/server-sdk-go/v2"
 	pb_participant "github.com/openimsdk/openim-rtc/proto/go/participant"
 	pb_room "github.com/openimsdk/openim-rtc/proto/go/room"
+	"github.com/pion/webrtc/v4"
 )
 
 type RoomListener struct {
@@ -65,41 +67,42 @@ func (l *RoomListener) OnConnectionQualityChanged(participantIdentify string, qu
 }
 
 // for remote participants
-func (l *RoomListener) OnTrackSubscribed(participantIdentify string, publication *lksdk.RemoteTrackPublication) {
-	log.Println("OnTrackSubscribed", participantIdentify, publication.Name())
+func (l *RoomListener) OnTrackSubscribed(track *webrtc.TrackRemote, publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
+	log.Println("OnTrackSubscribed", rp.Identity(), publication.SID())
+	go func() {
+		for {
+			_, _, err := track.ReadRTP()
+			if err != nil {
+				break
+			}
+			// log.Println("Recv:", len(rtp.Payload))
+		}
+	}()
 }
-func (l *RoomListener) OnTrackUnsubscribed(participantIdentify string, trackSid string) {
-	log.Println("OnTrackUnsubscribed", participantIdentify, trackSid)
+func (l *RoomListener) OnTrackUnsubscribed(track *webrtc.TrackRemote, publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
+	log.Println("OnTrackUnsubscribed", rp.Identity(), publication.SID())
 }
 func (l *RoomListener) OnTrackSubscriptionFailed(participantIdentify string, trackSid string, err string) {
 	log.Println("OnTrackSubscriptionFailed", participantIdentify, trackSid, err)
 }
 
-func (l *RoomListener) OnTrackPublished(participantIdentify string, publication *lksdk.RemoteTrackPublication) {
-	log.Println("OnTrackPublished", participantIdentify, publication.Name())
+func (l *RoomListener) OnTrackPublished(publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
+	log.Println("OnTrackPublished", rp.Identity(), publication.SID())
 }
 
-func (l *RoomListener) OnTrackUnpublished(participantIdentify string, publicationSid string) {
-	log.Println("OnTrackUnpublished", participantIdentify, publicationSid)
+func (l *RoomListener) OnTrackUnpublished(publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
+	log.Println("OnTrackUnpublished", rp.Identity(), publication.SID())
 }
 
-func (l *RoomListener) OnDataPacket(participantIdentify string, packet lksdk.DataPacket) {
-	log.Println("OnDataPacket", participantIdentify, packet)
-	// packet := data.ToProto()
-	// var value *livekit.DataPacket = nil
-	// if user, ok := packet.Value.(*livekit.DataPacket_User); ok {
-	// 	value = &pb_room.UserPacket{
-	// 		Topic: *user.User.Topic,
-	// 		// TODO
-	// 		// Data:  user.User.Payload,
-	// 	}
-	// }
-	// if sipDtmf, ok := packet.Value.(*livekit.DataPacket_SipDtmf); ok {
-	// 	value = &pb_room.SipDTMF{
-	// 		Digit: sipDtmf.SipDtmf.Digit,
-	// 		Code:  sipDtmf.SipDtmf.Code,
-	// 	}
-	// }
+func (l *RoomListener) OnDataPacket(participantIdentify string, _packet lksdk.DataPacket) {
+	packet := _packet.ToProto()
+	if user, ok := packet.Value.(*livekit.DataPacket_User); ok {
+		log.Println("Recv User Data", participantIdentify, user)
+	}
+
+	if sipDtmf, ok := packet.Value.(*livekit.DataPacket_SipDtmf); ok {
+		log.Println("Recv SipDtmf Data", participantIdentify, sipDtmf)
+	}
 }
 
 func (l *RoomListener) OnTranscriptionReceived(participantIdentify string, trackSid string, segments []*pb_room.TranscriptionSegment) {

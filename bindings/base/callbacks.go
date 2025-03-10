@@ -8,6 +8,7 @@ import (
 	pb_room "github.com/openimsdk/openim-rtc/proto/go/room"
 	pb_track "github.com/openimsdk/openim-rtc/proto/go/track"
 	"github.com/openimsdk/openim-rtc/sdk"
+	"github.com/pion/webrtc/v4"
 )
 
 type RoomListener struct {
@@ -228,7 +229,7 @@ func (l *RoomListener) OnConnectionQualityChanged(participantIdentify string, qu
 }
 
 // for remote participants
-func (l *RoomListener) OnTrackSubscribed(participantIdentify string, publication *lksdk.RemoteTrackPublication) {
+func (l *RoomListener) OnTrackSubscribed(track *webrtc.TrackRemote, publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
 	info := &pb_track.TrackInfo{
 		Sid:         publication.SID(),
 		Name:        publication.Name(),
@@ -242,11 +243,10 @@ func (l *RoomListener) OnTrackSubscribed(participantIdentify string, publication
 			RoomHandle: l.RoomHandle,
 			Message: &pb_room.RoomEvent_TrackSubscribed{
 				TrackSubscribed: &pb_room.TrackSubscribed{
-					ParticipantIdentity: participantIdentify,
+					ParticipantIdentity: rp.Identity(),
 					Track: &pb_track.OwnedTrack{
-						// TODO
-						// Handle: &pb_common.FfiOwnedHandle{Id: api.storeObj(track)},
-						Info: info,
+						Handle: &pb_handle.FfiOwnedHandle{Id: api.storeObj(track)},
+						Info:   info,
 					},
 				},
 			},
@@ -254,14 +254,14 @@ func (l *RoomListener) OnTrackSubscribed(participantIdentify string, publication
 	}
 	dispatchEvent(&pb_ffi.FfiEvent{Message: msg})
 }
-func (l *RoomListener) OnTrackUnsubscribed(participantIdentify string, trackSid string) {
+func (l *RoomListener) OnTrackUnsubscribed(track *webrtc.TrackRemote, publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
 	msg := &pb_ffi.FfiEvent_RoomEvent{
 		RoomEvent: &pb_room.RoomEvent{
 			RoomHandle: l.RoomHandle,
 			Message: &pb_room.RoomEvent_TrackUnsubscribed{
 				TrackUnsubscribed: &pb_room.TrackUnsubscribed{
-					ParticipantIdentity: participantIdentify,
-					TrackSid:            trackSid,
+					ParticipantIdentity: rp.Identity(),
+					TrackSid:            publication.SID(),
 				},
 			},
 		},
@@ -284,16 +284,15 @@ func (l *RoomListener) OnTrackSubscriptionFailed(participantIdentify string, tra
 	dispatchEvent(&pb_ffi.FfiEvent{Message: msg})
 }
 
-func (l *RoomListener) OnTrackPublished(participantIdentify string, publication *lksdk.RemoteTrackPublication) {
+func (l *RoomListener) OnTrackPublished(publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
 	msg := &pb_ffi.FfiEvent_RoomEvent{
 		RoomEvent: &pb_room.RoomEvent{
 			RoomHandle: l.RoomHandle,
 			Message: &pb_room.RoomEvent_TrackPublished{
 				TrackPublished: &pb_room.TrackPublished{
-					ParticipantIdentity: participantIdentify,
+					ParticipantIdentity: rp.Identity(),
 					Publication: &pb_track.OwnedTrackPublication{
-						// TODO
-						// Handle: &pb_common.FfiOwnedHandle{Id: api.storeObj(remoteTrack)},
+						Handle: &pb_handle.FfiOwnedHandle{Id: api.storeObj(publication)},
 						Info: &pb_track.TrackPublicationInfo{
 							Sid:         publication.SID(),
 							Name:        publication.Name(),
@@ -314,14 +313,14 @@ func (l *RoomListener) OnTrackPublished(participantIdentify string, publication 
 	dispatchEvent(&pb_ffi.FfiEvent{Message: msg})
 }
 
-func (l *RoomListener) OnTrackUnpublished(participantIdentify string, publicationSid string) {
+func (l *RoomListener) OnTrackUnpublished(publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
 	msg := &pb_ffi.FfiEvent_RoomEvent{
 		RoomEvent: &pb_room.RoomEvent{
 			RoomHandle: l.RoomHandle,
 			Message: &pb_room.RoomEvent_TrackUnpublished{
 				TrackUnpublished: &pb_room.TrackUnpublished{
-					ParticipantIdentity: participantIdentify,
-					PublicationSid:      publicationSid,
+					ParticipantIdentity: rp.Identity(),
+					PublicationSid:      publication.SID(),
 				},
 			},
 		},

@@ -49,6 +49,7 @@ func (s *AudioSource) NextSample(c context.Context) (media.Sample, error) {
 	case sampleData := <-s.dataCache:
 		sample.Data = sampleData.Data
 		sample.Duration = sampleData.Duration
+		// log.Println("NextSample:", len(sample.Data), sample.Duration)
 	default:
 		sample.Data = make([]byte, 0)
 		sample.Duration = 1 * time.Second
@@ -56,11 +57,14 @@ func (s *AudioSource) NextSample(c context.Context) (media.Sample, error) {
 	return sample, nil
 }
 
-func (s *AudioSource) CaptureFrame(data []byte) error {
+func (s *AudioSource) calcDuration(sampleCount int) time.Duration {
 	// 每两个字节表示一个采样
-	duration := time.Duration((len(data) / 2) * 1e9 / int(s.SampleRate))
+	return time.Duration((sampleCount / 2) * 1e9 / int(s.SampleRate))
+}
+
+func (s *AudioSource) CaptureFrame(data []byte) error {
 	s.dataCache <- SampleData{
-		Duration: duration,
+		Duration: s.calcDuration(len(data)),
 		Data:     data,
 	}
 	return nil

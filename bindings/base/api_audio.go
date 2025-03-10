@@ -8,6 +8,13 @@ import (
 	"github.com/openimsdk/openim-rtc/sdk"
 )
 
+type AudioFrameBuffer struct {
+	DataPtr           uint64
+	NumChannels       uint32
+	SampleRate        uint32
+	SamplesPerChannel uint32
+}
+
 // Audio
 func (api *API) NewAudioStream(req *pb_audio.NewAudioStreamRequest) (*pb_audio.NewAudioStreamResponse, error) {
 	track := api.getRemoteTrack(req.TrackHandle)
@@ -91,12 +98,39 @@ func (api *API) ClearAudioBuffer(req *pb_audio.ClearAudioBufferRequest) (*pb_aud
 
 // TODO
 func (api *API) NewAudioResampler(req *pb_audio.NewAudioResamplerRequest) (*pb_audio.NewAudioResamplerResponse, error) {
-	return nil, nil
+	resampler := sdk.NewAudioResampler()
+	return &pb_audio.NewAudioResamplerResponse{
+		Resampler: &pb_audio.OwnedAudioResampler{
+			Handle: &pb_handle.FfiOwnedHandle{Id: api.storeObj(resampler)},
+			Info:   &pb_audio.AudioResamplerInfo{},
+		},
+	}, nil
 }
-func (api *API) RemixAndResample(req *pb_audio.RemixAndResampleRequest) (*pb_audio.RemixAndResampleResponse, error) {
 
-	return nil, nil
+func (api *API) RemixAndResample(req *pb_audio.RemixAndResampleRequest) (*pb_audio.RemixAndResampleResponse, error) {
+	resample := api.GetAudioResampler(req.ResamplerHandle)
+	length := uint64(req.Buffer.NumChannels * req.Buffer.SamplesPerChannel * 2)
+	data := cPointerToGoByteSliceNoCopyFunc(req.Buffer.DataPtr, length)
+	buffer := resample.RemixAndResample(data, req.Buffer.SampleRate, req.SampleRate)
+	audioFrameBuffer := &AudioFrameBuffer{
+		DataPtr:           goByteSliceToCPointerNoCopyFunc(buffer),
+		NumChannels:       req.NumChannels,
+		SampleRate:        req.SampleRate,
+		SamplesPerChannel: req.Buffer.SamplesPerChannel,
+	}
+	return &pb_audio.RemixAndResampleResponse{
+		Buffer: &pb_audio.OwnedAudioFrameBuffer{
+			Handle: &pb_handle.FfiOwnedHandle{Id: api.storeObj(audioFrameBuffer)},
+			Info: &pb_audio.AudioFrameBufferInfo{
+				DataPtr:           audioFrameBuffer.DataPtr,
+				NumChannels:       audioFrameBuffer.NumChannels,
+				SampleRate:        audioFrameBuffer.SampleRate,
+				SamplesPerChannel: audioFrameBuffer.SamplesPerChannel,
+			},
+		},
+	}, nil
 }
+
 func (api *API) AudioStreamFromParticipant(req *pb_audio.AudioStreamFromParticipantRequest) (*pb_audio.AudioStreamFromParticipantResponse, error) {
 	return nil, nil
 }

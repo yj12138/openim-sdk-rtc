@@ -11,18 +11,26 @@ import (
 )
 
 type CPointerToGoByteSliceNoCopyFunc func(cPointer uint64, length uint64) []byte
+type GoByteSliceToCPointerNoCopyFunc func(data []byte) uint64
 
 var (
 	api                             *API
 	cPointerToGoByteSliceNoCopyFunc CPointerToGoByteSliceNoCopyFunc
+	goByteSliceToCPointerNoCopyFunc GoByteSliceToCPointerNoCopyFunc
 )
 
 func init() {
 	api = newAPI()
 }
 
+// C数据转go数据
 func SetCPointerToGoByteSliceNoCopyFunc(f CPointerToGoByteSliceNoCopyFunc) {
 	cPointerToGoByteSliceNoCopyFunc = f
+}
+
+// go数据转C数据
+func SetGoByteSliceToCPointerNoCopyFunc(f GoByteSliceToCPointerNoCopyFunc) {
+	goByteSliceToCPointerNoCopyFunc = f
 }
 
 type API struct {
@@ -126,4 +134,45 @@ func (api *API) getAudioSource(handle uint64) *sdk.AudioSource {
 		}
 	}
 	panic(fmt.Sprintf("not find handle:%d", handle))
+}
+
+func (api *API) GetAudioResampler(handle uint64) *sdk.AudioResampler {
+	if value, ok := api.objMap.Load(handle); ok {
+		if r, ok := value.(*sdk.AudioResampler); ok {
+			return r
+		} else {
+			panic(fmt.Sprintf("handle:%d is not sdk.AudioSource type", handle))
+		}
+	}
+	panic(fmt.Sprintf("not find handle:%d", handle))
+}
+
+func (a *API) getFFICall(handleId uint64) *FFICall {
+	if value, ok := api.objMap.Load(handleId); ok {
+		if r, ok := value.(*FFICall); ok {
+			return r
+		} else {
+			panic(fmt.Sprintf(":%d is not FFICall type", handleId))
+		}
+	}
+	return nil
+}
+func (a *API) getFFIEvent(handleId uint64) *FFIEvent {
+	if value, ok := api.objMap.Load(handleId); ok {
+		if r, ok := value.(*FFIEvent); ok {
+			return r
+		} else {
+			panic(fmt.Sprintf(":%d is not FFIEvent type", handleId))
+		}
+	}
+	return nil
+}
+func StoreFFICall(call *FFICall) uint64 {
+	return api.storeObj(call)
+}
+func GetFFICall(handleId uint64) *FFICall {
+	return api.getFFICall(handleId)
+}
+func GetFFIEvent(handleId uint64) *FFIEvent {
+	return api.getFFIEvent(handleId)
 }

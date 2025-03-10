@@ -23,6 +23,7 @@ import (
 func init() {
 	base.SetEventCallBackFunc(eventCallBack)
 	base.SetCPointerToGoByteSliceNoCopyFunc(CPointerToGoByteSliceNoCopy)
+	base.SetGoByteSliceToCPointerNoCopyFunc(GoByteSliceToCPointerNoCopy)
 }
 
 func eventCallBack(event *base.FFIEvent) {
@@ -44,6 +45,13 @@ func CPointerToGoByteSliceNoCopy(cPointer uint64, length uint64) []byte {
 	goPointer := unsafe.Pointer(uintptr(cPointer))
 	// 使用 unsafe.Slice 创建一个切片，直接引用 C 内存
 	return unsafe.Slice((*byte)(goPointer), int(length))
+}
+
+func GoByteSliceToCPointerNoCopy(data []byte) uint64 {
+	if len(data) == 0 {
+		panic("GoByteSliceToCPointerNoCopy Length = 0")
+	}
+	return uint64(uintptr(unsafe.Pointer(&data[0])))
 }
 
 //export openim_rtc_ffi_init

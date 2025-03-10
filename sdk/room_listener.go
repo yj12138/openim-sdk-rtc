@@ -4,6 +4,7 @@ import (
 	lksdk "github.com/livekit/server-sdk-go/v2"
 	pb_participant "github.com/openimsdk/openim-rtc/proto/go/participant"
 	pb_room "github.com/openimsdk/openim-rtc/proto/go/room"
+	"github.com/pion/webrtc/v4"
 )
 
 type OnRoomListener interface {
@@ -28,11 +29,11 @@ type OnRoomListener interface {
 	OnConnectionQualityChanged(participantIdentify string, quality pb_room.ConnectionQuality)
 
 	// for remote participants
-	OnTrackSubscribed(participantIdentify string, track *lksdk.RemoteTrackPublication)
-	OnTrackUnsubscribed(participantIdentify string, trackSid string)
+	OnTrackSubscribed(track *webrtc.TrackRemote, publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant)
+	OnTrackUnsubscribed(track *webrtc.TrackRemote, publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant)
 	OnTrackSubscriptionFailed(participantIdentify string, trackSid string, err string)
-	OnTrackPublished(participantIdentify string, track *lksdk.RemoteTrackPublication)
-	OnTrackUnpublished(participantIdentify string, publicationSid string)
+	OnTrackPublished(publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant)
+	OnTrackUnpublished(publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant)
 	OnDataPacket(participantIdentify string, packet lksdk.DataPacket)
 	OnTranscriptionReceived(participantIdentify string, trackSid string, segments []*pb_room.TranscriptionSegment)
 }

@@ -22,7 +22,9 @@ func drawLocalParticipant() {
 	if imgui.Button("Send TestData") {
 		go func() {
 			err := context.LocalParticipant.SendData("hello world", []byte("hello"), true, []string{})
-			log.Println(err.Error())
+			if err != nil {
+				log.Println(err.Error())
+			}
 		}()
 	}
 	if imgui.Button("Publish Audio Track") {
@@ -30,6 +32,7 @@ func drawLocalParticipant() {
 			audioSource := sdk.NewAudioSource(audio_frame.AudioSourceType_AUDIO_SOURCE_NATIVE, context.MicPhone.SampleRate, context.MicPhone.Channels)
 			track := sdk.NewAudioTrack("micphone audio track", audioSource)
 			context.PublishAudioTrack(track)
+			context.MicPhone.Start()
 			context.MicPhone.AddCallBack(func(data []byte, frameCount uint32) {
 				err := audioSource.CaptureFrame(data)
 				if err != nil {
