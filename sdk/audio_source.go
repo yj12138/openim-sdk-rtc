@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-type SampleData struct {
+type AudioSampleData struct {
 	Duration time.Duration
 	Data     []byte
 }
@@ -19,7 +19,7 @@ type AudioSource struct {
 	NumChannels     uint32
 	mime            string
 	onWriteComplete func()
-	dataCache       chan SampleData
+	dataCache       chan AudioSampleData
 }
 
 func (s *AudioSource) OnBind() error {
@@ -63,7 +63,7 @@ func (s *AudioSource) calcDuration(sampleCount int) time.Duration {
 }
 
 func (s *AudioSource) CaptureFrame(data []byte) error {
-	s.dataCache <- SampleData{
+	s.dataCache <- AudioSampleData{
 		Duration: s.calcDuration(len(data)),
 		Data:     data,
 	}
@@ -80,7 +80,7 @@ func NewAudioSource(sourceType pb_audio.AudioSourceType, sampleRate uint32, numC
 		SampleRate:  sampleRate,
 		NumChannels: numChannels,
 		// TODO
-		mime:      MimeTypeOpus,
-		dataCache: make(chan SampleData, 10),
+		mime:      "audio/opus",
+		dataCache: make(chan AudioSampleData, 10),
 	}
 }

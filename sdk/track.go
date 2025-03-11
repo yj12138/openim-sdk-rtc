@@ -6,22 +6,18 @@ import (
 	"log"
 )
 
-const (
-	MimeTypeOpus = "audio/opus"
-)
-
 type LocalTrack struct {
 	*lksdk.LocalTrack
 	// MimeType    string
 	Name        string
 	VideoWidth  int
 	VideoHeight int
-	Souce       *AudioSource
+	AudioSource *AudioSource
+	VideoSource *VideoSource
 	Publication *lksdk.LocalTrackPublication
 }
 
 func NewAudioTrack(name string, source *AudioSource) *LocalTrack {
-	// mimeType := MimeTypeOpus
 	liveKitTrack, err := lksdk.NewLocalTrack(webrtc.RTPCodecCapability{
 		MimeType: source.mime,
 	})
@@ -34,16 +30,33 @@ func NewAudioTrack(name string, source *AudioSource) *LocalTrack {
 		}
 	})
 	track := &LocalTrack{
-		Name:       name,
-		LocalTrack: liveKitTrack,
-		Souce:      source,
-		// MimeType:    mimeType,
+		Name:        name,
+		LocalTrack:  liveKitTrack,
+		AudioSource: source,
 		VideoWidth:  0,
 		VideoHeight: 0,
 	}
 	return track
 }
 
-func NewVideoTrack() *LocalTrack {
-	return nil
+func NewVideoTrack(name string, source *VideoSource) *LocalTrack {
+	liveKitTrack, err := lksdk.NewLocalTrack(webrtc.RTPCodecCapability{
+		MimeType: source.mime,
+	})
+	if err != nil {
+		log.Panic(err.Error())
+	}
+	liveKitTrack.OnBind(func() {
+		if err := liveKitTrack.StartWrite(source, source.onWriteComplete); err != nil {
+			log.Panic(err.Error())
+		}
+	})
+	track := &LocalTrack{
+		Name:        name,
+		LocalTrack:  liveKitTrack,
+		VideoSource: source,
+		VideoWidth:  0,
+		VideoHeight: 0,
+	}
+	return track
 }

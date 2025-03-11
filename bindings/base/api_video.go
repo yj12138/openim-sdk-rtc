@@ -6,6 +6,7 @@ import (
 
 // Video
 func (api *API) NewVideoStream(req *pb_video.NewVideoStreamRequest) (*pb_video.NewVideoStreamResponse, error) {
+
 	return nil, nil
 }
 func (api *API) NewVideoSource(req *pb_video.NewVideoSourceRequest) (*pb_video.NewVideoSourceResponse, error) {

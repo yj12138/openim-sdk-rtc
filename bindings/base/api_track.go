@@ -11,7 +11,8 @@ import (
 )
 
 func (api *API) CreateVideoTrack(req *pb_track.CreateVideoTrackRequest) (*pb_track.CreateVideoTrackResponse, error) {
-	track := sdk.NewVideoTrack()
+	videoSource := api.getVideoSource(req.SourceHandle)
+	track := sdk.NewVideoTrack(req.Name, videoSource)
 	res := &pb_track.CreateVideoTrackResponse{
 		Track: &pb_track.OwnedTrack{
 			Handle: &pb_handle.FfiOwnedHandle{Id: api.storeObj(track)},

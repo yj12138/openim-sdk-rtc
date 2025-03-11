@@ -141,7 +141,29 @@ func (api *API) GetAudioResampler(handle uint64) *sdk.AudioResampler {
 		if r, ok := value.(*sdk.AudioResampler); ok {
 			return r
 		} else {
-			panic(fmt.Sprintf("handle:%d is not sdk.AudioSource type", handle))
+			panic(fmt.Sprintf("handle:%d is not sdk.AudioResampler type", handle))
+		}
+	}
+	panic(fmt.Sprintf("not find handle:%d", handle))
+}
+
+func (api *API) getVideoStream(handle uint64) *sdk.VideoStream {
+	if value, ok := api.objMap.Load(handle); ok {
+		if r, ok := value.(*sdk.VideoStream); ok {
+			return r
+		} else {
+			panic(fmt.Sprintf("handle:%d is not sdk.Stream type", handle))
+		}
+	}
+	panic(fmt.Sprintf("not find handle:%d", handle))
+}
+
+func (api *API) getVideoSource(handle uint64) *sdk.VideoSource {
+	if value, ok := api.objMap.Load(handle); ok {
+		if r, ok := value.(*sdk.VideoSource); ok {
+			return r
+		} else {
+			panic(fmt.Sprintf("handle:%d is not sdk.VideoSource type", handle))
 		}
 	}
 	panic(fmt.Sprintf("not find handle:%d", handle))
@@ -166,13 +188,4 @@ func (a *API) getFFIEvent(handleId uint64) *FFIEvent {
 		}
 	}
 	return nil
-}
-func StoreFFICall(call *FFICall) uint64 {
-	return api.storeObj(call)
-}
-func GetFFICall(handleId uint64) *FFICall {
-	return api.getFFICall(handleId)
-}
-func GetFFIEvent(handleId uint64) *FFIEvent {
-	return api.getFFIEvent(handleId)
 }

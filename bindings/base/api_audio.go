@@ -2,6 +2,8 @@ package base
 
 import (
 	// lksdk "github.com/livekit/server-sdk-go/v2"
+	"log"
+
 	pb_audio "github.com/openimsdk/openim-rtc/proto/go/audio_frame"
 	pb_ffi "github.com/openimsdk/openim-rtc/proto/go/ffi"
 	pb_handle "github.com/openimsdk/openim-rtc/proto/go/handle"
@@ -96,7 +98,6 @@ func (api *API) ClearAudioBuffer(req *pb_audio.ClearAudioBufferRequest) (*pb_aud
 	return res, nil
 }
 
-// TODO
 func (api *API) NewAudioResampler(req *pb_audio.NewAudioResamplerRequest) (*pb_audio.NewAudioResamplerResponse, error) {
 	resampler := sdk.NewAudioResampler()
 	return &pb_audio.NewAudioResamplerResponse{
@@ -111,7 +112,11 @@ func (api *API) RemixAndResample(req *pb_audio.RemixAndResampleRequest) (*pb_aud
 	resample := api.GetAudioResampler(req.ResamplerHandle)
 	length := uint64(req.Buffer.NumChannels * req.Buffer.SamplesPerChannel * 2)
 	data := cPointerToGoByteSliceNoCopyFunc(req.Buffer.DataPtr, length)
-	buffer := resample.RemixAndResample(data, req.Buffer.SampleRate, req.SampleRate)
+	buffer, err := resample.RemixAndResample(data, req.Buffer.SampleRate, int(req.Buffer.NumChannels), req.SampleRate)
+	if err != nil {
+		log.Println("RemixAndResample: ", err.Error())
+		return nil, err
+	}
 	audioFrameBuffer := &AudioFrameBuffer{
 		DataPtr:           goByteSliceToCPointerNoCopyFunc(buffer),
 		NumChannels:       req.NumChannels,

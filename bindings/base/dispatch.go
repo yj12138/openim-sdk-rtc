@@ -25,6 +25,16 @@ type FFIEvent struct {
 	DataPtr unsafe.Pointer
 }
 
+func StoreFFICall(call *FFICall) uint64 {
+	return api.storeObj(call)
+}
+func GetFFICall(handleId uint64) *FFICall {
+	return api.getFFICall(handleId)
+}
+func GetFFIEvent(handleId uint64) *FFIEvent {
+	return api.getFFIEvent(handleId)
+}
+
 func SetEventCallBackFunc(f func(*FFIEvent)) {
 	eventCallback = f
 }
