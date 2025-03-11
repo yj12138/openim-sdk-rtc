@@ -5,7 +5,7 @@ import (
 	pb_rpc "github.com/openimsdk/openim-rtc/proto/go/rpc"
 )
 
-func (api *API) PerformRpc(req *pb_rpc.PerformRpcRequest) (*pb_rpc.PerformRpcResponse, error) {
+func (api *API) PerformRpc(req *pb_rpc.PerformRpcRequest) *pb_rpc.PerformRpcResponse {
 	asyncId := api.nextAsyncId()
 	participant := api.getLocalParticipant(req.LocalParticipantHandle)
 	go func() {
@@ -20,17 +20,17 @@ func (api *API) PerformRpc(req *pb_rpc.PerformRpcRequest) (*pb_rpc.PerformRpcRes
 	}()
 	return &pb_rpc.PerformRpcResponse{
 		AsyncId: asyncId,
-	}, nil
+	}
 }
 
-func (api *API) RegisterRpcMethod(req *pb_rpc.RegisterRpcMethodRequest) (*pb_rpc.RegisterRpcMethodResponse, error) {
-	return nil, nil
+func (api *API) RegisterRpcMethod(req *pb_rpc.RegisterRpcMethodRequest) *pb_rpc.RegisterRpcMethodResponse {
+	return nil
 }
 
-func (api *API) UnregisterRpcMethod(req *pb_rpc.UnregisterRpcMethodRequest) (*pb_rpc.UnregisterRpcMethodResponse, error) {
-	return nil, nil
+func (api *API) UnregisterRpcMethod(req *pb_rpc.UnregisterRpcMethodRequest) *pb_rpc.UnregisterRpcMethodResponse {
+	return nil
 }
 
-func (api *API) RpcMethodInvocationResponse(req *pb_rpc.RpcMethodInvocationResponseRequest) (*pb_rpc.RpcMethodInvocationResponseResponse, error) {
-	return nil, nil
+func (api *API) RpcMethodInvocationResponse(req *pb_rpc.RpcMethodInvocationResponseRequest) *pb_rpc.RpcMethodInvocationResponseResponse {
+	return nil
 }

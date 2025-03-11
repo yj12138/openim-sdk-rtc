@@ -2,6 +2,8 @@ package base
 
 import (
 	// lksdk "github.com/livekit/server-sdk-go/v2"
+	"log"
+
 	"github.com/openimsdk/openim-rtc/proto/go/e2ee"
 	pb_ffi "github.com/openimsdk/openim-rtc/proto/go/ffi"
 	pb_handle "github.com/openimsdk/openim-rtc/proto/go/handle"
@@ -11,7 +13,7 @@ import (
 	"github.com/openimsdk/openim-rtc/sdk"
 )
 
-func (api *API) Connect(req *pb_room.ConnectRequest) (*pb_room.ConnectResponse, error) {
+func (api *API) Connect(req *pb_room.ConnectRequest) *pb_room.ConnectResponse {
 	asyncId := api.nextAsyncId()
 	go func() {
 		listener := NewRoomListener()
@@ -87,14 +89,14 @@ func (api *API) Connect(req *pb_room.ConnectRequest) (*pb_room.ConnectResponse, 
 			},
 		})
 	}()
-
+	log.Println("Connect AsyncId", asyncId)
 	res := &pb_room.ConnectResponse{
 		AsyncId: asyncId,
 	}
-	return res, nil
+	return res
 }
 
-func (api *API) Disconnect(req *pb_room.DisconnectRequest) (*pb_room.DisconnectResponse, error) {
+func (api *API) Disconnect(req *pb_room.DisconnectRequest) *pb_room.DisconnectResponse {
 	asyncId := api.nextAsyncId()
 	room := api.getRoom(req.RoomHandle)
 	go func() {
@@ -109,10 +111,10 @@ func (api *API) Disconnect(req *pb_room.DisconnectRequest) (*pb_room.DisconnectR
 	}()
 	return &pb_room.DisconnectResponse{
 		AsyncId: asyncId,
-	}, nil
+	}
 }
 
-func (api *API) GetSessionStats(req *pb_room.GetSessionStatsRequest) (*pb_room.GetSessionStatsResponse, error) {
+func (api *API) GetSessionStats(req *pb_room.GetSessionStatsRequest) *pb_room.GetSessionStatsResponse {
 	asyncId := api.nextAsyncId()
 	room := api.getRoom(req.RoomHandle)
 	go func() {
@@ -132,15 +134,15 @@ func (api *API) GetSessionStats(req *pb_room.GetSessionStatsRequest) (*pb_room.G
 	res := &pb_room.GetSessionStatsResponse{
 		AsyncId: asyncId,
 	}
-	return res, nil
+	return res
 }
 
-func (api *API) Dispose(req *pb_ffi.DisposeRequest) (*pb_ffi.DisposeResponse, error) {
+func (api *API) Dispose(req *pb_ffi.DisposeRequest) *pb_ffi.DisposeResponse {
 	asyncId := api.nextAsyncId()
 	go func() {
 		// TODO
 	}()
 	return &pb_ffi.DisposeResponse{
 		AsyncId: asyncId,
-	}, nil
+	}
 }

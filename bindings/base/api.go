@@ -173,8 +173,6 @@ func (a *API) getFFICall(handleId uint64) *FFICall {
 	if value, ok := api.objMap.Load(handleId); ok {
 		if r, ok := value.(*FFICall); ok {
 			return r
-		} else {
-			panic(fmt.Sprintf(":%d is not FFICall type", handleId))
 		}
 	}
 	return nil
@@ -183,8 +181,6 @@ func (a *API) getFFIEvent(handleId uint64) *FFIEvent {
 	if value, ok := api.objMap.Load(handleId); ok {
 		if r, ok := value.(*FFIEvent); ok {
 			return r
-		} else {
-			panic(fmt.Sprintf(":%d is not FFIEvent type", handleId))
 		}
 	}
 	return nil

@@ -18,7 +18,7 @@ type VideoFrameBuffer struct {
 }
 
 // Video
-func (api *API) NewVideoStream(req *pb_video.NewVideoStreamRequest) (*pb_video.NewVideoStreamResponse, error) {
+func (api *API) NewVideoStream(req *pb_video.NewVideoStreamRequest) *pb_video.NewVideoStreamResponse {
 	track := api.getRemoteTrack(req.TrackHandle)
 	videoStream := sdk.NewVideoStreamByTrack(track, req.Type, req.Format, req.NormalizeStride)
 	streamHandle := api.storeObj(videoStream)
@@ -62,9 +62,9 @@ func (api *API) NewVideoStream(req *pb_video.NewVideoStreamRequest) (*pb_video.N
 			},
 		},
 	}
-	return res, nil
+	return res
 }
-func (api *API) NewVideoSource(req *pb_video.NewVideoSourceRequest) (*pb_video.NewVideoSourceResponse, error) {
+func (api *API) NewVideoSource(req *pb_video.NewVideoSourceRequest) *pb_video.NewVideoSourceResponse {
 	videoSource := sdk.NewVideoSource(req.Type, req.Resolution.Width, req.Resolution.Height)
 	res := &pb_video.NewVideoSourceResponse{
 		Source: &pb_video.OwnedVideoSource{
@@ -74,22 +74,22 @@ func (api *API) NewVideoSource(req *pb_video.NewVideoSourceRequest) (*pb_video.N
 			},
 		},
 	}
-	return res, nil
+	return res
 }
-func (api *API) CaptureVideoFrame(req *pb_video.CaptureVideoFrameRequest) (*pb_video.CaptureVideoFrameResponse, error) {
+func (api *API) CaptureVideoFrame(req *pb_video.CaptureVideoFrameRequest) *pb_video.CaptureVideoFrameResponse {
 	videoSource := api.getVideoSource(req.SourceHandle)
 	// TODO 计算大小
 	length := 0
 	data := cPointerToGoByteSliceNoCopyFunc(req.Buffer.DataPtr, uint64(length))
 	videoSource.CaptureFrame(req.TimestampUs, req.Rotation, data)
 	res := &pb_video.CaptureVideoFrameResponse{}
-	return res, nil
+	return res
 }
-func (api *API) VideoConvert(req *pb_video.VideoConvertRequest) (*pb_video.VideoConvertResponse, error) {
+func (api *API) VideoConvert(req *pb_video.VideoConvertRequest) *pb_video.VideoConvertResponse {
 	// TODO
-	return nil, nil
+	return nil
 }
-func (api *API) VideoStreamFromParticipan(req *pb_video.VideoStreamFromParticipantRequest) (*pb_video.VideoStreamFromParticipantResponse, error) {
+func (api *API) VideoStreamFromParticipant(req *pb_video.VideoStreamFromParticipantRequest) *pb_video.VideoStreamFromParticipantResponse {
 	// TODO
-	return nil, nil
+	return nil
 }

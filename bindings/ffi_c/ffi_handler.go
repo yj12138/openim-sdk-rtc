@@ -9,18 +9,19 @@ package main
 typedef void (*CallBack)(void* dataPtr,int len);
 extern CallBack eventCallBack;
 extern void InvokeCallBack(CallBack cb,char* dataPtr,int dataLength);
+extern void CPrint(char* dataPtr,int dataLength);
 */
 import "C"
 
 import (
-	"context"
-	"github.com/openimsdk/openim-rtc/bindings/base"
-	"github.com/openimsdk/tools/errs"
-	"github.com/openimsdk/tools/log"
+	"log"
 	"unsafe"
+
+	"github.com/openimsdk/openim-rtc/bindings/base"
 )
 
 func init() {
+	log.SetFlags(log.Llongfile)
 	base.SetEventCallBackFunc(eventCallBack)
 	base.SetCPointerToGoByteSliceNoCopyFunc(CPointerToGoByteSliceNoCopy)
 	base.SetGoByteSliceToCPointerNoCopyFunc(GoByteSliceToCPointerNoCopy)
@@ -30,7 +31,7 @@ func eventCallBack(event *base.FFIEvent) {
 	dataLen := len(event.Data)
 	cData := (*C.uint8_t)(C.malloc(C.size_t(dataLen)))
 	if cData == nil {
-		log.ZWarn(context.Background(), "callback data", errs.New("Failed to allocate memory"))
+		log.Println("callback data", "Failed to allocate memory")
 	}
 	cDataPtr := (*[1 << 30]byte)(unsafe.Pointer(cData))[:dataLen:dataLen]
 	copy(cDataPtr, event.Data)
@@ -55,48 +56,59 @@ func GoByteSliceToCPointerNoCopy(data []byte) uint64 {
 }
 
 //export openim_rtc_ffi_init
-func openim_rtc_ffi_init(event C.CallBack) int64 {
+func openim_rtc_ffi_init(event C.CallBack, captureLogs C.int, sdk *C.char, sdkVersion *C.char) int64 {
 	C.eventCallBack = event
 	return 1
 }
 
 //export openim_rtc_ffi_request
-func openim_rtc_ffi_request(data *C.void, length C.int, dataPtr **C.void, dataLen *C.size_t) C.int64_t {
+func openim_rtc_ffi_request(data *C.void, length C.int, dataPtr **C.uint8_t, dataLen *C.uintptr_t) C.int64_t {
 	call := &base.FFICall{}
 	// TODO 可以使用无拷贝复制
 	call.RequestDataPtr = unsafe.Pointer(data)
 	call.RequestData = C.GoBytes(call.RequestDataPtr, length)
-
+	// log.Println("openim_rtc_ffi request", call.RequestData)
 	base.Request(call)
-
+	// log.Println("openim_rtc_ffi reponse ", call.ResponseData)
 	if call.ResponseData == nil {
 		return 0
 	}
-	len := len(call.ResponseData)
-	if len == 0 {
+	responseData := call.ResponseData
+	resLength := len(responseData)
+	if resLength == 0 {
 		return 0
 	}
-	ptr := C.malloc(C.size_t(len))
-	if ptr == nil {
-		return 0
+	// 分配 C 内存
+	cResponse := C.malloc(C.size_t(resLength))
+	if cResponse == nil {
+		return 0 // 内存分配失败，返回 0 句柄
 	}
-	call.ResponseDataPtr = unsafe.Pointer(ptr)
-	C.memcpy(ptr, unsafe.Pointer(&call.ResponseData[0]), C.size_t(len))
-	*dataPtr = (*C.void)(ptr)
-	*dataLen = C.size_t(len)
+	// log.Println("Go Print", responseData)
+	// 复制数据到 C 内存
+	copy((*[1 << 30]byte)(cResponse)[:resLength:resLength], responseData)
+	call.ResponseDataPtr = cResponse
+	// C.CPrint((*C.char)(cResponse), C.int(resLength))
+	// 设置返回指针和长度
+	*dataPtr = (*C.uint8_t)(cResponse)
+	*dataLen = C.uintptr_t(resLength)
+	// log.Println("openim_rtc_ffi call", call)
 	return C.int64_t(call.Id)
 }
 
 //export openim_rtc_ffi_drop_handle
 func openim_rtc_ffi_drop_handle(handleId uint64) {
+	log.Println("openim_rtc_ffi drop handle", handleId)
 	call := base.GetFFICall(handleId)
 	if call != nil {
-		C.free(unsafe.Pointer(call.RequestDataPtr))
+		log.Println("drop FFICall", call)
+		// 由C端释放
+		// C.free(unsafe.Pointer(call.RequestDataPtr))
 		C.free(unsafe.Pointer(call.ResponseDataPtr))
 	}
 	event := base.GetFFIEvent(handleId)
 	if event != nil {
+		log.Println("drop FFIEvent", event)
 		C.free(unsafe.Pointer(event.DataPtr))
 	}
-	base.RemoteHandle(call.Id)
+	base.RemoteHandle(handleId)
 }

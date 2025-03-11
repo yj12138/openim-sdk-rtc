@@ -10,7 +10,7 @@ import (
 	"github.com/openimsdk/openim-rtc/sdk"
 )
 
-func (api *API) PublishTrack(req *pb_room.PublishTrackRequest) (*pb_room.PublishTrackResponse, error) {
+func (api *API) PublishTrack(req *pb_room.PublishTrackRequest) *pb_room.PublishTrackResponse {
 	asyncId := api.nextAsyncId()
 	participant := api.getLocalParticipant(req.LocalParticipantHandle)
 	track := api.getLocalTrack(req.TrackHandle)
@@ -61,9 +61,9 @@ func (api *API) PublishTrack(req *pb_room.PublishTrackRequest) (*pb_room.Publish
 	res := &pb_room.PublishTrackResponse{
 		AsyncId: asyncId,
 	}
-	return res, nil
+	return res
 }
-func (api *API) UnpublishTrack(req *pb_room.UnpublishTrackRequest) (*pb_room.UnpublishTrackResponse, error) {
+func (api *API) UnpublishTrack(req *pb_room.UnpublishTrackRequest) *pb_room.UnpublishTrackResponse {
 	asyncId := api.nextAsyncId()
 	participant := api.getLocalParticipant(req.LocalParticipantHandle)
 	go func() {
@@ -85,9 +85,9 @@ func (api *API) UnpublishTrack(req *pb_room.UnpublishTrackRequest) (*pb_room.Unp
 	res := &pb_room.UnpublishTrackResponse{
 		AsyncId: asyncId,
 	}
-	return res, nil
+	return res
 }
-func (api *API) PublishData(req *pb_room.PublishDataRequest) (*pb_room.PublishDataResponse, error) {
+func (api *API) PublishData(req *pb_room.PublishDataRequest) *pb_room.PublishDataResponse {
 	asyncId := api.nextAsyncId()
 	participant := api.getLocalParticipant(req.LocalParticipantHandle)
 	go func() {
@@ -109,9 +109,9 @@ func (api *API) PublishData(req *pb_room.PublishDataRequest) (*pb_room.PublishDa
 	res := &pb_room.PublishDataResponse{
 		AsyncId: asyncId,
 	}
-	return res, nil
+	return res
 }
-func (api *API) PublishSipDtmf(req *pb_room.PublishSipDtmfRequest) (*pb_room.PublishSipDtmfResponse, error) {
+func (api *API) PublishSipDtmf(req *pb_room.PublishSipDtmfRequest) *pb_room.PublishSipDtmfResponse {
 	asyncId := api.nextAsyncId()
 	participant := api.getLocalParticipant(req.LocalParticipantHandle)
 	go func() {
@@ -132,9 +132,9 @@ func (api *API) PublishSipDtmf(req *pb_room.PublishSipDtmfRequest) (*pb_room.Pub
 	res := &pb_room.PublishSipDtmfResponse{
 		AsyncId: asyncId,
 	}
-	return res, nil
+	return res
 }
-func (api *API) SetLocalMetadata(req *pb_room.SetLocalMetadataRequest) (*pb_room.SetLocalMetadataResponse, error) {
+func (api *API) SetLocalMetadata(req *pb_room.SetLocalMetadataRequest) *pb_room.SetLocalMetadataResponse {
 	asyncId := api.nextAsyncId()
 	participant := api.getLocalParticipant(req.LocalParticipantHandle)
 	go func() {
@@ -151,9 +151,9 @@ func (api *API) SetLocalMetadata(req *pb_room.SetLocalMetadataRequest) (*pb_room
 	res := &pb_room.SetLocalMetadataResponse{
 		AsyncId: asyncId,
 	}
-	return res, nil
+	return res
 }
-func (api *API) SetLocalName(req *pb_room.SetLocalNameRequest) (*pb_room.SetLocalNameResponse, error) {
+func (api *API) SetLocalName(req *pb_room.SetLocalNameRequest) *pb_room.SetLocalNameResponse {
 	asyncId := api.nextAsyncId()
 	participant := api.getLocalParticipant(req.LocalParticipantHandle)
 	go func() {
@@ -170,9 +170,9 @@ func (api *API) SetLocalName(req *pb_room.SetLocalNameRequest) (*pb_room.SetLoca
 	res := &pb_room.SetLocalNameResponse{
 		AsyncId: asyncId,
 	}
-	return res, nil
+	return res
 }
-func (api *API) SetLocalAttributes(req *pb_room.SetLocalAttributesRequest) (*pb_room.SetLocalAttributesResponse, error) {
+func (api *API) SetLocalAttributes(req *pb_room.SetLocalAttributesRequest) *pb_room.SetLocalAttributesResponse {
 	asyncId := api.nextAsyncId()
 	participant := api.getLocalParticipant(req.LocalParticipantHandle)
 	go func() {
@@ -193,10 +193,10 @@ func (api *API) SetLocalAttributes(req *pb_room.SetLocalAttributesRequest) (*pb_
 	res := &pb_room.SetLocalAttributesResponse{
 		AsyncId: asyncId,
 	}
-	return res, nil
+	return res
 }
 
-func (api *API) PublishTranscription(req *pb_room.PublishTranscriptionRequest) (*pb_room.PublishTranscriptionResponse, error) {
+func (api *API) PublishTranscription(req *pb_room.PublishTranscriptionRequest) *pb_room.PublishTranscriptionResponse {
 	asyncId := api.nextAsyncId()
 	participant := api.getLocalParticipant(req.LocalParticipantHandle)
 	go func() {
@@ -217,9 +217,9 @@ func (api *API) PublishTranscription(req *pb_room.PublishTranscriptionRequest) (
 	res := &pb_room.PublishTranscriptionResponse{
 		AsyncId: asyncId,
 	}
-	return res, nil
+	return res
 }
-func (api *API) SendChatMessage(req *pb_room.SendChatMessageRequest) (*pb_room.SendChatMessageResponse, error) {
+func (api *API) SendChatMessage(req *pb_room.SendChatMessageRequest) *pb_room.SendChatMessageResponse {
 	asyncId := api.nextAsyncId()
 	participant := api.getLocalParticipant(req.LocalParticipantHandle)
 	go func() {
@@ -263,9 +263,9 @@ func (api *API) SendChatMessage(req *pb_room.SendChatMessageRequest) (*pb_room.S
 	res := &pb_room.SendChatMessageResponse{
 		AsyncId: asyncId,
 	}
-	return res, nil
+	return res
 }
-func (api *API) EditChatMessage(req *pb_room.EditChatMessageRequest) (*pb_room.SendChatMessageResponse, error) {
+func (api *API) EditChatMessage(req *pb_room.EditChatMessageRequest) *pb_room.SendChatMessageResponse {
 	asyncId := api.nextAsyncId()
 	participant := api.getLocalParticipant(req.LocalParticipantHandle)
 	go func() {
@@ -308,9 +308,9 @@ func (api *API) EditChatMessage(req *pb_room.EditChatMessageRequest) (*pb_room.S
 	res := &pb_room.SendChatMessageResponse{
 		AsyncId: asyncId,
 	}
-	return res, nil
+	return res
 }
-func (api *API) SendTranscription(req *pb_room.PublishTranscriptionRequest) (*pb_room.PublishTranscriptionResponse, error) {
+func (api *API) SendTranscription(req *pb_room.PublishTranscriptionRequest) *pb_room.PublishTranscriptionResponse {
 	asyncId := api.nextAsyncId()
 	participant := api.getLocalParticipant(req.LocalParticipantHandle)
 	go func() {
@@ -331,9 +331,9 @@ func (api *API) SendTranscription(req *pb_room.PublishTranscriptionRequest) (*pb
 	res := &pb_room.PublishTranscriptionResponse{
 		AsyncId: asyncId,
 	}
-	return res, nil
+	return res
 }
-func (api *API) SendStreamHeader(req *pb_room.SendStreamHeaderRequest) (*pb_room.SendStreamHeaderResponse, error) {
+func (api *API) SendStreamHeader(req *pb_room.SendStreamHeaderRequest) *pb_room.SendStreamHeaderResponse {
 	asyncId := api.nextAsyncId()
 	participant := api.getLocalParticipant(req.LocalParticipantHandle)
 	go func() {
@@ -354,9 +354,9 @@ func (api *API) SendStreamHeader(req *pb_room.SendStreamHeaderRequest) (*pb_room
 	res := &pb_room.SendStreamHeaderResponse{
 		AsyncId: asyncId,
 	}
-	return res, nil
+	return res
 }
-func (api *API) SendStreamChunk(req *pb_room.SendStreamChunkRequest) (*pb_room.SendStreamChunkResponse, error) {
+func (api *API) SendStreamChunk(req *pb_room.SendStreamChunkRequest) *pb_room.SendStreamChunkResponse {
 	asyncId := api.nextAsyncId()
 	participant := api.getLocalParticipant(req.LocalParticipantHandle)
 	go func() {
@@ -377,9 +377,9 @@ func (api *API) SendStreamChunk(req *pb_room.SendStreamChunkRequest) (*pb_room.S
 	res := &pb_room.SendStreamChunkResponse{
 		AsyncId: asyncId,
 	}
-	return res, nil
+	return res
 }
-func (api *API) SendStreamTrailer(req *pb_room.SendStreamTrailerRequest) (*pb_room.SendStreamTrailerResponse, error) {
+func (api *API) SendStreamTrailer(req *pb_room.SendStreamTrailerRequest) *pb_room.SendStreamTrailerResponse {
 	asyncId := api.nextAsyncId()
 	participant := api.getLocalParticipant(req.LocalParticipantHandle)
 	go func() {
@@ -400,19 +400,19 @@ func (api *API) SendStreamTrailer(req *pb_room.SendStreamTrailerRequest) (*pb_ro
 	res := &pb_room.SendStreamTrailerResponse{
 		AsyncId: asyncId,
 	}
-	return res, nil
+	return res
 }
 
-func (api *API) SetTrackSubscriptionPermissions(req *pb_track.SetTrackSubscriptionPermissionsRequest) (*pb_track.SetTrackSubscriptionPermissionsResponse, error) {
+func (api *API) SetTrackSubscriptionPermissions(req *pb_track.SetTrackSubscriptionPermissionsRequest) *pb_track.SetTrackSubscriptionPermissionsResponse {
 	participant := api.getLocalParticipant(req.LocalParticipantHandle)
 	participant.SetSubscriptionPermissionWrap(req.AllParticipantsAllowed, req.Permissions)
 	res := &pb_track.SetTrackSubscriptionPermissionsResponse{}
-	return res, nil
+	return res
 }
 
-func (api *API) SetDataChannelBufferedAmountLowThreshold(req *pb_room.SetDataChannelBufferedAmountLowThresholdRequest) (*pb_room.SetDataChannelBufferedAmountLowThresholdResponse, error) {
+func (api *API) SetDataChannelBufferedAmountLowThreshold(req *pb_room.SetDataChannelBufferedAmountLowThresholdRequest) *pb_room.SetDataChannelBufferedAmountLowThresholdResponse {
 	// TODO
 	// participant := api.getLocalParticipant(req.LocalParticipantHandle)
 	res := &pb_room.SetDataChannelBufferedAmountLowThresholdResponse{}
-	return res, nil
+	return res
 }

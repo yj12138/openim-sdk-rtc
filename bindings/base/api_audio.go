@@ -18,7 +18,7 @@ type AudioFrameBuffer struct {
 }
 
 // Audio
-func (api *API) NewAudioStream(req *pb_audio.NewAudioStreamRequest) (*pb_audio.NewAudioStreamResponse, error) {
+func (api *API) NewAudioStream(req *pb_audio.NewAudioStreamRequest) *pb_audio.NewAudioStreamResponse {
 	track := api.getRemoteTrack(req.TrackHandle)
 	audioStream := sdk.NewAudioStreamByTrack(track, req.Type, req.SampleRate, req.NumChannels)
 	streamHandle := api.storeObj(audioStream)
@@ -58,9 +58,9 @@ func (api *API) NewAudioStream(req *pb_audio.NewAudioStreamRequest) (*pb_audio.N
 			},
 		},
 	}
-	return res, nil
+	return res
 }
-func (api *API) NewAudioSource(req *pb_audio.NewAudioSourceRequest) (*pb_audio.NewAudioSourceResponse, error) {
+func (api *API) NewAudioSource(req *pb_audio.NewAudioSourceRequest) *pb_audio.NewAudioSourceResponse {
 	audioSource := sdk.NewAudioSource(req.Type, req.SampleRate, req.NumChannels)
 	res := &pb_audio.NewAudioSourceResponse{
 		Source: &pb_audio.OwnedAudioSource{
@@ -70,9 +70,9 @@ func (api *API) NewAudioSource(req *pb_audio.NewAudioSourceRequest) (*pb_audio.N
 			},
 		},
 	}
-	return res, nil
+	return res
 }
-func (api *API) CaptureAudioFrame(req *pb_audio.CaptureAudioFrameRequest) (*pb_audio.CaptureAudioFrameResponse, error) {
+func (api *API) CaptureAudioFrame(req *pb_audio.CaptureAudioFrameRequest) *pb_audio.CaptureAudioFrameResponse {
 	asyncId := api.nextAsyncId()
 	audioSource := api.getAudioSource(req.SourceHandle)
 	go func() {
@@ -94,33 +94,33 @@ func (api *API) CaptureAudioFrame(req *pb_audio.CaptureAudioFrameRequest) (*pb_a
 		})
 	}()
 	res := &pb_audio.CaptureAudioFrameResponse{AsyncId: asyncId}
-	return res, nil
+	return res
 }
-func (api *API) ClearAudioBuffer(req *pb_audio.ClearAudioBufferRequest) (*pb_audio.ClearAudioBufferResponse, error) {
+func (api *API) ClearAudioBuffer(req *pb_audio.ClearAudioBufferRequest) *pb_audio.ClearAudioBufferResponse {
 	audioSource := api.getAudioSource(req.SourceHandle)
 	audioSource.ClearBuffer()
 	res := &pb_audio.ClearAudioBufferResponse{}
-	return res, nil
+	return res
 }
 
-func (api *API) NewAudioResampler(req *pb_audio.NewAudioResamplerRequest) (*pb_audio.NewAudioResamplerResponse, error) {
+func (api *API) NewAudioResampler(req *pb_audio.NewAudioResamplerRequest) *pb_audio.NewAudioResamplerResponse {
 	resampler := sdk.NewAudioResampler()
 	return &pb_audio.NewAudioResamplerResponse{
 		Resampler: &pb_audio.OwnedAudioResampler{
 			Handle: &pb_handle.FfiOwnedHandle{Id: api.storeObj(resampler)},
 			Info:   &pb_audio.AudioResamplerInfo{},
 		},
-	}, nil
+	}
 }
 
-func (api *API) RemixAndResample(req *pb_audio.RemixAndResampleRequest) (*pb_audio.RemixAndResampleResponse, error) {
+func (api *API) RemixAndResample(req *pb_audio.RemixAndResampleRequest) *pb_audio.RemixAndResampleResponse {
 	resample := api.GetAudioResampler(req.ResamplerHandle)
 	length := uint64(req.Buffer.NumChannels * req.Buffer.SamplesPerChannel * 2)
 	data := cPointerToGoByteSliceNoCopyFunc(req.Buffer.DataPtr, length)
 	buffer, err := resample.RemixAndResample(data, req.Buffer.SampleRate, int(req.Buffer.NumChannels), req.SampleRate)
 	if err != nil {
 		log.Println("RemixAndResample: ", err.Error())
-		return nil, err
+		return nil
 	}
 	audioFrameBuffer := &AudioFrameBuffer{
 		DataPtr:           goByteSliceToCPointerNoCopyFunc(buffer),
@@ -138,25 +138,25 @@ func (api *API) RemixAndResample(req *pb_audio.RemixAndResampleRequest) (*pb_aud
 				SamplesPerChannel: audioFrameBuffer.SamplesPerChannel,
 			},
 		},
-	}, nil
+	}
 }
 
-func (api *API) AudioStreamFromParticipant(req *pb_audio.AudioStreamFromParticipantRequest) (*pb_audio.AudioStreamFromParticipantResponse, error) {
-	return nil, nil
+func (api *API) AudioStreamFromParticipant(req *pb_audio.AudioStreamFromParticipantRequest) *pb_audio.AudioStreamFromParticipantResponse {
+	return nil
 }
 
-func (api *API) NewSoxResampler(req *pb_audio.NewSoxResamplerRequest) (*pb_audio.NewSoxResamplerResponse, error) {
-	return nil, nil
+func (api *API) NewSoxResampler(req *pb_audio.NewSoxResamplerRequest) *pb_audio.NewSoxResamplerResponse {
+	return nil
 }
 
-func (api *API) PushSoxResampler(req *pb_audio.PushSoxResamplerRequest) (*pb_audio.PushSoxResamplerResponse, error) {
-	return nil, nil
+func (api *API) PushSoxResampler(req *pb_audio.PushSoxResamplerRequest) *pb_audio.PushSoxResamplerResponse {
+	return nil
 }
 
-func (api *API) FlushSoxResampler(req *pb_audio.FlushSoxResamplerRequest) (*pb_audio.FlushSoxResamplerResponse, error) {
-	return nil, nil
+func (api *API) FlushSoxResampler(req *pb_audio.FlushSoxResamplerRequest) *pb_audio.FlushSoxResamplerResponse {
+	return nil
 }
 
-func (api *API) LoadAudioFilterPlugin(req *pb_audio.LoadAudioFilterPluginRequest) (*pb_audio.LoadAudioFilterPluginResponse, error) {
-	return nil, nil
+func (api *API) LoadAudioFilterPlugin(req *pb_audio.LoadAudioFilterPluginRequest) *pb_audio.LoadAudioFilterPluginResponse {
+	return nil
 }
