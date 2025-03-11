@@ -20,7 +20,8 @@ func (api *API) Connect(req *pb_room.ConnectRequest) *pb_room.ConnectResponse {
 		room := sdk.ConnectByToken(req.Url, req.Token, listener)
 		roomHandle := api.storeObj(room)
 		listener.RoomHandle = roomHandle
-		localParticipantHandle := api.storeObj(room.LocalParticipant)
+		localParticipant := sdk.NewLocalParticipant(room.LocalParticipant)
+		localParticipantHandle := api.storeObj(localParticipant)
 		rps := room.GetRemoteParticipants()
 		participantWithTracks := make([]*pb_room.ConnectCallback_ParticipantWithTracks, 0)
 		for _, rp := range rps {
