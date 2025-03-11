@@ -23,6 +23,12 @@ func (api *API) NewAudioStream(req *pb_audio.NewAudioStreamRequest) (*pb_audio.N
 	audioStream := sdk.NewAudioStreamByTrack(track, req.Type, req.SampleRate, req.NumChannels)
 	streamHandle := api.storeObj(audioStream)
 	audioStream.CallBack = func(audioFrame *sdk.AudioFrame) {
+		buffer := &AudioFrameBuffer{
+			DataPtr:           goByteSliceToCPointerNoCopyFunc(audioFrame.Payload),
+			NumChannels:       audioFrame.NumChannels,
+			SampleRate:        audioFrame.SampleRate,
+			SamplesPerChannel: audioFrame.SamplesPerChannel,
+		}
 		dispatchEvent(&pb_ffi.FfiEvent{
 			Message: &pb_ffi.FfiEvent_AudioStreamEvent{
 				AudioStreamEvent: &pb_audio.AudioStreamEvent{
@@ -30,13 +36,12 @@ func (api *API) NewAudioStream(req *pb_audio.NewAudioStreamRequest) (*pb_audio.N
 					Message: &pb_audio.AudioStreamEvent_FrameReceived{
 						FrameReceived: &pb_audio.AudioFrameReceived{
 							Frame: &pb_audio.OwnedAudioFrameBuffer{
-								Handle: &pb_handle.FfiOwnedHandle{Id: api.storeObj(audioFrame)},
+								Handle: &pb_handle.FfiOwnedHandle{Id: api.storeObj(buffer)},
 								Info: &pb_audio.AudioFrameBufferInfo{
-									// TODO 所数据转成C指针
-									DataPtr:           0,
-									SampleRate:        audioFrame.SampleRate,
-									SamplesPerChannel: audioFrame.SamplesPerChannel,
-									NumChannels:       audioFrame.NumChannels,
+									DataPtr:           buffer.DataPtr,
+									SampleRate:        buffer.SampleRate,
+									SamplesPerChannel: buffer.SamplesPerChannel,
+									NumChannels:       buffer.NumChannels,
 								},
 							},
 						},

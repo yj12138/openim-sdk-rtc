@@ -71,7 +71,7 @@ func (m *MicPhone) init() {
 	}
 	device, err := malgo.InitDevice(ctx.Context, deviceConfig, captureCallbacks)
 	if err != nil {
-		log.Panic(err)
+		log.Println(err)
 		return
 	}
 	m.canUse = true

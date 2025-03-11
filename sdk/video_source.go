@@ -15,8 +15,8 @@ type VideoSampleData struct {
 
 type VideoSource struct {
 	SourceType      pb_video.VideoSourceType
-	Width           int
-	Height          int
+	Width           uint32
+	Height          uint32
 	mime            string
 	onWriteComplete func()
 	dataCache       chan VideoSampleData
@@ -57,7 +57,7 @@ func (s *VideoSource) NextSample(c context.Context) (media.Sample, error) {
 	return sample, nil
 }
 
-func (s *VideoSource) CaptureFrame(data []byte) error {
+func (s *VideoSource) CaptureFrame(timeStampUs int64, rotation pb_video.VideoRotation, data []byte) error {
 	s.dataCache <- VideoSampleData{
 		Data: data,
 	}
@@ -68,7 +68,7 @@ func (s *VideoSource) ClearBuffer() {
 
 }
 
-func NewVideoSource(sourceType pb_video.VideoSourceType, width int, height int) *VideoSource {
+func NewVideoSource(sourceType pb_video.VideoSourceType, width uint32, height uint32) *VideoSource {
 	return &VideoSource{
 		SourceType: sourceType,
 		Width:      width,
