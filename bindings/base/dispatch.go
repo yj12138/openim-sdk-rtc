@@ -34,6 +34,9 @@ func GetFFICall(handleId uint64) *FFICall {
 func GetFFIEvent(handleId uint64) *FFIEvent {
 	return api.getFFIEvent(handleId)
 }
+func GetCBuffer(handleId uint64) *CBuffer {
+	return api.getCBuffer(handleId)
+}
 
 func SetEventCallBackFunc(f func(*FFIEvent)) {
 	eventCallback = f

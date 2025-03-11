@@ -21,7 +21,7 @@ func drawLocalParticipant() {
 	imgui.Begin("LocalParticipayt:" + context.participantName)
 	if imgui.Button("Send TestData") {
 		go func() {
-			err := context.LocalParticipant.SendData("hello world", []byte("hello"), true, []string{})
+			err := context.LocalParticipant.SendData("Test", []byte("golang hello"), true, []string{})
 			if err != nil {
 				log.Println(err.Error())
 			}

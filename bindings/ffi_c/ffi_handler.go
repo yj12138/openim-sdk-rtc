@@ -110,5 +110,9 @@ func openim_rtc_ffi_drop_handle(handleId uint64) {
 		log.Println("drop FFIEvent", event)
 		C.free(unsafe.Pointer(event.DataPtr))
 	}
+	cbuffer := base.GetCBuffer(handleId)
+	if cbuffer != nil {
+		// 直接使用的go的数据指针不用清理内存
+	}
 	base.RemoteHandle(handleId)
 }

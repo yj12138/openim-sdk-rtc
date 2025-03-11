@@ -185,3 +185,11 @@ func (a *API) getFFIEvent(handleId uint64) *FFIEvent {
 	}
 	return nil
 }
+func (a *API) getCBuffer(handleId uint64) *CBuffer {
+	if value, ok := api.objMap.Load(handleId); ok {
+		if r, ok := value.(*CBuffer); ok {
+			return r
+		}
+	}
+	return nil
+}

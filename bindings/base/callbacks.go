@@ -1,6 +1,7 @@
 package base
 
 import (
+	"github.com/livekit/protocol/livekit"
 	lksdk "github.com/livekit/server-sdk-go/v2"
 	pb_ffi "github.com/openimsdk/openim-rtc/proto/go/ffi"
 	pb_handle "github.com/openimsdk/openim-rtc/proto/go/handle"
@@ -328,12 +329,42 @@ func (l *RoomListener) OnTrackUnpublished(publication *lksdk.RemoteTrackPublicat
 	dispatchEvent(&pb_ffi.FfiEvent{Message: msg})
 }
 
-func (l *RoomListener) OnDataPacket(participantIdentify string, packet lksdk.DataPacket) {
+func (l *RoomListener) OnDataPacket(participantIdentify string, _packet lksdk.DataPacket) {
+	packet := _packet.ToProto()
+	dataPacketReceived := &pb_room.DataPacketReceived{
+		ParticipantIdentity: participantIdentify,
+		Value:               nil,
+	}
+	if user, ok := packet.Value.(*livekit.DataPacket_User); ok {
+		cbuffer := NewCBuffer(user.User.Payload)
+		dataPacketReceived.Value = &pb_room.DataPacketReceived_User{
+			User: &pb_room.UserPacket{
+				Topic: *user.User.Topic,
+				Data: &pb_room.OwnedBuffer{
+					Handle: &pb_handle.FfiOwnedHandle{Id: api.storeObj(cbuffer)},
+					Data: &pb_room.BufferInfo{
+						DataPtr: cbuffer.CDataPtr,
+						DataLen: uint64(cbuffer.CDataLen),
+					},
+				},
+			},
+		}
+	}
+	if sipDtmf, ok := packet.Value.(*livekit.DataPacket_SipDtmf); ok {
+		dataPacketReceived.Value = &pb_room.DataPacketReceived_SipDtmf{
+			SipDtmf: &pb_room.SipDTMF{
+				Code:  sipDtmf.SipDtmf.Code,
+				Digit: sipDtmf.SipDtmf.Digit,
+			},
+		}
+	}
+
 	dispatchEvent(&pb_ffi.FfiEvent{
 		Message: &pb_ffi.FfiEvent_RoomEvent{
 			RoomEvent: &pb_room.RoomEvent{
+				RoomHandle: l.RoomHandle,
 				Message: &pb_room.RoomEvent_DataPacketReceived{
-					DataPacketReceived: sdk.ConvertDataPacket(participantIdentify, packet.ToProto()),
+					DataPacketReceived: dataPacketReceived,
 				},
 			},
 		},
