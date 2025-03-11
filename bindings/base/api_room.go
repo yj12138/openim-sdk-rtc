@@ -1,9 +1,6 @@
 package base
 
 import (
-	// lksdk "github.com/livekit/server-sdk-go/v2"
-	"log"
-
 	"github.com/openimsdk/openim-rtc/proto/go/e2ee"
 	pb_ffi "github.com/openimsdk/openim-rtc/proto/go/ffi"
 	pb_handle "github.com/openimsdk/openim-rtc/proto/go/handle"
@@ -90,7 +87,6 @@ func (api *API) Connect(req *pb_room.ConnectRequest) *pb_room.ConnectResponse {
 			},
 		})
 	}()
-	log.Println("Connect AsyncId", asyncId)
 	res := &pb_room.ConnectResponse{
 		AsyncId: asyncId,
 	}

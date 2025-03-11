@@ -6,7 +6,7 @@ replace github.com/openimsdk/openim-rtc => ../
 
 require (
 	github.com/AllenDang/cimgui-go v1.1.0
-	github.com/gen2brain/malgo v0.11.23
+	github.com/gen2brain/malgo v0.11.10
 	github.com/livekit/protocol v1.34.0
 	github.com/livekit/server-sdk-go/v2 v2.5.0
 	github.com/openimsdk/openim-rtc v0.0.0-00010101000000-000000000000

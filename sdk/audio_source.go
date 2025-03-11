@@ -49,11 +49,11 @@ func (s *AudioSource) NextSample(c context.Context) (media.Sample, error) {
 	case sampleData := <-s.dataCache:
 		sample.Data = sampleData.Data
 		sample.Duration = sampleData.Duration
-		// log.Println("NextSample:", len(sample.Data), sample.Duration)
 	default:
 		sample.Data = make([]byte, 0)
 		sample.Duration = 1 * time.Second
 	}
+	// log.Println("NextSample:", len(sample.Data), sample.Duration)
 	return sample, nil
 }
 

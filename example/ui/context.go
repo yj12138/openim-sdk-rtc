@@ -11,7 +11,7 @@ import (
 	lksdk "github.com/livekit/server-sdk-go/v2"
 	"github.com/openimsdk/openim-rtc/sdk"
 
-	io_input "github.com/openimsdk/openim-rtc/example/io"
+	_io "github.com/openimsdk/openim-rtc/example/io"
 )
 
 var context *Context
@@ -46,7 +46,8 @@ type Context struct {
 	Room             *sdk.Room
 	LocalParticipant *sdk.LocalParticipant
 
-	MicPhone *io_input.MicPhone
+	MicPhone *_io.MicPhone
+	Speaker  *_io.Speaker
 }
 
 func (c *Context) connect() {
@@ -124,7 +125,8 @@ func InitContext(httpUrl string, x_Sandbox_ID string, roomName string, participa
 		roomName:        roomName,
 		participantName: participantName,
 		ConnectState:    ConnectNone,
-		MicPhone:        io_input.NewMicPhone(44100, 1),
+		MicPhone:        _io.NewMicPhone(48000, 1),
+		Speaker:         _io.NewSpeaker(48000, 1),
 	}
 	go context.connect()
 }

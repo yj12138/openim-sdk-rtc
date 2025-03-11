@@ -8,15 +8,6 @@ import (
 	// "log"
 )
 
-type VideoFrameBuffer struct {
-	Type       pb_video.VideoBufferType
-	Width      uint32
-	Height     uint32
-	DataPtr    uint64
-	Stride     uint32
-	Components []*pb_video.VideoBufferInfo_ComponentInfo
-}
-
 // Video
 func (api *API) NewVideoStream(req *pb_video.NewVideoStreamRequest) *pb_video.NewVideoStreamResponse {
 	track := api.getRemoteTrack(req.TrackHandle)

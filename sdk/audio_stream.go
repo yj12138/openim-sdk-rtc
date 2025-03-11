@@ -28,9 +28,10 @@ func (s *AudioStream) handleStream() {
 		}
 		if s.CallBack != nil {
 			s.CallBack(&AudioFrame{
-				Payload:     pkt.Payload,
-				SampleRate:  s.SampleRate,
-				NumChannels: s.NumChannels,
+				Payload:           pkt.Payload,
+				SampleRate:        s.SampleRate,
+				NumChannels:       s.NumChannels,
+				SamplesPerChannel: uint32(len(pkt.Payload) / int(s.NumChannels)),
 			})
 		}
 	}

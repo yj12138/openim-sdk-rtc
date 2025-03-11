@@ -100,14 +100,14 @@ func openim_rtc_ffi_drop_handle(handleId uint64) {
 	log.Println("openim_rtc_ffi drop handle", handleId)
 	call := base.GetFFICall(handleId)
 	if call != nil {
-		log.Println("drop FFICall", call)
+		// log.Println("drop FFICall", call)
 		// 由C端释放
 		// C.free(unsafe.Pointer(call.RequestDataPtr))
 		C.free(unsafe.Pointer(call.ResponseDataPtr))
 	}
 	event := base.GetFFIEvent(handleId)
 	if event != nil {
-		log.Println("drop FFIEvent", event)
+		// log.Println("drop FFIEvent", event)
 		C.free(unsafe.Pointer(event.DataPtr))
 	}
 	cbuffer := base.GetCBuffer(handleId)

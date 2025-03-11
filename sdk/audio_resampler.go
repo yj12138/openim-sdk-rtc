@@ -78,7 +78,7 @@ func (resampler *AudioResampler) RemixAndResample(pcmData []byte, sourceSampleRa
 		bitDepth:    16,
 	}
 	resample := beep.Resample(3, oldSampleRate, newSampleRate, streamer)
-	audioData, err := StreamerToBytes(resample, newSampleRate, 1)
+	audioData, err := StreamerToBytes(resample, newSampleRate, sourceNumChannels)
 	return audioData, err
 }
 

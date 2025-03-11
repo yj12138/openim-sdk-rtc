@@ -42,6 +42,9 @@ type Speaker struct {
 	canUse  bool
 	using   bool
 
+	sampleRate uint32
+	channels   uint32
+
 	audioData chan []byte
 	callbacks *SpeakerCallBackList
 }
@@ -55,10 +58,23 @@ func (m *Speaker) init() {
 		log.Panic(err)
 		return
 	}
+	playbackDevices, err := ctx.Devices(malgo.Playback)
+	if err != nil {
+		log.Fatalf("无法获取播放设备: %v", err)
+	}
+
+	// 输出每个播放设备的名称和支持的最大通道数
+	log.Println("播放设备:")
+	for _, device := range playbackDevices {
+		log.Printf("名称: %s FormatCount :%d 默认 %b", device.Name(), device.FormatCount, device.IsDefault)
+		for _, format := range device.Formats {
+			log.Println(format.Format, format.Channels, format.SampleRate, format.Flags)
+		}
+	}
 	deviceConfig := malgo.DefaultDeviceConfig(malgo.Playback)
 	deviceConfig.Playback.Format = malgo.FormatS16
-	deviceConfig.Playback.Channels = 1
-	deviceConfig.SampleRate = 44100
+	deviceConfig.Playback.Channels = m.channels
+	deviceConfig.SampleRate = m.sampleRate
 	deviceConfig.Alsa.NoMMap = 1
 	playbackCallbacks := malgo.DeviceCallbacks{
 		Data: m.onSendFrames,
@@ -132,10 +148,12 @@ func (m *Speaker) AddCallBack(cb func(data []byte)) {
 	m.callbacks.Add(cb)
 }
 
-func NewSpeaker() *Speaker {
+func NewSpeaker(sampleRate uint32, channels uint32) *Speaker {
 	speaker := &Speaker{
-		audioData: make(chan []byte, 10),
-		callbacks: newSpeakerCallbackList(),
+		sampleRate: sampleRate,
+		channels:   channels,
+		audioData:  make(chan []byte, 10),
+		callbacks:  newSpeakerCallbackList(),
 	}
 	speaker.init()
 	return speaker

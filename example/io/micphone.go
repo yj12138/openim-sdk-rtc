@@ -58,6 +58,18 @@ func (m *MicPhone) init() {
 		log.Panic(err)
 		return
 	}
+	captureDevices, err := ctx.Devices(malgo.Capture)
+	if err != nil {
+		log.Fatalf("无法获取捕获设备")
+		return
+	}
+	log.Println("捕获设备:")
+	for _, device := range captureDevices {
+		log.Printf("名称: %s FormatCount :%d 默认 %b", device.Name(), device.FormatCount, device.IsDefault)
+		for _, format := range device.Formats {
+			log.Println(format.Format, format.Channels, format.SampleRate, format.Flags)
+		}
+	}
 
 	deviceConfig := malgo.DefaultDeviceConfig(malgo.Capture)
 	deviceConfig.Capture.Format = malgo.FormatS16

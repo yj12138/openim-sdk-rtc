@@ -191,8 +191,7 @@ func ConnectByToken(host, token string, listener OnRoomListener) *Room {
 	room.listener = listener
 	livekitRoom, err := lksdk.ConnectToRoomWithToken(host, token, room.createCallBack(), lksdk.WithAutoSubscribe(true))
 	if err != nil {
-		log.Println(err.Error())
-		return nil
+		log.Panic(err.Error())
 	}
 	room.Room = livekitRoom
 	return room

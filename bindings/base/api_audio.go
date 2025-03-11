@@ -10,25 +10,13 @@ import (
 	"github.com/openimsdk/openim-rtc/sdk"
 )
 
-type AudioFrameBuffer struct {
-	DataPtr           uint64
-	NumChannels       uint32
-	SampleRate        uint32
-	SamplesPerChannel uint32
-}
-
 // Audio
 func (api *API) NewAudioStream(req *pb_audio.NewAudioStreamRequest) *pb_audio.NewAudioStreamResponse {
 	track := api.getRemoteTrack(req.TrackHandle)
 	audioStream := sdk.NewAudioStreamByTrack(track, req.Type, req.SampleRate, req.NumChannels)
 	streamHandle := api.storeObj(audioStream)
 	audioStream.CallBack = func(audioFrame *sdk.AudioFrame) {
-		buffer := &AudioFrameBuffer{
-			DataPtr:           goByteSliceToCPointerNoCopyFunc(audioFrame.Payload),
-			NumChannels:       audioFrame.NumChannels,
-			SampleRate:        audioFrame.SampleRate,
-			SamplesPerChannel: audioFrame.SamplesPerChannel,
-		}
+		buffer := NewAudioFrameBuffer(audioFrame.Payload, audioFrame.NumChannels, audioFrame.SampleRate, audioFrame.SamplesPerChannel)
 		dispatchEvent(&pb_ffi.FfiEvent{
 			Message: &pb_ffi.FfiEvent_AudioStreamEvent{
 				AudioStreamEvent: &pb_audio.AudioStreamEvent{

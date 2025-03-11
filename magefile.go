@@ -553,9 +553,9 @@ func BuildAndroid() error {
 	architectures := []struct {
 		GoArch, API, ArchName string
 	}{
-		{"arm", "16", "armeabi-v7a"},
+		{"arm", "21", "armeabi-v7a"},
 		{"arm64", "21", "arm64-v8a"},
-		{"386", "16", "x86"},
+		{"386", "21", "x86"},
 		{"amd64", "21", "x86_64"},
 	}
 
@@ -795,7 +795,7 @@ func buildAndroid(aOutPath, goArch, apiLevel, archName string) error {
 		"build",
 		"-buildmode=c-shared",
 		"-trimpath",
-		"-ldflags=-s -w",
+		"-ldflags=-s -w -checklinkname=0",
 		"-tags", buildTags,
 		"-o", filepath.Join(aOutPath, archName, strings.Join([]string{soName, "so"}, ".")), ".")
 
