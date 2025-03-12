@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/livekit/protocol/livekit"
 	lksdk "github.com/livekit/server-sdk-go/v2"
@@ -33,13 +34,14 @@ type CreateTokenResponse struct {
 }
 
 type Context struct {
-	httpURL          string
-	x_Sandbox_ID     string
-	serverUrl        string
-	roomName         string
-	participantName  string
-	participantToken string
-	ConnectState     ConnectState
+	httpURL             string
+	x_Sandbox_ID        string
+	serverUrl           string
+	roomName            string
+	participantIdentify string
+	participantName     string
+	participantToken    string
+	ConnectState        ConnectState
 
 	setWindowTitle func(string)
 
@@ -53,8 +55,8 @@ type Context struct {
 func (c *Context) connect() {
 	c.ConnectState = Connecting
 	data := map[string]string{
-		"roomName":        c.roomName,
-		"participantName": c.participantName,
+		"roomName": c.roomName,
+		// "participantName": , 随机一个 identify
 	}
 	jsonData, err := json.Marshal(data)
 	if err != nil {
@@ -88,7 +90,7 @@ func (c *Context) connect() {
 	}
 	c.serverUrl = response.ServerUrl
 	c.roomName = response.RoomName
-	c.participantName = response.ParticipantName
+	c.participantIdentify = response.ParticipantName
 	c.participantToken = response.ParticipantToken
 	log.Println(response.ServerUrl)
 	log.Println(response.RoomName)
@@ -97,6 +99,18 @@ func (c *Context) connect() {
 	c.Room = sdk.ConnectByToken(c.serverUrl, c.participantToken, NewRoomListener())
 	c.LocalParticipant = sdk.NewLocalParticipant(c.Room.LocalParticipant)
 	c.setWindowTitle("Room:" + c.roomName)
+	c.Room.LocalParticipant.SetName(c.participantName)
+	go func() {
+		time.Sleep(3 * time.Second)
+		log.Println(c.Room.LocalParticipant.Name())
+		log.Println(c.Room.LocalParticipant.Identity())
+		log.Println(c.Room.LocalParticipant.SID())
+		log.Println(c.Room.LocalParticipant.Attributes())
+		log.Println(c.Room.LocalParticipant.IsMicrophoneEnabled())
+		log.Println(c.Room.LocalParticipant.IsCameraEnabled())
+		log.Println(c.Room.LocalParticipant.IsSpeaking())
+		c.Room.LocalParticipant.SetName(c.participantName + " : new name )")
+	}()
 
 	c.ConnectState = ConnectSuccess
 }

@@ -53,6 +53,9 @@ func (l *RoomListener) OnParticipantTrackMuted(participantIdentify string, track
 func (l *RoomListener) OnParticipantTrackUnmuted(participantIdentify string, trackSid string) {
 	log.Println("OnParticipantTrackUnmuted", participantIdentify, trackSid)
 }
+func (l *RoomListener) OnParticipantNameChanged(participantIdentify string, newName string, oldName string) {
+	log.Println("OnParticipantNameChanged", participantIdentify, newName, oldName)
+}
 func (l *RoomListener) OnParticipantMetadataChanged(participantIdentify string, metadata string) {
 	log.Println("OnParticipantMetadataChanged", participantIdentify, metadata)
 }
@@ -105,7 +108,7 @@ func (l *RoomListener) OnDataPacket(participantIdentify string, _packet lksdk.Da
 	}
 }
 
-func (l *RoomListener) OnTranscriptionReceived(participantIdentify string, trackSid string, segments []*pb_room.TranscriptionSegment) {
+func (l *RoomListener) OnTranscriptionReceived(participantIdentify string, trackSid string, segments []*lksdk.TranscriptionSegment) {
 	log.Println("OnTranscriptionReceived", participantIdentify, trackSid, segments)
 }
 

@@ -1,6 +1,9 @@
 package sdk
 
 import (
+	"sync"
+	"time"
+
 	lksdk "github.com/livekit/server-sdk-go/v2"
 	"github.com/pion/webrtc/v4"
 
@@ -14,6 +17,9 @@ import (
 type Room struct {
 	*lksdk.Room
 	listener OnRoomListener
+
+	participantIdentifyNameMap sync.Map
+	stopCheckNameChan          chan bool
 }
 
 func (r *Room) createCallBack() *lksdk.RoomCallback {
@@ -66,18 +72,42 @@ func (r *Room) GetConnectState() pb_room.ConnectionState {
 	return pb_room.ConnectionState_CONN_DISCONNECTED
 }
 
-func (r *Room) GetAllParticipantIdentifys() []string {
-	res := make([]string, 0)
-	rps := r.GetRemoteParticipants()
-	for _, rp := range rps {
-		res = append(res, rp.Identity())
+func (r *Room) checkParticipantNameChanged() {
+	ticker := time.NewTicker(2 * time.Second)
+	r.participantIdentifyNameMap.Store(r.LocalParticipant.Identity(), r.LocalParticipant.Name())
+	for _, remote := range r.GetRemoteParticipants() {
+		r.participantIdentifyNameMap.Store(remote.Identity(), remote.Name())
 	}
-	return res
+	checkNameChange := func(identify string, newName string) {
+		if value, ok := r.participantIdentifyNameMap.Load(identify); ok {
+			if oldName, ok := value.(string); ok {
+				if oldName != newName {
+					r.listener.OnParticipantNameChanged(identify, newName, oldName)
+					r.participantIdentifyNameMap.Store(identify, newName)
+				}
+			}
+		}
+	}
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				checkNameChange(r.LocalParticipant.Identity(), r.LocalParticipant.Name())
+				for _, remote := range r.GetRemoteParticipants() {
+					checkNameChange(remote.Identity(), remote.Name())
+				}
+			case <-r.stopCheckNameChan:
+				return
+			}
+		}
+	}()
 }
 
 // listener
 func (r *Room) onDisconnected() {
 	r.listener.OnDisconnectedWithReason(pb_participant.DisconnectReason_UNKNOWN_REASON)
+
+	r.stopCheckNameChan <- true
 }
 func (r *Room) onDisconnectedWithReason(reason lksdk.DisconnectionReason) {
 	res := pb_participant.DisconnectReason_UNKNOWN_REASON
@@ -93,9 +123,11 @@ func (r *Room) onDisconnectedWithReason(reason lksdk.DisconnectionReason) {
 	r.listener.OnDisconnectedWithReason(res)
 }
 func (r *Room) onParticipantConnected(rp *lksdk.RemoteParticipant) {
+	r.participantIdentifyNameMap.Store(rp.Identity(), rp.Name())
 	r.listener.OnParticipantConnected(rp)
 }
 func (r *Room) onParticipantDisconnected(rp *lksdk.RemoteParticipant) {
+	r.participantIdentifyNameMap.Delete(rp.Identity())
 	r.listener.OnParticipantDisconnected(rp)
 }
 func (r *Room) onActiveSpeakersChanged(ps []lksdk.Participant) {
@@ -171,34 +203,29 @@ func (r *Room) onDataPacket(packet lksdk.DataPacket, params lksdk.DataReceivePar
 	r.listener.OnDataPacket(params.SenderIdentity, packet)
 }
 func (r *Room) onTranscriptionReceived(transcriptionSegments []*lksdk.TranscriptionSegment, p lksdk.Participant, publication lksdk.TrackPublication) {
-	segments := make([]*pb_room.TranscriptionSegment, len(transcriptionSegments))
-	for i, segment := range transcriptionSegments {
-		segments[i] = &pb_room.TranscriptionSegment{
-			Id:        segment.ID,
-			Text:      segment.Text,
-			StartTime: segment.StartTime,
-			EndTime:   segment.EndTime,
-			Final:     segment.Final,
-			Language:  segment.Language,
-		}
-	}
-
-	r.listener.OnTranscriptionReceived(p.Identity(), publication.SID(), segments)
+	r.listener.OnTranscriptionReceived(p.Identity(), publication.SID(), transcriptionSegments)
 }
 
 func ConnectByToken(host, token string, listener OnRoomListener) *Room {
-	room := &Room{}
+	room := &Room{
+		participantIdentifyNameMap: sync.Map{},
+		stopCheckNameChan:          make(chan bool),
+	}
 	room.listener = listener
 	livekitRoom, err := lksdk.ConnectToRoomWithToken(host, token, room.createCallBack(), lksdk.WithAutoSubscribe(true))
 	if err != nil {
 		log.Panic(err.Error())
 	}
 	room.Room = livekitRoom
+	room.checkParticipantNameChanged()
 	return room
 }
 
 func ConnectBySecret(host, apiKey, apiSecret, roomName, identify string, listener OnRoomListener) *Room {
-	room := &Room{}
+	room := &Room{
+		participantIdentifyNameMap: sync.Map{},
+		stopCheckNameChan:          make(chan bool),
+	}
 	room.listener = listener
 	livekitRoom, err := lksdk.ConnectToRoom(host, lksdk.ConnectInfo{
 		APIKey:              apiKey,
@@ -210,5 +237,6 @@ func ConnectBySecret(host, apiKey, apiSecret, roomName, identify string, listene
 		panic(err)
 	}
 	room.Room = livekitRoom
+	room.checkParticipantNameChanged()
 	return room
 }

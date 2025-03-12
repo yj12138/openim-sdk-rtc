@@ -23,6 +23,7 @@ type OnRoomListener interface {
 	// for all participants
 	OnParticipantTrackMuted(participantIdentify string, trackSid string)
 	OnParticipantTrackUnmuted(participantIdentify string, trackSid string)
+	OnParticipantNameChanged(participantIdentify string, newName string, oldName string)
 	OnParticipantMetadataChanged(participantIdentify string, metadata string)
 	OnParticipantAttributesChanged(participantIdentify string, changed map[string]string)
 	OnIsSpeakingChanged(participantIdentify []string)
@@ -35,5 +36,5 @@ type OnRoomListener interface {
 	OnTrackPublished(publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant)
 	OnTrackUnpublished(publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant)
 	OnDataPacket(participantIdentify string, packet lksdk.DataPacket)
-	OnTranscriptionReceived(participantIdentify string, trackSid string, segments []*pb_room.TranscriptionSegment)
+	OnTranscriptionReceived(participantIdentify string, trackSid string, segments []*lksdk.TranscriptionSegment)
 }

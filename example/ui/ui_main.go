@@ -52,6 +52,15 @@ func drawRemoteParticipants() {
 			imgui.TableSetupColumn("Identify")
 			imgui.TableSetupColumn("Publication Count")
 			imgui.TableHeadersRow()
+			// local participant
+			imgui.TableNextRow()
+			imgui.TableSetColumnIndex(0)
+			imgui.Text(context.Room.LocalParticipant.Name())
+			imgui.TableSetColumnIndex(1)
+			imgui.Text(context.Room.LocalParticipant.Identity())
+			imgui.TableSetColumnIndex(2)
+			imgui.Text(fmt.Sprintf("%d", len(context.Room.LocalParticipant.TrackPublications())))
+			// remote participants
 			for _, rp := range rps {
 				imgui.TableNextRow()
 				imgui.TableSetColumnIndex(0)

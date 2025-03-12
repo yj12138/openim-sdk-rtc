@@ -31,15 +31,22 @@ func (l *RoomListener) OnDisconnectedWithReason(reason pb_participant.Disconnect
 	dispatchEvent(&pb_ffi.FfiEvent{Message: msg})
 }
 func (l *RoomListener) OnParticipantConnected(rp *lksdk.RemoteParticipant) {
-	handle := api.storeObj(rp)
 	msg := &pb_ffi.FfiEvent_RoomEvent{
 		RoomEvent: &pb_room.RoomEvent{
 			RoomHandle: l.RoomHandle,
 			Message: &pb_room.RoomEvent_ParticipantConnected{
 				ParticipantConnected: &pb_room.ParticipantConnected{
 					Info: &pb_participant.OwnedParticipant{
-						Handle: &pb_handle.FfiOwnedHandle{Id: handle},
-						Info:   &pb_participant.ParticipantInfo{},
+						Handle: &pb_handle.FfiOwnedHandle{Id: api.storeObj(rp)},
+						Info: &pb_participant.ParticipantInfo{
+							Sid:              rp.SID(),
+							Name:             rp.Name(),
+							Identity:         rp.Identity(),
+							Metadata:         rp.Metadata(),
+							Attributes:       rp.Attributes(),
+							Kind:             sdk.ConvertParticipantKind(rp.Kind()),
+							DisconnectReason: pb_participant.DisconnectReason_UNKNOWN_REASON,
+						},
 					},
 				},
 			},
@@ -52,7 +59,10 @@ func (l *RoomListener) OnParticipantDisconnected(rp *lksdk.RemoteParticipant) {
 		RoomEvent: &pb_room.RoomEvent{
 			RoomHandle: l.RoomHandle,
 			Message: &pb_room.RoomEvent_ParticipantDisconnected{
-				ParticipantDisconnected: &pb_room.ParticipantDisconnected{},
+				ParticipantDisconnected: &pb_room.ParticipantDisconnected{
+					ParticipantIdentity: rp.Identity(),
+					DisconnectReason:    pb_participant.DisconnectReason_UNKNOWN_REASON,
+				},
 			},
 		},
 	}
@@ -165,6 +175,20 @@ func (l *RoomListener) OnParticipantTrackUnmuted(participantIdentify string, tra
 	}
 	dispatchEvent(&pb_ffi.FfiEvent{Message: msg})
 }
+func (l *RoomListener) OnParticipantNameChanged(participantIdentify string, newName string, oldName string) {
+	msg := &pb_ffi.FfiEvent_RoomEvent{
+		RoomEvent: &pb_room.RoomEvent{
+			RoomHandle: l.RoomHandle,
+			Message: &pb_room.RoomEvent_ParticipantNameChanged{
+				ParticipantNameChanged: &pb_room.ParticipantNameChanged{
+					ParticipantIdentity: participantIdentify,
+					Name:                newName,
+				},
+			},
+		},
+	}
+	dispatchEvent(&pb_ffi.FfiEvent{Message: msg})
+}
 func (l *RoomListener) OnParticipantMetadataChanged(participantIdentify string, metadata string) {
 	msg := &pb_ffi.FfiEvent_RoomEvent{
 		RoomEvent: &pb_room.RoomEvent{
@@ -180,7 +204,6 @@ func (l *RoomListener) OnParticipantMetadataChanged(participantIdentify string, 
 	dispatchEvent(&pb_ffi.FfiEvent{Message: msg})
 }
 func (l *RoomListener) OnParticipantAttributesChanged(participantIdentify string, changed map[string]string) {
-
 	changedAttributes := make([]*pb_room.AttributesEntry, 0)
 	for k, v := range changed {
 		changedAttributes = append(changedAttributes, &pb_room.AttributesEntry{
@@ -194,6 +217,7 @@ func (l *RoomListener) OnParticipantAttributesChanged(participantIdentify string
 			Message: &pb_room.RoomEvent_ParticipantAttributesChanged{
 				ParticipantAttributesChanged: &pb_room.ParticipantAttributesChanged{
 					ParticipantIdentity: participantIdentify,
+					Attributes:          nil,
 					ChangedAttributes:   changedAttributes,
 				},
 			},
@@ -298,7 +322,7 @@ func (l *RoomListener) OnTrackPublished(publication *lksdk.RemoteTrackPublicatio
 							Sid:         publication.SID(),
 							Name:        publication.Name(),
 							Kind:        sdk.ConvertTrackKind(publication.Kind()),
-							Source:      pb_track.TrackSource(publication.Source()),
+							Source:      sdk.ConvertTrackSource(publication.Source()),
 							Simulcasted: publication.TrackInfo().GetSimulcast(),
 							Width:       publication.TrackInfo().Height,
 							Height:      publication.TrackInfo().Height,
@@ -371,7 +395,7 @@ func (l *RoomListener) OnDataPacket(participantIdentify string, _packet lksdk.Da
 	})
 }
 
-func (l *RoomListener) OnTranscriptionReceived(participantIdentify string, trackSid string, segments []*pb_room.TranscriptionSegment) {
+func (l *RoomListener) OnTranscriptionReceived(participantIdentify string, trackSid string, segments []*lksdk.TranscriptionSegment) {
 	msg := &pb_ffi.FfiEvent_RoomEvent{
 		RoomEvent: &pb_room.RoomEvent{
 			RoomHandle: l.RoomHandle,
@@ -379,7 +403,7 @@ func (l *RoomListener) OnTranscriptionReceived(participantIdentify string, track
 				TranscriptionReceived: &pb_room.TranscriptionReceived{
 					ParticipantIdentity: participantIdentify,
 					TrackSid:            trackSid,
-					Segments:            segments,
+					Segments:            sdk.ConvertTranscriptionSegment(segments),
 				},
 			},
 		},
