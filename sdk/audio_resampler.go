@@ -1,94 +1,40 @@
 package sdk
 
 import (
-	"bytes"
-	"encoding/binary"
-	// "io"
 	"log"
-
-	"github.com/faiface/beep"
 )
-
-// type PCMStreamer struct {
-// 	reader      io.Reader
-// 	sampleRate  beep.SampleRate
-// 	numChannels uint32
-// 	bitDepth    int
-// }
-
-// func (p *PCMStreamer) Stream(samples [][2]float64) (n int, ok bool) {
-// 	bytesPerSample := p.bitDepth / 8
-// 	buffer := make([]byte, bytesPerSample*p.numChannels*len(samples))
-// 	bytesRead, err := p.reader.Read(buffer)
-// 	if err != nil && err != io.EOF {
-// 		return 0, false
-// 	}
-// 	if bytesRead == 0 {
-// 		return 0, false
-// 	}
-
-// 	for i := 0; i < bytesRead/(bytesPerSample*p.numChannels); i++ {
-// 		for ch := 0; ch < p.numChannels; ch++ {
-// 			var sample int16
-// 			offset := (i*p.numChannels + ch) * bytesPerSample
-// 			binary.Read(bytes.NewReader(buffer[offset:offset+bytesPerSample]), binary.LittleEndian, &sample)
-// 			samples[i][ch] = float64(sample) / (1 << 15)
-// 		}
-// 	}
-// 	return bytesRead / (bytesPerSample * p.numChannels), true
-// }
-
-// Err 返回流中的错误
-// func (p *PCMStreamer) Err() error {
-// 	return nil
-// }
 
 type AudioResampler struct {
 	sampleRate     uint32
 	targetChannels uint32
 }
 
-func StreamerToBytes(streamer beep.Streamer, sampleRate beep.SampleRate, numChannels int) ([]byte, error) {
-	var buf bytes.Buffer
-	samples := make([][2]float64, 1024)
-	for {
-		n, ok := streamer.Stream(samples)
-		if !ok {
-			break
-		}
-		for i := 0; i < n; i++ {
-			for c := 0; c < numChannels; c++ {
-				// Convert the sample to 16-bit PCM
-				sample := int16(samples[i][c] * (1 << 15))
-				if err := binary.Write(&buf, binary.LittleEndian, sample); err != nil {
-					return nil, err
-				}
-			}
-		}
-	}
-	return buf.Bytes(), nil
-}
-
-// RemixAndResample 重新采样音频数据
 func (s *AudioResampler) RemixAndResample(sourceData []byte, sourceSampleRate uint32, sourceNumChannels uint32, sourceSamplesPerChannel uint32, targetSampleRate uint32, targetChannels uint32) []byte {
 	log.Println("RemixAndResample", "Source Length", len(sourceData), sourceSampleRate, sourceNumChannels, sourceSamplesPerChannel, targetSampleRate, targetChannels)
 	if sourceSampleRate == targetSampleRate && sourceNumChannels == targetChannels {
 		return sourceData
 	}
-	if targetSampleRate != s.sampleRate || s.targetChannels != targetChannels {
-		// TODO
+	var destData []byte = sourceData
+	if sourceNumChannels != targetChannels {
+		if sourceNumChannels == 1 && targetChannels == 2 {
+			destData = make([]byte, len(sourceData)*2)
+			for i := 0; i < len(sourceData); i++ {
+				destData[i*2] = sourceData[i]
+				destData[i*2+1] = sourceData[i]
+			}
+		}
+		if sourceNumChannels == 2 && targetChannels == 1 {
+			destData = make([]byte, len(sourceData)/2)
+			for i := 0; i < len(sourceData)/2; i++ {
+				destData[i] = sourceData[i*2]
+			}
+		}
 	}
-	// oldSampleRate := beep.SampleRate(sourceSampleRate)
-	// newSampleRate := beep.SampleRate(targetSampleRate)
-	// streamer := &PCMStreamer{
-	// 	reader:      bytes.NewReader(sourceData),
-	// 	sampleRate:  oldSampleRate,
-	// 	numChannels: sourceNumChannels,
-	// 	bitDepth:    16,
-	// }
-	// resample := beep.Resample(3, oldSampleRate, newSampleRate, streamer)
-	// audioData, err := StreamerToBytes(resample, newSampleRate, sourceNumChannels)
-	return make([]byte, 0)
+	if sourceSampleRate != targetSampleRate {
+		// return Resample(destData, int(sourceSampleRate), int(targetSampleRate))
+	} else {
+	}
+	return destData
 }
 
 func NewAudioResampler() *AudioResampler {
