@@ -1,6 +1,7 @@
 package base
 
 import (
+	"github.com/livekit/protocol/livekit"
 	lksdk "github.com/livekit/server-sdk-go/v2"
 	"github.com/openimsdk/openim-rtc/proto/go/e2ee"
 	pb_ffi "github.com/openimsdk/openim-rtc/proto/go/ffi"
@@ -15,7 +16,13 @@ func (api *API) PublishTrack(req *pb_room.PublishTrackRequest) *pb_room.PublishT
 	participant := api.getLocalParticipant(req.LocalParticipantHandle)
 	track := api.getLocalTrack(req.TrackHandle)
 	go func() {
-		pub, err := participant.PublishTrack(track, &lksdk.TrackPublicationOptions{})
+		pub, err := participant.PublishTrack(track, &lksdk.TrackPublicationOptions{
+			Name:       track.Name,
+			DisableDTX: req.Options.Dtx,
+			Source:     livekit.TrackSource(req.Options.Source),
+			Encryption: livekit.Encryption_NONE,
+			Stream:     req.Options.Stream,
+		})
 		if err != nil {
 			dispatchEvent(&pb_ffi.FfiEvent{
 				Message: &pb_ffi.FfiEvent_PublishTrack{
@@ -55,7 +62,6 @@ func (api *API) PublishTrack(req *pb_room.PublishTrackRequest) *pb_room.PublishT
 				},
 			})
 		}
-
 	}()
 
 	res := &pb_room.PublishTrackResponse{

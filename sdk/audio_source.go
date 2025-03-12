@@ -45,14 +45,9 @@ func (s *AudioSource) CurrentAudioLevel() uint8 {
 
 func (s *AudioSource) NextSample(c context.Context) (media.Sample, error) {
 	sample := media.Sample{}
-	select {
-	case sampleData := <-s.dataCache:
-		sample.Data = sampleData.Data
-		sample.Duration = sampleData.Duration
-	default:
-		sample.Data = make([]byte, 0)
-		sample.Duration = 1 * time.Second
-	}
+	sampleData := <-s.dataCache
+	sample.Data = sampleData.Data
+	sample.Duration = sampleData.Duration
 	// log.Println("NextSample:", len(sample.Data), sample.Duration)
 	return sample, nil
 }
@@ -79,8 +74,7 @@ func NewAudioSource(sourceType pb_audio.AudioSourceType, sampleRate uint32, numC
 		SourceType:  sourceType,
 		SampleRate:  sampleRate,
 		NumChannels: numChannels,
-		// TODO
-		mime:      "audio/opus",
-		dataCache: make(chan AudioSampleData, 10),
+		mime:        "audio/opus",
+		dataCache:   make(chan AudioSampleData, 10),
 	}
 }

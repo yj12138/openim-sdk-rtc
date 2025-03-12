@@ -17,11 +17,7 @@ func (api *API) CreateVideoTrack(req *pb_track.CreateVideoTrackRequest) *pb_trac
 		Track: &pb_track.OwnedTrack{
 			Handle: &pb_handle.FfiOwnedHandle{Id: api.storeObj(track)},
 			Info: &pb_track.TrackInfo{
-				// Sid:         track.LocalTrackPublication.SID(),
-				// Name:        track.LocalTrackPublication.Name(),
-				// Kind:        sdk.ConvertTrackKind(track.LocalTrackPublication.Kind()),
-				// StreamState: pb_track.StreamState_STATE_ACTIVE,
-				// Muted:       track.LocalTrackPublication.IsMuted(),
+				Name:   track.Name,
 				Remote: false,
 			},
 		},
@@ -36,11 +32,7 @@ func (api *API) CreateAudioTrack(req *pb_track.CreateAudioTrackRequest) *pb_trac
 		Track: &pb_track.OwnedTrack{
 			Handle: &pb_handle.FfiOwnedHandle{Id: trackHandle},
 			Info: &pb_track.TrackInfo{
-				// Sid:         track.StreamID(),
-				// Name:        track.Name(),
-				// Kind:        sdk.ConvertTrackKind(track.LocalTrackPublication.Kind()),
-				// StreamState: pb_track.StreamState_STATE_ACTIVE,
-				// Muted:       track.LocalTrackPublication.IsMuted(),
+				Name:   track.Name,
 				Remote: false,
 			},
 		},
