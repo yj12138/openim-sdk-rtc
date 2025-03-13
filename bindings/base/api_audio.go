@@ -1,6 +1,8 @@
 package base
 
 import (
+	// "log"
+
 	pb_audio "github.com/openimsdk/openim-rtc/proto/go/audio_frame"
 	pb_ffi "github.com/openimsdk/openim-rtc/proto/go/ffi"
 	pb_handle "github.com/openimsdk/openim-rtc/proto/go/handle"
@@ -62,7 +64,8 @@ func (api *API) CaptureAudioFrame(req *pb_audio.CaptureAudioFrameRequest) *pb_au
 	audioSource := api.getAudioSource(req.SourceHandle)
 	go func() {
 		buffer := req.Buffer
-		length := buffer.NumChannels * buffer.SampleRate * 2
+		length := buffer.NumChannels * buffer.SamplesPerChannel * 2
+		//log.Println("CaptureAudioFrame", req.Buffer.SampleRate, req.Buffer.NumChannels, req.Buffer.SamplesPerChannel, length)
 		data := cPointerToGoByteSliceNoCopyFunc(req.Buffer.DataPtr, uint64(length))
 		err := audioSource.CaptureFrame(data)
 		errStr := ""

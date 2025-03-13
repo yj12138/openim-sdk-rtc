@@ -97,7 +97,7 @@ func openim_rtc_ffi_request(data *C.void, length C.int, dataPtr **C.uint8_t, dat
 
 //export openim_rtc_ffi_drop_handle
 func openim_rtc_ffi_drop_handle(handleId uint64) {
-	log.Println("openim_rtc_ffi drop handle", handleId)
+	// log.Println("openim_rtc_ffi drop handle", handleId)
 	call := base.GetFFICall(handleId)
 	if call != nil {
 		// log.Println("drop FFICall", call)

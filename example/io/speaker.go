@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/gen2brain/malgo"
+	"github.com/openimsdk/openim-rtc/sdk"
 )
 
 type SpeakerCallBackFunc func(data []byte)
@@ -47,6 +48,8 @@ type Speaker struct {
 
 	audioData chan []byte
 	callbacks *SpeakerCallBackList
+
+	resample *sdk.AudioResampler
 }
 
 func (m *Speaker) init() {
@@ -139,9 +142,10 @@ func (m *Speaker) Dispose() {
 	}
 }
 
-func (m *Speaker) WriteData(data []byte) {
-	m.callbacks.Execute(data)
-	m.audioData <- data
+func (m *Speaker) WriteFrame(data []byte) {
+	resampleData := m.resample.RemixAndResample(data, 48000, 1, uint32(len(data)), 48000, 1)
+	m.callbacks.Execute(resampleData)
+	m.audioData <- resampleData
 }
 
 func (m *Speaker) AddCallBack(cb func(data []byte)) {
@@ -154,6 +158,7 @@ func NewSpeaker(sampleRate uint32, channels uint32) *Speaker {
 		channels:   channels,
 		audioData:  make(chan []byte, 10),
 		callbacks:  newSpeakerCallbackList(),
+		resample:   sdk.NewAudioResampler(),
 	}
 	speaker.init()
 	return speaker

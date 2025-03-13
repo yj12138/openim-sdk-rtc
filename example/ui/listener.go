@@ -74,11 +74,11 @@ func (l *RoomListener) OnTrackSubscribed(track *webrtc.TrackRemote, publication 
 	log.Println("OnTrackSubscribed", rp.Identity(), publication.SID())
 	go func() {
 		for {
-			_, _, err := track.ReadRTP()
+			rtp, _, err := track.ReadRTP()
 			if err != nil {
 				break
 			}
-			// log.Println("Recv:", len(rtp.Payload))
+			context.Speaker.WriteFrame(rtp.Payload)
 		}
 	}()
 }

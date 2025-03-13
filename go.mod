@@ -3,7 +3,6 @@ module github.com/openimsdk/openim-rtc
 go 1.23.4
 
 require (
-	github.com/faiface/beep v1.1.0
 	github.com/livekit/protocol v1.34.0
 	github.com/livekit/server-sdk-go/v2 v2.5.0
 	github.com/pion/webrtc/v4 v4.0.11

@@ -55,8 +55,8 @@ type Context struct {
 func (c *Context) connect() {
 	c.ConnectState = Connecting
 	data := map[string]string{
-		"roomName": c.roomName,
-		// "participantName": , 随机一个 identify
+		"roomName":        c.roomName,
+		"participantName": "test-go-client", // particiant identify
 	}
 	jsonData, err := json.Marshal(data)
 	if err != nil {
@@ -99,7 +99,6 @@ func (c *Context) connect() {
 	c.Room = sdk.ConnectByToken(c.serverUrl, c.participantToken, NewRoomListener())
 	c.LocalParticipant = sdk.NewLocalParticipant(c.Room.LocalParticipant)
 	c.setWindowTitle("Room:" + c.roomName)
-	c.Room.LocalParticipant.SetName(c.participantName)
 	go func() {
 		time.Sleep(3 * time.Second)
 		log.Println(c.Room.LocalParticipant.Name())
@@ -109,10 +108,11 @@ func (c *Context) connect() {
 		log.Println(c.Room.LocalParticipant.IsMicrophoneEnabled())
 		log.Println(c.Room.LocalParticipant.IsCameraEnabled())
 		log.Println(c.Room.LocalParticipant.IsSpeaking())
-		c.Room.LocalParticipant.SetName(c.participantName + " : new name )")
+		c.Room.LocalParticipant.SetName(c.participantName)
 	}()
-
 	c.ConnectState = ConnectSuccess
+
+	context.Speaker.Start()
 }
 
 func (c *Context) PublishAudioTrack(track *sdk.LocalTrack) {
