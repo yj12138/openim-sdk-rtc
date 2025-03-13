@@ -66,7 +66,7 @@ func (api *API) CaptureAudioFrame(req *pb_audio.CaptureAudioFrameRequest) *pb_au
 		buffer := req.Buffer
 		length := buffer.NumChannels * buffer.SamplesPerChannel * 2
 		//log.Println("CaptureAudioFrame", req.Buffer.SampleRate, req.Buffer.NumChannels, req.Buffer.SamplesPerChannel, length)
-		data := cPointerToGoByteSliceNoCopyFunc(req.Buffer.DataPtr, uint64(length))
+		data := api.c.CPointerToGoByteSliceNoCopy(req.Buffer.DataPtr, uint64(length))
 		err := audioSource.CaptureFrame(data)
 		errStr := ""
 		if err != nil {
@@ -104,10 +104,10 @@ func (api *API) NewAudioResampler(req *pb_audio.NewAudioResamplerRequest) *pb_au
 func (api *API) RemixAndResample(req *pb_audio.RemixAndResampleRequest) *pb_audio.RemixAndResampleResponse {
 	resample := api.GetAudioResampler(req.ResamplerHandle)
 	length := uint64(req.Buffer.NumChannels * req.Buffer.SamplesPerChannel * 2)
-	data := cPointerToGoByteSliceNoCopyFunc(req.Buffer.DataPtr, length)
+	data := api.c.CPointerToGoByteSliceNoCopy(req.Buffer.DataPtr, length)
 	buffer := resample.RemixAndResample(data, req.Buffer.SampleRate, req.Buffer.NumChannels, req.Buffer.NumChannels, req.SampleRate, req.NumChannels)
 	audioFrameBuffer := &AudioFrameBuffer{
-		DataPtr:           goByteSliceToCPointerNoCopyFunc(buffer),
+		DataPtr:           api.c.GoByteSliceToCPointerNoCopy(buffer),
 		NumChannels:       req.NumChannels,
 		SampleRate:        req.SampleRate,
 		SamplesPerChannel: req.Buffer.SamplesPerChannel,

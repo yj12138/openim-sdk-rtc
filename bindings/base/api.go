@@ -10,37 +10,24 @@ import (
 	"github.com/pion/webrtc/v4"
 )
 
-type CPointerToGoByteSliceNoCopyFunc func(cPointer uint64, length uint64) []byte
-type GoByteSliceToCPointerNoCopyFunc func(data []byte) uint64
-
 var (
-	api                             *API
-	cPointerToGoByteSliceNoCopyFunc CPointerToGoByteSliceNoCopyFunc
-	goByteSliceToCPointerNoCopyFunc GoByteSliceToCPointerNoCopyFunc
+	api *API
 )
 
-func init() {
-	api = newAPI()
-}
-
-// C数据转go数据
-func SetCPointerToGoByteSliceNoCopyFunc(f CPointerToGoByteSliceNoCopyFunc) {
-	cPointerToGoByteSliceNoCopyFunc = f
-}
-
-// go数据转C数据
-func SetGoByteSliceToCPointerNoCopyFunc(f GoByteSliceToCPointerNoCopyFunc) {
-	goByteSliceToCPointerNoCopyFunc = f
+func InitAPI(c CInterface) {
+	api = newAPI(c)
 }
 
 type API struct {
+	c              CInterface
 	objMap         sync.Map
 	handleCounter  atomic.Uint64
 	asyncIdCounter atomic.Uint64
 }
 
-func newAPI() *API {
+func newAPI(cInterface CInterface) *API {
 	return &API{
+		c:             cInterface,
 		objMap:        sync.Map{},
 		handleCounter: atomic.Uint64{},
 	}

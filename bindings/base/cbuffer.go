@@ -11,7 +11,7 @@ type CBuffer struct {
 }
 
 func NewCBuffer(sourceData []byte) *CBuffer {
-	ptr := goByteSliceToCPointerNoCopyFunc(sourceData)
+	ptr := api.c.GoByteSliceToCPointerNoCopy(sourceData)
 	return &CBuffer{
 		SourceData: sourceData,
 		CDataPtr:   ptr,
@@ -28,7 +28,7 @@ type AudioFrameBuffer struct {
 
 func NewAudioFrameBuffer(data []byte, numChannels uint32, sampleRate uint32, samplesPerChannel uint32) *AudioFrameBuffer {
 	return &AudioFrameBuffer{
-		DataPtr:           goByteSliceToCPointerNoCopyFunc(data),
+		DataPtr:           api.c.GoByteSliceToCPointerNoCopy(data),
 		NumChannels:       numChannels,
 		SampleRate:        sampleRate,
 		SamplesPerChannel: samplesPerChannel,

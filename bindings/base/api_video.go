@@ -19,7 +19,7 @@ func (api *API) NewVideoStream(req *pb_video.NewVideoStreamRequest) *pb_video.Ne
 			Type:    videoFrame.Type,
 			Width:   videoFrame.Width,
 			Height:  videoFrame.Height,
-			DataPtr: goByteSliceToCPointerNoCopyFunc(videoFrame.Payload),
+			DataPtr: api.c.GoByteSliceToCPointerNoCopy(videoFrame.Payload),
 			Stride:  0,
 		}
 		dispatchEvent(&pb_ffi.FfiEvent{
@@ -71,7 +71,7 @@ func (api *API) CaptureVideoFrame(req *pb_video.CaptureVideoFrameRequest) *pb_vi
 	videoSource := api.getVideoSource(req.SourceHandle)
 	// TODO 计算大小
 	length := 0
-	data := cPointerToGoByteSliceNoCopyFunc(req.Buffer.DataPtr, uint64(length))
+	data := api.c.CPointerToGoByteSliceNoCopy(req.Buffer.DataPtr, uint64(length))
 	videoSource.CaptureFrame(req.TimestampUs, req.Rotation, data)
 	res := &pb_video.CaptureVideoFrameResponse{}
 	return res

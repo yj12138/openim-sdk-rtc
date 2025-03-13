@@ -97,7 +97,7 @@ func (api *API) PublishData(req *pb_room.PublishDataRequest) *pb_room.PublishDat
 	asyncId := api.nextAsyncId()
 	participant := api.getLocalParticipant(req.LocalParticipantHandle)
 	go func() {
-		data := cPointerToGoByteSliceNoCopyFunc(req.DataPtr, req.DataLen)
+		data := api.c.CPointerToGoByteSliceNoCopy(req.DataPtr, req.DataLen)
 		err := participant.SendData(req.Topic, data, req.Reliable, req.DestinationIdentities)
 		errStr := ""
 		if err != nil {

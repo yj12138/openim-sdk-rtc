@@ -7,10 +7,6 @@ import (
 	"unsafe"
 )
 
-var (
-	eventCallback func(*FFIEvent)
-)
-
 type FFICall struct {
 	Id              uint64
 	RequestData     []byte
@@ -38,10 +34,6 @@ func GetCBuffer(handleId uint64) *CBuffer {
 	return api.getCBuffer(handleId)
 }
 
-func SetEventCallBackFunc(f func(*FFIEvent)) {
-	eventCallback = f
-}
-
 func RemoteHandle(handle uint64) {
 	api.delObj(handle)
 }
@@ -55,10 +47,7 @@ func dispatchEvent(pbFfiEvent *pb_ffi.FfiEvent) {
 	}
 	ffiEvent.Data = data
 	ffiEvent.Id = api.storeObj(ffiEvent)
-	if eventCallback == nil {
-		panic("eventCallback is nil")
-	}
-	eventCallback(ffiEvent)
+	api.c.EventCallback(ffiEvent)
 }
 
 func execute(req *pb_ffi.FfiRequest) *pb_ffi.FfiResponse {
