@@ -94,6 +94,8 @@ func (m *Speaker) Stop() error {
 
 func (m *Speaker) onSendFrames(outputSample, inputSample []byte, framecount uint32) {
 	data := <-m.audioData
+	// TODO 对要播放的流进行重采样
+	// resampleData := m.resample.RemixAndResample(data, 48000, 1, uint32(len(data)), 48000, 1)
 	copy(outputSample, data)
 }
 
@@ -112,8 +114,7 @@ func (m *Speaker) Dispose() {
 }
 
 func (m *Speaker) WriteFrame(data []byte) {
-	resampleData := m.resample.RemixAndResample(data, 48000, 1, uint32(len(data)), 48000, 1)
-	m.audioData <- resampleData
+	m.audioData <- data
 }
 
 func NewSpeaker(sampleRate uint32, channels uint32) *Speaker {
