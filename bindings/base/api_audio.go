@@ -64,10 +64,11 @@ func (api *API) CaptureAudioFrame(req *pb_audio.CaptureAudioFrameRequest) *pb_au
 	audioSource := api.getAudioSource(req.SourceHandle)
 	go func() {
 		buffer := req.Buffer
-		length := buffer.NumChannels * buffer.SamplesPerChannel * 2
+		sampleCount := buffer.NumChannels * buffer.SamplesPerChannel
+		length := sampleCount * 2
 		//log.Println("CaptureAudioFrame", req.Buffer.SampleRate, req.Buffer.NumChannels, req.Buffer.SamplesPerChannel, length)
 		data := api.c.CPointerToGoByteSliceNoCopy(req.Buffer.DataPtr, uint64(length))
-		err := audioSource.CaptureFrame(data)
+		err := audioSource.CaptureFrame(data, int(sampleCount))
 		errStr := ""
 		if err != nil {
 			errStr = err.Error()

@@ -2,45 +2,24 @@ package ui
 
 import (
 	"fmt"
-	"log"
-
 	"github.com/AllenDang/cimgui-go/imgui"
-	"github.com/openimsdk/openim-rtc/proto/go/audio_frame"
-	"github.com/openimsdk/openim-rtc/sdk"
+	"github.com/AllenDang/cimgui-go/implot"
 )
 
-// var micPhoneData []uint32
+const AudioDataLength = 500
 
-// const MaxMicPhoneDataLength = 500
-
-// var speakerData []uint32
-
-// const MaxSpeakerDataLength = 500
+var rawAudioData []uint32 = make([]uint32, AudioDataLength)
+var clearAudioData []uint32 = make([]uint32, AudioDataLength)
 
 func drawLocalParticipant() {
 	imgui.Begin("LocalParticipayt:" + context.participantName)
 	if imgui.Button("Send TestData") {
-		go func() {
-			err := context.LocalParticipant.SendData("Test", []byte("golang hello"), true, []string{})
-			if err != nil {
-				log.Println(err.Error())
-			}
-		}()
+		context.SendData("Hello From Golang")
 	}
 	if imgui.Button("Publish Audio Track") {
-		go func() {
-			audioSource := sdk.NewAudioSource(audio_frame.AudioSourceType_AUDIO_SOURCE_NATIVE, context.MicPhone.SampleRate, context.MicPhone.Channels)
-			track := sdk.NewAudioTrack("micphone audio track", audioSource)
-			context.PublishAudioTrack(track)
-			context.MicPhone.Start()
-			context.MicPhone.AddCallBack(func(data []byte, frameCount uint32) {
-				err := audioSource.CaptureFrame(data)
-				if err != nil {
-					log.Println(err.Error())
-				}
-			})
-		}()
+		context.PublishAudioTrack()
 	}
+
 	imgui.End()
 }
 
@@ -76,89 +55,56 @@ func drawRemoteParticipants() {
 	imgui.End()
 }
 
-func drawAudioTrack() {
-	// imgui.Begin("Audio Track")
-	// if core.HasPublishAudioTrack() {
-	// 	if imgui.Button("Unpublish Audio Track") {
-	// 		core.StopAudioTrack()
-	// 	}
-	// } else {
-	// 	if imgui.Button("Public Audio Track") {
-	// 		core.OpenAudioTrack()
-	// 	}
-	// }
-	// imgui.Text("------------------MicPhone------------------------")
-	// if core.GetMicPhone().Using() {
-	// 	if imgui.Button("Close Micphone") {
-	// 		err := core.GetMicPhone().Stop()
-	// 		if err != nil {
-	// 			log.Panicln(err)
-	// 		}
-	// 	}
-	// 	if implot.PlotBeginPlotV("Micphone", imgui.NewVec2(-1, 300), 0) {
-	// 		implot.PlotPlotLineU32PtrInt("line", &micPhoneData[0], int32(len(micPhoneData)))
-	// 		implot.PlotEndPlot()
-	// 	}
-	// } else {
-	// 	if imgui.Button("Open Micphone") {
+func appendRawAudioFrame(data []byte, frameCount uint32) {
+	sum := uint32(0)
+	for i := 0; i < len(data); i += 2 {
+		val := uint32(data[i]) | uint32(data[i+1])<<8
+		sum += val
+	}
+	if len(rawAudioData) > AudioDataLength {
+		rawAudioData = rawAudioData[:0]
+	}
+	val := sum / frameCount
+	rawAudioData = append(rawAudioData, val)
+}
 
-	// 		err := core.GetMicPhone().Start()
-	// 		if err != nil {
-	// 			log.Panic(err)
-	// 		} else {
-	// 			core.GetMicPhone().AddCallBack(func(data []byte, frameCount uint32) {
-	// 				sum := uint32(0)
-	// 				for i := 0; i < len(data); i += 2 {
-	// 					val := uint32(data[i]) | uint32(data[i+1])<<8
-	// 					sum += val
-	// 				}
-	// 				if len(micPhoneData) > MaxMicPhoneDataLength {
-	// 					micPhoneData = micPhoneData[:0]
-	// 				}
-	// 				val := sum / frameCount
-	// 				micPhoneData = append(micPhoneData, val)
-	// 			})
-	// 		}
-	// 	}
-	// }
-	// imgui.Text("------------------Speaker------------------------")
-	// if core.GetSpeaker().Using() {
-	// 	if imgui.Button("Close Speaker") {
-	// 		err := core.GetSpeaker().Stop()
-	// 		if err != nil {
-	// 			log.Panicln(err)
-	// 		}
-	// 	}
-	// 	if len(speakerData) > 0 {
-	// 		if implot.PlotBeginPlotV("Speaker", imgui.NewVec2(-1, 300), 0) {
-	// 			implot.PlotPlotLineU32PtrInt("line", &speakerData[0], int32(len(speakerData)))
-	// 			implot.PlotEndPlot()
-	// 		}
-	// 	} else {
-	// 		imgui.Text("No Recv data")
-	// 	}
-	// } else {
-	// 	if imgui.Button("Open Speaker") {
-	// 		err := core.GetSpeaker().Start()
-	// 		if err != nil {
-	// 			log.Panic(err)
-	// 		} else {
-	// 			core.GetSpeaker().AddCallBack(func(data []byte) {
-	// 				sum := uint32(0)
-	// 				for i := 0; i < len(data); i += 2 {
-	// 					val := uint32(data[i]) | uint32(data[i+1])<<8
-	// 					sum += val
-	// 				}
-	// 				if len(speakerData) > MaxSpeakerDataLength {
-	// 					speakerData = speakerData[:0]
-	// 				}
-	// 				val := sum / uint32((len(data) / 2))
-	// 				speakerData = append(speakerData, val)
-	// 			})
-	// 		}
-	// 	}
-	// }
-	// imgui.End()
+func appendClearAudioFrame(data []byte, frameCount uint32) {
+	sum := uint32(0)
+	for i := 0; i < len(data); i += 2 {
+		val := uint32(data[i]) | uint32(data[i+1])<<8
+		sum += val
+	}
+	if len(clearAudioData) > AudioDataLength {
+		clearAudioData = clearAudioData[:0]
+	}
+	val := sum / frameCount
+	clearAudioData = append(clearAudioData, val)
+}
+
+func drawAudioWave() {
+	imgui.Begin("Audio Track")
+	if implot.PlotBeginPlotV("RawAudioWave", imgui.NewVec2(-1, 300), 0) {
+		implot.PlotPlotLineU32PtrInt("line", &rawAudioData[0], int32(len(rawAudioData)))
+		implot.PlotEndPlot()
+	}
+	if implot.PlotBeginPlotV("ClerAudioWave", imgui.NewVec2(-1, 600), 0) {
+		implot.PlotPlotLineU32PtrInt("line", &clearAudioData[0], int32(len(clearAudioData)))
+		implot.PlotEndPlot()
+	}
+	imgui.End()
+}
+
+func drawAudioRecord() {
+	if imgui.Begin("AudioRecord") {
+		if imgui.Button("Start") {
+			context.MicPhone.Start()
+		}
+		if imgui.Button("Stop") {
+			context.MicPhone.SaveWavFile("out.wav")
+			context.MicPhone.Stop()
+		}
+		imgui.End()
+	}
 }
 
 func drawMainWin() {
@@ -167,4 +113,6 @@ func drawMainWin() {
 	}
 	drawLocalParticipant()
 	drawRemoteParticipants()
+	// drawAudioWave()
+	drawAudioRecord()
 }

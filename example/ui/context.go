@@ -10,7 +10,9 @@ import (
 
 	"github.com/livekit/protocol/livekit"
 	lksdk "github.com/livekit/server-sdk-go/v2"
+	pb_audio_frame "github.com/openimsdk/openim-rtc/proto/go/audio_frame"
 	"github.com/openimsdk/openim-rtc/sdk"
+	audio "github.com/openimsdk/openim-rtc/sdk/audio"
 
 	_io "github.com/openimsdk/openim-rtc/example/io"
 )
@@ -48,8 +50,10 @@ type Context struct {
 	Room             *sdk.Room
 	LocalParticipant *sdk.LocalParticipant
 
-	MicPhone *_io.MicPhone
-	Speaker  *_io.Speaker
+	MicPhone     *_io.MicPhone
+	Speaker      *_io.Speaker
+	audioSource  *sdk.AudioSource
+	aceProcessor *audio.AECProcessor
 }
 
 func (c *Context) connect() {
@@ -113,9 +117,34 @@ func (c *Context) connect() {
 	c.ConnectState = ConnectSuccess
 
 	context.Speaker.Start()
+	context.MicPhone.CallBack = (func(data []byte, frameCount uint32) {
+		appendRawAudioFrame(data, frameCount)
+		// log.Println("Frame Length:", len(data), frameCount)
+		// TODO 降噪去掉回声
+		// data = context.aceProcessor.Process(data)
+		appendClearAudioFrame(data, frameCount)
+		if context.audioSource != nil {
+			err := context.audioSource.CaptureFrame(data, int(frameCount))
+			if err != nil {
+				log.Println(err.Error())
+			}
+		}
+
+	})
 }
 
-func (c *Context) PublishAudioTrack(track *sdk.LocalTrack) {
+func (c *Context) SendData(data string) {
+	go func() {
+		err := context.LocalParticipant.SendData("Test", []byte("golang hello"), true, []string{})
+		if err != nil {
+			log.Println(err.Error())
+		}
+	}()
+}
+
+func (c *Context) PublishAudioTrack() {
+	c.audioSource = sdk.NewAudioSource(pb_audio_frame.AudioSourceType_AUDIO_SOURCE_NATIVE, context.MicPhone.SampleRate, context.MicPhone.Channels)
+	track := sdk.NewAudioTrack("micphone audio track", c.audioSource)
 	_, err := c.LocalParticipant.PublishTrack(track, &lksdk.TrackPublicationOptions{
 		Name:       track.Name,
 		Source:     livekit.TrackSource_MICROPHONE,
@@ -124,6 +153,7 @@ func (c *Context) PublishAudioTrack(track *sdk.LocalTrack) {
 	if err != nil {
 		log.Panic(err.Error())
 	}
+	context.MicPhone.Start()
 }
 
 func (c *Context) SetWindowTitle(title string) {
@@ -133,14 +163,19 @@ func (c *Context) SetWindowTitle(title string) {
 }
 
 func InitContext(httpUrl string, x_Sandbox_ID string, roomName string, participantName string) {
+
+	sampleRate := 48000
+	// sampleRate := 44100
+
 	context = &Context{
 		httpURL:         httpUrl,
 		x_Sandbox_ID:    x_Sandbox_ID,
 		roomName:        roomName,
 		participantName: participantName,
 		ConnectState:    ConnectNone,
-		MicPhone:        _io.NewMicPhone(48000, 1),
-		Speaker:         _io.NewSpeaker(48000, 1),
+		MicPhone:        _io.NewMicPhone(uint32(sampleRate), 1),
+		Speaker:         _io.NewSpeaker(uint32(sampleRate), 1),
+		aceProcessor:    audio.NewAECProcessor(480, 4800, sampleRate),
 	}
 	go context.connect()
 }

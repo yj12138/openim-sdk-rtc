@@ -1,40 +1,15 @@
 package io
 
 import (
+	"encoding/binary"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/gen2brain/malgo"
+	"github.com/go-audio/audio"
+	"github.com/go-audio/wav"
 )
-
-type MicPhoneCallbackFunc func(data []byte, frameCount uint32)
-
-type MicPhoneCallbackList struct {
-	callbacks []MicPhoneCallbackFunc
-	exists    map[string]bool
-}
-
-func newMicPhoneCallbackList() *MicPhoneCallbackList {
-	return &MicPhoneCallbackList{
-		callbacks: []MicPhoneCallbackFunc{},
-		exists:    make(map[string]bool),
-	}
-}
-func (cl *MicPhoneCallbackList) Add(callback MicPhoneCallbackFunc) {
-	callbackID := fmt.Sprintf("%p", callback)
-	if !cl.exists[callbackID] {
-		cl.callbacks = append(cl.callbacks, callback)
-		cl.exists[callbackID] = true
-	} else {
-		log.Println("回调函数已经存在")
-	}
-}
-
-func (cl *MicPhoneCallbackList) Execute(data []byte, frameCount uint32) {
-	for _, callback := range cl.callbacks {
-		callback(data, frameCount)
-	}
-}
 
 type MicPhone struct {
 	context     *malgo.AllocatedContext
@@ -43,10 +18,11 @@ type MicPhone struct {
 	using       bool
 	sizeInBytes uint32
 
-	callbacks *MicPhoneCallbackList
+	SampleRate   uint32
+	Channels     uint32
+	rawAudioData []byte
 
-	SampleRate uint32
-	Channels   uint32
+	CallBack func([]byte, uint32)
 }
 
 func (m *MicPhone) init() {
@@ -122,7 +98,10 @@ func (m *MicPhone) Stop() error {
 }
 
 func (m *MicPhone) OnRecvFrames(outputSample, inputSample []byte, framecount uint32) {
-	m.callbacks.Execute(inputSample, framecount)
+	m.rawAudioData = append(m.rawAudioData, inputSample...)
+	if m.CallBack != nil {
+		m.CallBack(inputSample, framecount)
+	}
 }
 
 func (m *MicPhone) OnStop() {
@@ -139,15 +118,49 @@ func (m *MicPhone) Dispose() {
 	}
 }
 
-func (m *MicPhone) AddCallBack(cb func(data []byte, frameCount uint32)) {
-	m.callbacks.Add(cb)
+func (m *MicPhone) SaveWavFile(filename string) error {
+	file, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	byteToPCM := func(data []byte) []int {
+		pcmData := make([]int, len(data)/2)
+		for i := 0; i < len(data); i += 2 {
+			pcmData[i/2] = int(binary.LittleEndian.Uint16(data[i : i+2]))
+		}
+		return pcmData
+	}
+
+	enc := wav.NewEncoder(file, int(m.SampleRate), 16, int(m.Channels), 1)
+
+	buf := &audio.IntBuffer{
+		Format: &audio.Format{
+			SampleRate:  int(m.SampleRate),
+			NumChannels: int(m.Channels),
+		},
+		Data:           byteToPCM(m.rawAudioData),
+		SourceBitDepth: 16,
+	}
+
+	if err := enc.Write(buf); err != nil {
+		return err
+	}
+
+	if err := enc.Close(); err != nil {
+		return err
+	}
+
+	fmt.Println("WAV 文件已保存:", filename)
+	return nil
 }
 
 func NewMicPhone(sameleRate uint32, chnnels uint32) *MicPhone {
 	micPhone := &MicPhone{
-		SampleRate: sameleRate,
-		Channels:   chnnels,
-		callbacks:  newMicPhoneCallbackList(),
+		SampleRate:   sameleRate,
+		Channels:     chnnels,
+		rawAudioData: make([]byte, 0),
 	}
 	micPhone.init()
 	return micPhone

@@ -8,35 +8,6 @@ import (
 	"github.com/openimsdk/openim-rtc/sdk"
 )
 
-type SpeakerCallBackFunc func(data []byte)
-
-type SpeakerCallBackList struct {
-	callbacks []SpeakerCallBackFunc
-	exists    map[string]bool
-}
-
-func (cl *SpeakerCallBackList) Add(callback SpeakerCallBackFunc) {
-	callbackID := fmt.Sprintf("%p", callback)
-	if !cl.exists[callbackID] {
-		cl.callbacks = append(cl.callbacks, callback)
-		cl.exists[callbackID] = true
-	} else {
-		log.Println("回调函数已经存在")
-	}
-}
-
-func (cl *SpeakerCallBackList) Execute(data []byte) {
-	for _, callback := range cl.callbacks {
-		callback(data)
-	}
-}
-func newSpeakerCallbackList() *SpeakerCallBackList {
-	return &SpeakerCallBackList{
-		callbacks: []SpeakerCallBackFunc{},
-		exists:    make(map[string]bool),
-	}
-}
-
 type Speaker struct {
 	context *malgo.AllocatedContext
 	device  *malgo.Device
@@ -47,9 +18,7 @@ type Speaker struct {
 	channels   uint32
 
 	audioData chan []byte
-	callbacks *SpeakerCallBackList
-
-	resample *sdk.AudioResampler
+	resample  *sdk.AudioResampler
 }
 
 func (m *Speaker) init() {
@@ -144,20 +113,14 @@ func (m *Speaker) Dispose() {
 
 func (m *Speaker) WriteFrame(data []byte) {
 	resampleData := m.resample.RemixAndResample(data, 48000, 1, uint32(len(data)), 48000, 1)
-	m.callbacks.Execute(resampleData)
 	m.audioData <- resampleData
-}
-
-func (m *Speaker) AddCallBack(cb func(data []byte)) {
-	m.callbacks.Add(cb)
 }
 
 func NewSpeaker(sampleRate uint32, channels uint32) *Speaker {
 	speaker := &Speaker{
 		sampleRate: sampleRate,
 		channels:   channels,
-		audioData:  make(chan []byte, 10),
-		callbacks:  newSpeakerCallbackList(),
+		audioData:  make(chan []byte, 100),
 		resample:   sdk.NewAudioResampler(),
 	}
 	speaker.init()

@@ -39,7 +39,6 @@ func (s *AudioSource) Close() error {
 }
 
 func (s *AudioSource) CurrentAudioLevel() uint8 {
-	// default audio level 15
 	return 15
 }
 
@@ -54,12 +53,12 @@ func (s *AudioSource) NextSample(c context.Context) (media.Sample, error) {
 
 func (s *AudioSource) calcDuration(sampleCount int) time.Duration {
 	// 每两个字节表示一个采样
-	return time.Duration((sampleCount / 2) * 1e9 / int(s.SampleRate))
+	return time.Duration((sampleCount * 1e9) / int(s.SampleRate))
 }
 
-func (s *AudioSource) CaptureFrame(data []byte) error {
+func (s *AudioSource) CaptureFrame(data []byte, sampleCount int) error {
 	s.dataCache <- AudioSampleData{
-		Duration: s.calcDuration(len(data)),
+		Duration: s.calcDuration(sampleCount),
 		Data:     data,
 	}
 	return nil
@@ -75,6 +74,6 @@ func NewAudioSource(sourceType pb_audio.AudioSourceType, sampleRate uint32, numC
 		SampleRate:  sampleRate,
 		NumChannels: numChannels,
 		mime:        "audio/opus",
-		dataCache:   make(chan AudioSampleData, 10),
+		dataCache:   make(chan AudioSampleData, 100), //缓存100帧，大概1秒
 	}
 }
