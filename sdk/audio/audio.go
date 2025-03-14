@@ -1,0 +1,5 @@
+package audio
+
+func Resample() {
+
+}

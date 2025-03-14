@@ -1,8 +1,6 @@
 package audio
 
 /*
-#cgo CFLAGS: -I./include
-#cgo LDFLAGS: -L. -lspeexdsp
 #include <speex/speex_echo.h>
 #include <speex/speex_preprocess.h>
 #include<stdio.h>
@@ -34,8 +32,10 @@ void Process(spx_int16_t* dataBuf)  {
    speex_preprocess_run(state, (spx_int16_t*)(dataBuf));
 }
 
+
 */
 import "C"
+
 import (
 	"bytes"
 	"encoding/binary"
@@ -80,6 +80,7 @@ func (aec *AECProcessor) Process(input []byte) []byte {
 
 // 释放资源
 func (aec *AECProcessor) Destroy() {
+
 	// C.speex_echo_state_destroy(aec.echoState)
 	// C.speex_preprocess_state_destroy(aec.preprocess)
 }
