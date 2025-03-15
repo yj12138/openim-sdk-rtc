@@ -10,8 +10,9 @@ type AudioResampler struct {
 }
 
 func (s *AudioResampler) RemixAndResample(sourceData []byte, sourceSampleRate uint32, sourceNumChannels uint32, sourceSamplesPerChannel uint32, targetSampleRate uint32, targetChannels uint32) []byte {
+	// TODO
 	audio.Resample()
-	return nil
+	return sourceData
 }
 
 func NewAudioResampler() *AudioResampler {

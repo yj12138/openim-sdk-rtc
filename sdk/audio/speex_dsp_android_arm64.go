@@ -2,6 +2,6 @@ package audio
 
 /*
 #cgo CFLAGS: -I./include
-#cgo LDFLAGS: -L./libs/android/armv8 -lspeexdsp
+#cgo LDFLAGS: -L./libs/android/arm64-v8a -lspeexdsp
 */
 import "C"
