@@ -1,8 +1,6 @@
 package base
 
 import (
-	// "log"
-
 	pb_audio "github.com/openimsdk/openim-rtc/proto/go/audio_frame"
 	pb_ffi "github.com/openimsdk/openim-rtc/proto/go/ffi"
 	pb_handle "github.com/openimsdk/openim-rtc/proto/go/handle"
@@ -65,10 +63,9 @@ func (api *API) CaptureAudioFrame(req *pb_audio.CaptureAudioFrameRequest) *pb_au
 	go func() {
 		buffer := req.Buffer
 		sampleCount := buffer.NumChannels * buffer.SamplesPerChannel
-		length := sampleCount * 2
-		//log.Println("CaptureAudioFrame", req.Buffer.SampleRate, req.Buffer.NumChannels, req.Buffer.SamplesPerChannel, length)
-		data := api.c.CPointerToGoByteSliceNoCopy(req.Buffer.DataPtr, uint64(length))
-		err := audioSource.CaptureFrame(data, int(sampleCount))
+		size := sampleCount * 2
+		data := api.c.CPointerToGoByteSliceNoCopy(req.Buffer.DataPtr, uint64(size))
+		err := audioSource.CaptureFrame(data, buffer.NumChannels, buffer.SampleRate, buffer.SamplesPerChannel, nil)
 		errStr := ""
 		if err != nil {
 			errStr = err.Error()
@@ -106,7 +103,7 @@ func (api *API) RemixAndResample(req *pb_audio.RemixAndResampleRequest) *pb_audi
 	resample := api.GetAudioResampler(req.ResamplerHandle)
 	length := uint64(req.Buffer.NumChannels * req.Buffer.SamplesPerChannel * 2)
 	data := api.c.CPointerToGoByteSliceNoCopy(req.Buffer.DataPtr, length)
-	buffer := resample.RemixAndResample(data, req.Buffer.SampleRate, req.Buffer.NumChannels, req.Buffer.NumChannels, req.SampleRate, req.NumChannels)
+	buffer := resample.RemixAndResample(data, req.Buffer.SampleRate, req.Buffer.NumChannels, req.SampleRate, req.NumChannels)
 	audioFrameBuffer := &AudioFrameBuffer{
 		DataPtr:           api.c.GoByteSliceToCPointerNoCopy(buffer),
 		NumChannels:       req.NumChannels,

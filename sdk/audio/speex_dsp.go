@@ -1,86 +1,185 @@
 package audio
 
 /*
-#include <speex/speex_echo.h>
-#include <speex/speex_preprocess.h>
 #include<stdio.h>
 #include <stdlib.h>
-
-SpeexPreprocessState *state;
-
-void InitPreprocess(int frameSize,int sampleRate){
-    state = speex_preprocess_state_init(frameSize, sampleRate);
-    int denoise = 1;
-    int noiseSuppress = -25;
-    speex_preprocess_ctl(state, SPEEX_PREPROCESS_SET_DENOISE, &denoise);
-    speex_preprocess_ctl(state, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, &noiseSuppress);
-
-    int i;
-    i = 0;
-    speex_preprocess_ctl(state, SPEEX_PREPROCESS_SET_AGC, &i);
-    i = 80000;
-    speex_preprocess_ctl(state, SPEEX_PREPROCESS_SET_AGC_LEVEL, &i);
-    i = 0;
-    speex_preprocess_ctl(state, SPEEX_PREPROCESS_SET_DEREVERB, &i);
-    float f = 0;
-    speex_preprocess_ctl(state, SPEEX_PREPROCESS_SET_DEREVERB_DECAY, &f);
-    f = 0;
-    speex_preprocess_ctl(state, SPEEX_PREPROCESS_SET_DEREVERB_LEVEL, &f);
-}
-
-void Process(spx_int16_t* dataBuf)  {
-   speex_preprocess_run(state, (spx_int16_t*)(dataBuf));
-}
-
-
+#include <speex/speex_echo.h>
+#include <speex/speex_preprocess.h>
+#include <speex/speex_resampler.h>
 */
 import "C"
 
 import (
-	"bytes"
-	"encoding/binary"
+	"errors"
 	"log"
 	"unsafe"
 )
 
-// AECProcessor 处理音频流（回声消除 + 降噪）
-type AECProcessor struct {
+const EchoTail = 4800 // Echo cancellation delay buffer size
+
+type SpeexDSP struct {
+	echoState  *C.SpeexEchoState
+	preState   *C.SpeexPreprocessState
+	frameSize  uint32
+	sampleRate uint32
+
+	resampler        *C.SpeexResamplerState
+	sourceSampleRate uint32
+	targetSampleRate uint32
 }
 
-// 初始化 AEC + NS 处理器
-func NewAECProcessor(frameSize, filterLength, sampleRate int) *AECProcessor {
-	C.InitPreprocess(C.int(frameSize), C.int(sampleRate))
-	return &AECProcessor{}
+func (dsp *SpeexDSP) Init() error {
+	return nil
 }
 
-func BytesToInt16(data []byte) ([]int16, error) {
-	buf := bytes.NewReader(data)
-	int16Data := make([]int16, len(data)/2)
-	err := binary.Read(buf, binary.LittleEndian, &int16Data)
-	return int16Data, err
+func (dsp *SpeexDSP) initState(frameSize uint32, sampleRate uint32, useAEC bool) error {
+	if dsp.preState != nil {
+		C.speex_preprocess_state_destroy(dsp.preState)
+	}
+	preprocessState := C.speex_preprocess_state_init(C.int(frameSize), C.int(sampleRate))
+	if preprocessState == nil {
+		return errors.New("failed to initialize Speex preprocess")
+	}
+	if useAEC {
+		echoState := C.speex_echo_state_init(C.int(frameSize), C.int(EchoTail))
+		if echoState == nil {
+			C.speex_preprocess_state_destroy(preprocessState)
+			return errors.New("failed to initialize Speex echo canceller")
+		}
+		C.speex_echo_ctl(echoState, C.SPEEX_ECHO_SET_SAMPLING_RATE, unsafe.Pointer(&sampleRate))
+		C.speex_preprocess_ctl(preprocessState, C.SPEEX_PREPROCESS_SET_ECHO_STATE, unsafe.Pointer(echoState))
+		dsp.echoState = echoState
+	}
+
+	ns := C.int(1)
+	C.speex_preprocess_ctl(preprocessState, C.SPEEX_PREPROCESS_SET_DENOISE, unsafe.Pointer(&ns))
+
+	noiseSuppress := C.int(-15)
+	C.speex_preprocess_ctl(preprocessState, C.SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, unsafe.Pointer(&noiseSuppress))
+
+	agc := C.int(1)
+	C.speex_preprocess_ctl(preprocessState, C.SPEEX_PREPROCESS_SET_AGC, unsafe.Pointer(&agc))
+
+	agcLevel := C.int(8000)
+	C.speex_preprocess_ctl(preprocessState, C.SPEEX_PREPROCESS_SET_AGC_LEVEL, unsafe.Pointer(&agcLevel))
+
+	dsp.preState = preprocessState
+	dsp.frameSize = frameSize
+	dsp.sampleRate = sampleRate
+	return nil
 }
 
-// Int16ToBytes 将 []int16 转换回 []byte（小端序）
-func Int16ToBytes(data []int16) []byte {
-	buf := new(bytes.Buffer)
-	binary.Write(buf, binary.LittleEndian, data)
-	return buf.Bytes()
+func (dsp *SpeexDSP) AAAProcess(source []byte, sampleRate uint32, echo []byte) []byte {
+	frame, err := bytesToInt16(source)
+	if err != nil {
+		log.Println("AAAProcess", err.Error())
+		return source
+	}
+	frameSize := uint32(len(frame))
+	useAEC := echo != nil
+	if useAEC {
+		if len(source) != len(echo) {
+			log.Println("AAASProcess", "Source Frame Size != Echo Frame Size")
+			return source
+		}
+	}
+	if dsp.frameSize != frameSize || dsp.sampleRate != sampleRate {
+		err := dsp.initState(frameSize, sampleRate, useAEC)
+		if err != nil {
+			log.Println("AAAProcess", err.Error())
+			return source
+		}
+	}
+	outFrame := frame
+	if useAEC {
+		echoFrame, err := bytesToInt16(echo)
+		if err != nil {
+			log.Println("AAAProcess", err.Error())
+			return source
+		}
+		outFrame := make([]int16, frameSize)
+		C.speex_echo_cancellation(dsp.echoState, (*C.spx_int16_t)(unsafe.Pointer(&frame[0])), (*C.spx_int16_t)(unsafe.Pointer(&echoFrame[0])), (*C.spx_int16_t)(unsafe.Pointer(&outFrame[0])))
+	}
+	processed := C.speex_preprocess_run(dsp.preState, (*C.spx_int16_t)(unsafe.Pointer(&outFrame[0])))
+	if processed == 0 {
+		log.Println("AAAProcess", "failed to process audio frame")
+		return source
+	}
+	return int16ToBytes(outFrame)
 }
 
-func (aec *AECProcessor) Process(input []byte) []byte {
-	audioFrame, err := BytesToInt16(input)
+func (dsp *SpeexDSP) initResampler(sourceSampleRate uint32, targetSampleRate uint32) error {
+	if dsp.resampler != nil {
+		C.speex_resampler_destroy(dsp.resampler)
+	}
+	var errCode C.int
+	resampler := C.speex_resampler_init(1, C.uint(sourceSampleRate), C.uint(targetSampleRate), C.int(3), &errCode)
+	if resampler == nil || errCode != 0 {
+		return errors.New("failed to initialize Speex resampler")
+	}
+	dsp.sourceSampleRate = sourceSampleRate
+	dsp.targetSampleRate = targetSampleRate
+	dsp.resampler = resampler
+	return nil
+}
+
+func (dsp *SpeexDSP) Resample(sourceData []byte, sourceSampleRate uint32, sourceNumChannels uint32, targetSampleRate uint32, targetNumChannels uint32) []byte {
+	if sourceSampleRate != dsp.sourceSampleRate || targetSampleRate != dsp.targetSampleRate {
+		err := dsp.initResampler(sourceSampleRate, targetSampleRate)
+		if err != nil {
+			log.Println("Resample", err.Error())
+			return sourceData
+		}
+	}
+	if sourceNumChannels != 1 && sourceNumChannels != 2 {
+		log.Println("unsupported input channels")
+		return sourceData
+	}
+	if targetNumChannels != 1 && targetNumChannels != 2 {
+		log.Println("unsupported output channels")
+		return sourceData
+	}
+	input, err := bytesToInt16(sourceData)
+
+	outLen := len(input) / int(sourceNumChannels) * int(targetSampleRate) / int(sourceSampleRate) * int(targetNumChannels)
+	output := make([]int16, outLen)
+
+	var inLenC, outLenC C.uint
+	inLenC = C.uint(len(input) / int(sourceNumChannels))
+	outLenC = C.uint(outLen / int(targetNumChannels))
 	if err != nil {
 		log.Println(err.Error())
-		return input
+		return sourceData
 	}
-	C.Process((*C.spx_int16_t)(unsafe.Pointer(&audioFrame[0])))
+	if sourceNumChannels == 2 && targetNumChannels == 1 {
+		monoInput := make([]int16, len(input)/2)
+		for i := 0; i < len(monoInput); i++ {
+			monoInput[i] = (input[2*i] + input[2*i+1]) / 2
+		}
+		input = monoInput
+	} else if sourceNumChannels == 1 && targetNumChannels == 2 {
+		stereoOutput := make([]int16, len(input)*2)
+		for i := 0; i < len(input); i++ {
+			stereoOutput[2*i] = input[i]
+			stereoOutput[2*i+1] = input[i]
+		}
+		input = stereoOutput
+	}
 
-	return Int16ToBytes(audioFrame)
+	res := C.speex_resampler_process_int(dsp.resampler, 0, (*C.spx_int16_t)(unsafe.Pointer(&input[0])), &inLenC, (*C.spx_int16_t)(unsafe.Pointer(&output[0])), &outLenC)
+	if res != 0 {
+		log.Println("failed to resample audio")
+		return sourceData
+	}
+	outputFrame := output[:outLenC*C.uint(targetNumChannels)]
+	return int16ToBytes(outputFrame)
 }
 
-// 释放资源
-func (aec *AECProcessor) Destroy() {
-
-	// C.speex_echo_state_destroy(aec.echoState)
-	// C.speex_preprocess_state_destroy(aec.preprocess)
+func (dsp *SpeexDSP) Destory() {
+	if dsp.echoState != nil {
+		C.speex_echo_state_destroy(dsp.echoState)
+	}
+	if dsp.preState != nil {
+		C.speex_preprocess_state_destroy(dsp.preState)
+	}
 }

@@ -137,7 +137,14 @@ func (api *API) GetSessionStats(req *pb_room.GetSessionStatsRequest) *pb_room.Ge
 func (api *API) Dispose(req *pb_ffi.DisposeRequest) *pb_ffi.DisposeResponse {
 	asyncId := api.nextAsyncId()
 	go func() {
-		// TODO
+		sdk.Dispose()
+		dispatchEvent(&pb_ffi.FfiEvent{
+			Message: &pb_ffi.FfiEvent_Dispose{
+				Dispose: &pb_ffi.DisposeCallback{
+					AsyncId: asyncId,
+				},
+			},
+		})
 	}()
 	return &pb_ffi.DisposeResponse{
 		AsyncId: asyncId,
