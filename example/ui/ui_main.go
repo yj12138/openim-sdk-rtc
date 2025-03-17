@@ -113,6 +113,6 @@ func drawMainWin() {
 	}
 	drawLocalParticipant()
 	drawRemoteParticipants()
-	// drawAudioWave()
-	drawAudioRecord()
+	drawAudioWave()
+	// drawAudioRecord()
 }

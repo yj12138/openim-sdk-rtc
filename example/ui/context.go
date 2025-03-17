@@ -10,11 +10,9 @@ import (
 
 	"github.com/livekit/protocol/livekit"
 	lksdk "github.com/livekit/server-sdk-go/v2"
+	_io "github.com/openimsdk/openim-rtc/example/io"
 	pb_audio_frame "github.com/openimsdk/openim-rtc/proto/go/audio_frame"
 	"github.com/openimsdk/openim-rtc/sdk"
-	audio "github.com/openimsdk/openim-rtc/sdk/audio"
-
-	_io "github.com/openimsdk/openim-rtc/example/io"
 )
 
 var context *Context
@@ -50,10 +48,9 @@ type Context struct {
 	Room             *sdk.Room
 	LocalParticipant *sdk.LocalParticipant
 
-	MicPhone     *_io.MicPhone
-	Speaker      *_io.Speaker
-	audioSource  *sdk.AudioSource
-	aceProcessor *audio.AECProcessor
+	MicPhone    *_io.MicPhone
+	Speaker     *_io.Speaker
+	audioSource *sdk.AudioSource
 }
 
 func (c *Context) connect() {
@@ -104,7 +101,7 @@ func (c *Context) connect() {
 	c.LocalParticipant = sdk.NewLocalParticipant(c.Room.LocalParticipant)
 	c.setWindowTitle("Room:" + c.roomName)
 	go func() {
-		time.Sleep(3 * time.Second)
+		time.Sleep(1 * time.Second)
 		log.Println(c.Room.LocalParticipant.Name())
 		log.Println(c.Room.LocalParticipant.Identity())
 		log.Println(c.Room.LocalParticipant.SID())
@@ -119,17 +116,14 @@ func (c *Context) connect() {
 	context.Speaker.Start()
 	context.MicPhone.CallBack = (func(data []byte, frameCount uint32) {
 		appendRawAudioFrame(data, frameCount)
-		// log.Println("Frame Length:", len(data), frameCount)
-		// TODO 降噪去掉回声
-		// data = context.aceProcessor.Process(data)
-		appendClearAudioFrame(data, frameCount)
 		if context.audioSource != nil {
-			err := context.audioSource.CaptureFrame(data, int(frameCount))
+			samplesPreChannel := len(data) / 2 * int(c.MicPhone.Channels)
+			frame := context.audioSource.CaptureFrame(data, c.MicPhone.Channels, c.MicPhone.SampleRate, uint32(samplesPreChannel), nil)
 			if err != nil {
 				log.Println(err.Error())
 			}
+			appendClearAudioFrame(frame, frameCount)
 		}
-
 	})
 }
 
@@ -163,10 +157,7 @@ func (c *Context) SetWindowTitle(title string) {
 }
 
 func InitContext(httpUrl string, x_Sandbox_ID string, roomName string, participantName string) {
-
 	sampleRate := 48000
-	// sampleRate := 44100
-
 	context = &Context{
 		httpURL:         httpUrl,
 		x_Sandbox_ID:    x_Sandbox_ID,
@@ -175,7 +166,6 @@ func InitContext(httpUrl string, x_Sandbox_ID string, roomName string, participa
 		ConnectState:    ConnectNone,
 		MicPhone:        _io.NewMicPhone(uint32(sampleRate), 1),
 		Speaker:         _io.NewSpeaker(uint32(sampleRate), 1),
-		aceProcessor:    audio.NewAECProcessor(480, 4800, sampleRate),
 	}
 	go context.connect()
 }

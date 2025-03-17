@@ -65,16 +65,12 @@ func (api *API) CaptureAudioFrame(req *pb_audio.CaptureAudioFrameRequest) *pb_au
 		sampleCount := buffer.NumChannels * buffer.SamplesPerChannel
 		size := sampleCount * 2
 		data := api.c.CPointerToGoByteSliceNoCopy(req.Buffer.DataPtr, uint64(size))
-		err := audioSource.CaptureFrame(data, buffer.NumChannels, buffer.SampleRate, buffer.SamplesPerChannel, nil)
-		errStr := ""
-		if err != nil {
-			errStr = err.Error()
-		}
+		audioSource.CaptureFrame(data, buffer.NumChannels, buffer.SampleRate, buffer.SamplesPerChannel, nil)
 		dispatchEvent(&pb_ffi.FfiEvent{
 			Message: &pb_ffi.FfiEvent_CaptureAudioFrame{
 				CaptureAudioFrame: &pb_audio.CaptureAudioFrameCallback{
 					AsyncId: asyncId,
-					Error:   errStr,
+					Error:   "",
 				},
 			},
 		})
