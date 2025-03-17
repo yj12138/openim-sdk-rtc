@@ -53,15 +53,32 @@ func (dsp *SpeexDSP) initState(frameSize uint32, sampleRate uint32, useAEC bool)
 
 	ns := C.int(1)
 	C.speex_preprocess_ctl(preprocessState, C.SPEEX_PREPROCESS_SET_DENOISE, unsafe.Pointer(&ns))
+	log.Println("Denoise Enabled:", ns)
 
-	noiseSuppress := C.int(-15)
+	// **降噪强度**
+	noiseSuppress := C.int(-10) // 改为 -10dB，避免过度降噪导致音量降低
 	C.speex_preprocess_ctl(preprocessState, C.SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, unsafe.Pointer(&noiseSuppress))
+	log.Println("Noise Suppression Level:", noiseSuppress)
 
+	// // **启用 AGC**
 	agc := C.int(1)
 	C.speex_preprocess_ctl(preprocessState, C.SPEEX_PREPROCESS_SET_AGC, unsafe.Pointer(&agc))
+	log.Println("AGC Enabled:", agc)
 
-	agcLevel := C.int(8000)
-	C.speex_preprocess_ctl(preprocessState, C.SPEEX_PREPROCESS_SET_AGC_LEVEL, unsafe.Pointer(&agcLevel))
+	// // **AGC 目标音量**
+	// agcLevel := C.int(16000) // 目标音量设为 16000 (比 8000 更大)
+	// C.speex_preprocess_ctl(preprocessState, C.SPEEX_PREPROCESS_SET_AGC_LEVEL, unsafe.Pointer(&agcLevel))
+	// log.Println("AGC Target Level:", agcLevel)
+
+	// // **AGC 最大增益**
+	// agcMaxGain := C.int(40) // 最大增益设为 40dB，防止过度压制
+	// C.speex_preprocess_ctl(preprocessState, C.SPEEX_PREPROCESS_SET_AGC_MAX_GAIN, unsafe.Pointer(&agcMaxGain))
+	// log.Println("AGC Max Gain:", agcMaxGain)
+
+	// // **AGC 增益步进**
+	// agcIncrement := C.int(5) // 让 AGC 调节音量的速度稍快
+	// C.speex_preprocess_ctl(preprocessState, C.SPEEX_PREPROCESS_SET_AGC_INCREMENT, unsafe.Pointer(&agcIncrement))
+	// log.Println("AGC Gain Increment:", agcIncrement)
 
 	dsp.preState = preprocessState
 	dsp.frameSize = frameSize
