@@ -71,14 +71,15 @@ func (l *RoomListener) OnConnectionQualityChanged(participantIdentify string, qu
 
 // for remote participants
 func (l *RoomListener) OnTrackSubscribed(track *webrtc.TrackRemote, publication *lksdk.RemoteTrackPublication, rp *lksdk.RemoteParticipant) {
-	log.Println("OnTrackSubscribed", rp.Identity(), publication.SID())
+	log.Println("OnTrackSubscribed", rp.Identity(), publication.SID(), track.Codec().Channels, track.Codec().MimeType, track.Codec().PayloadType)
 	go func() {
 		for {
 			rtp, _, err := track.ReadRTP()
 			if err != nil {
 				break
 			}
-			context.Speaker.WriteFrame(rtp.Payload)
+			log.Println("Recv Frame ", track.Codec(), len(rtp.Payload))
+			context.Speaker.Write(rtp.Payload)
 		}
 	}()
 }

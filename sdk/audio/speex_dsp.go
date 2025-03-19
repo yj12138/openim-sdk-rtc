@@ -47,38 +47,11 @@ func (dsp *SpeexDSP) initState(frameSize uint32, sampleRate uint32, useAEC bool)
 			return errors.New("failed to initialize Speex echo canceller")
 		}
 		C.speex_echo_ctl(echoState, C.SPEEX_ECHO_SET_SAMPLING_RATE, unsafe.Pointer(&sampleRate))
-		C.speex_preprocess_ctl(preprocessState, C.SPEEX_PREPROCESS_SET_ECHO_STATE, unsafe.Pointer(echoState))
 		dsp.echoState = echoState
 	}
-
-	ns := C.int(1)
-	C.speex_preprocess_ctl(preprocessState, C.SPEEX_PREPROCESS_SET_DENOISE, unsafe.Pointer(&ns))
-	log.Println("Denoise Enabled:", ns)
-
-	// **降噪强度**
-	noiseSuppress := C.int(-10) // 改为 -10dB，避免过度降噪导致音量降低
-	C.speex_preprocess_ctl(preprocessState, C.SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, unsafe.Pointer(&noiseSuppress))
-	log.Println("Noise Suppression Level:", noiseSuppress)
-
-	// // **启用 AGC**
-	agc := C.int(1)
-	C.speex_preprocess_ctl(preprocessState, C.SPEEX_PREPROCESS_SET_AGC, unsafe.Pointer(&agc))
-	log.Println("AGC Enabled:", agc)
-
-	// // **AGC 目标音量**
-	// agcLevel := C.int(16000) // 目标音量设为 16000 (比 8000 更大)
-	// C.speex_preprocess_ctl(preprocessState, C.SPEEX_PREPROCESS_SET_AGC_LEVEL, unsafe.Pointer(&agcLevel))
-	// log.Println("AGC Target Level:", agcLevel)
-
-	// // **AGC 最大增益**
-	// agcMaxGain := C.int(40) // 最大增益设为 40dB，防止过度压制
-	// C.speex_preprocess_ctl(preprocessState, C.SPEEX_PREPROCESS_SET_AGC_MAX_GAIN, unsafe.Pointer(&agcMaxGain))
-	// log.Println("AGC Max Gain:", agcMaxGain)
-
-	// // **AGC 增益步进**
-	// agcIncrement := C.int(5) // 让 AGC 调节音量的速度稍快
-	// C.speex_preprocess_ctl(preprocessState, C.SPEEX_PREPROCESS_SET_AGC_INCREMENT, unsafe.Pointer(&agcIncrement))
-	// log.Println("AGC Gain Increment:", agcIncrement)
+	if useAEC {
+		C.speex_preprocess_ctl(preprocessState, C.SPEEX_PREPROCESS_SET_ECHO_STATE, unsafe.Pointer(dsp.echoState))
+	}
 
 	dsp.preState = preprocessState
 	dsp.frameSize = frameSize
@@ -93,7 +66,7 @@ func (dsp *SpeexDSP) AAAProcess(source []byte, sampleRate uint32, echo []byte) [
 		return source
 	}
 	frameSize := uint32(len(frame))
-	useAEC := echo != nil
+	useAEC := echo != nil || len(echo) == len(source)
 	if useAEC {
 		if len(source) != len(echo) {
 			log.Println("AAASProcess", "Source Frame Size != Echo Frame Size", len(source), len(echo))

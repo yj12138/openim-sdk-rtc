@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/gen2brain/malgo"
+	"github.com/openimsdk/openim-rtc/example/common"
 	"github.com/openimsdk/openim-rtc/sdk"
 )
 
@@ -17,9 +18,10 @@ type Speaker struct {
 	sampleRate uint32
 	channels   uint32
 
-	audioData chan []byte
-	resample  *sdk.AudioResampler
-	curFrame  []byte
+	resample *sdk.AudioResampler
+	curFrame []byte
+
+	audioBuffer *common.RingBuffer
 }
 
 func (m *Speaker) init() {
@@ -94,11 +96,11 @@ func (m *Speaker) Stop() error {
 }
 
 func (m *Speaker) onSendFrames(outputSample, inputSample []byte, framecount uint32) {
-	data := <-m.audioData
-	// TODO 对要播放的流进行重采样
-	// resampleData := m.resample.RemixAndResample(data, 48000, 1, uint32(len(data)), 48000, 1)
-	copy(outputSample, data)
-	copy(m.curFrame, data)
+	_, err := m.audioBuffer.Read(outputSample)
+	if err != nil {
+		return
+	}
+	copy(m.curFrame, outputSample)
 }
 
 func (m *Speaker) onStop() {
@@ -115,8 +117,11 @@ func (m *Speaker) Dispose() {
 	}
 }
 
-func (m *Speaker) WriteFrame(data []byte) {
-	m.audioData <- data
+func (m *Speaker) Write(data []byte) {
+	_, err := m.audioBuffer.Write(data)
+	if err != nil {
+		log.Println("Write Buffer Error:", err.Error())
+	}
 }
 
 func (m *Speaker) GetCurFrame() []byte {
@@ -125,11 +130,11 @@ func (m *Speaker) GetCurFrame() []byte {
 
 func NewSpeaker(sampleRate uint32, channels uint32) *Speaker {
 	speaker := &Speaker{
-		sampleRate: sampleRate,
-		channels:   channels,
-		audioData:  make(chan []byte, 100),
-		resample:   sdk.NewAudioResampler(),
-		curFrame:   make([]byte, 0),
+		sampleRate:  sampleRate,
+		channels:    channels,
+		resample:    sdk.NewAudioResampler(),
+		curFrame:    make([]byte, 0),
+		audioBuffer: common.NewRingBuffer(int(float32(sampleRate) * float32(channels) * 0.2)),
 	}
 	speaker.init()
 	return speaker
