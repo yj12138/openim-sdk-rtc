@@ -19,6 +19,7 @@ type Speaker struct {
 
 	audioData chan []byte
 	resample  *sdk.AudioResampler
+	curFrame  []byte
 }
 
 func (m *Speaker) init() {
@@ -97,6 +98,7 @@ func (m *Speaker) onSendFrames(outputSample, inputSample []byte, framecount uint
 	// TODO 对要播放的流进行重采样
 	// resampleData := m.resample.RemixAndResample(data, 48000, 1, uint32(len(data)), 48000, 1)
 	copy(outputSample, data)
+	copy(m.curFrame, data)
 }
 
 func (m *Speaker) onStop() {
@@ -117,12 +119,17 @@ func (m *Speaker) WriteFrame(data []byte) {
 	m.audioData <- data
 }
 
+func (m *Speaker) GetCurFrame() []byte {
+	return m.curFrame
+}
+
 func NewSpeaker(sampleRate uint32, channels uint32) *Speaker {
 	speaker := &Speaker{
 		sampleRate: sampleRate,
 		channels:   channels,
 		audioData:  make(chan []byte, 100),
 		resample:   sdk.NewAudioResampler(),
+		curFrame:   make([]byte, 0),
 	}
 	speaker.init()
 	return speaker

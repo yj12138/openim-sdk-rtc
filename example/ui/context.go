@@ -118,7 +118,7 @@ func (c *Context) connect() {
 		appendRawAudioFrame(data, frameCount)
 		if context.audioSource != nil {
 			samplesPreChannel := len(data) / 2 * int(c.MicPhone.Channels)
-			frame := context.audioSource.CaptureFrame(data, c.MicPhone.Channels, c.MicPhone.SampleRate, uint32(samplesPreChannel), nil)
+			frame := context.audioSource.CaptureFrame(data, c.MicPhone.Channels, c.MicPhone.SampleRate, uint32(samplesPreChannel), context.Speaker.GetCurFrame())
 			if err != nil {
 				log.Println(err.Error())
 			}

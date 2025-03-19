@@ -58,7 +58,7 @@ func (s *AudioSource) calcDuration(sampleCount int) time.Duration {
 }
 
 func (s *AudioSource) CaptureFrame(data []byte, numChannels, sampleRate, samplesPerChannel uint32, echo []byte) []byte {
-	frameData := audio.GetAudioDSP().AAAProcess(data, sampleRate, nil)
+	frameData := audio.GetAudioDSP().AAAProcess(data, sampleRate, echo)
 	s.dataCache <- AudioSampleData{
 		Duration: s.calcDuration(int(samplesPerChannel) * int(numChannels)),
 		Data:     frameData,

@@ -47,6 +47,7 @@ message NewAudioSourceResponse { OwnedAudioSource source = 1; }
 message CaptureAudioFrameRequest {
   uint64 source_handle = 1;
   AudioFrameBufferInfo buffer = 2;
+  AudioFrameBufferInfo echoBuffer = 3;
 }
 message CaptureAudioFrameResponse { uint64 async_id = 1; }
 message CaptureAudioFrameCallback {

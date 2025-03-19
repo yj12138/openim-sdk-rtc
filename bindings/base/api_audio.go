@@ -65,7 +65,11 @@ func (api *API) CaptureAudioFrame(req *pb_audio.CaptureAudioFrameRequest) *pb_au
 		sampleCount := buffer.NumChannels * buffer.SamplesPerChannel
 		size := sampleCount * 2
 		data := api.c.CPointerToGoByteSliceNoCopy(req.Buffer.DataPtr, uint64(size))
-		audioSource.CaptureFrame(data, buffer.NumChannels, buffer.SampleRate, buffer.SamplesPerChannel, nil)
+		var echoFrameData []byte = nil
+		if req.EchoBuffer != nil {
+			echoFrameData = api.c.CPointerToGoByteSliceNoCopy(req.EchoBuffer.DataPtr, uint64(size))
+		}
+		audioSource.CaptureFrame(data, buffer.NumChannels, buffer.SampleRate, buffer.SamplesPerChannel, echoFrameData)
 		dispatchEvent(&pb_ffi.FfiEvent{
 			Message: &pb_ffi.FfiEvent_CaptureAudioFrame{
 				CaptureAudioFrame: &pb_audio.CaptureAudioFrameCallback{

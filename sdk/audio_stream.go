@@ -1,8 +1,6 @@
 package sdk
 
 import (
-	"log"
-
 	pb_audio "github.com/openimsdk/openim-rtc/proto/go/audio_frame"
 	"github.com/pion/webrtc/v4"
 )
@@ -29,7 +27,6 @@ func (s *AudioStream) handleStream() {
 			break
 		}
 		if s.CallBack != nil {
-			log.Println("Recv Audio Frame", len(pkt.Payload), s.SampleRate, s.NumChannels)
 			s.CallBack(&AudioFrame{
 				Payload:           pkt.Payload,
 				SampleRate:        s.SampleRate,

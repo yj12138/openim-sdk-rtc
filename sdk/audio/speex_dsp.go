@@ -96,7 +96,7 @@ func (dsp *SpeexDSP) AAAProcess(source []byte, sampleRate uint32, echo []byte) [
 	useAEC := echo != nil
 	if useAEC {
 		if len(source) != len(echo) {
-			log.Println("AAASProcess", "Source Frame Size != Echo Frame Size")
+			log.Println("AAASProcess", "Source Frame Size != Echo Frame Size", len(source), len(echo))
 			return source
 		}
 	}
