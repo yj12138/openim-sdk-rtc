@@ -1,10 +1,13 @@
 package base
 
 import (
+	"log"
+
 	pb_audio "github.com/openimsdk/openim-rtc/proto/go/audio_frame"
 	pb_ffi "github.com/openimsdk/openim-rtc/proto/go/ffi"
 	pb_handle "github.com/openimsdk/openim-rtc/proto/go/handle"
 	"github.com/openimsdk/openim-rtc/sdk"
+	"github.com/openimsdk/openim-rtc/sdk/audio"
 )
 
 // Audio
@@ -57,6 +60,35 @@ func (api *API) NewAudioSource(req *pb_audio.NewAudioSourceRequest) *pb_audio.Ne
 	}
 	return res
 }
+func (api *API) AudioFrameEchoCancellation(req *pb_audio.AudioFrameEchoCancellationRequest) *pb_audio.AudioFrameEchoCancellationResponse {
+	rawLength := uint64(req.Buffer.NumChannels * req.Buffer.SamplesPerChannel * 2)
+	echoLength := uint64(req.EchoBuffer.NumChannels * req.EchoBuffer.SamplesPerChannel * 2)
+	if rawLength != echoLength || req.Buffer.SampleRate != req.EchoBuffer.SampleRate {
+		log.Println("Audio Frame EchoCancle Error", req.Buffer, req.EchoBuffer)
+		return nil
+	}
+
+	rawData := api.c.CPointerToGoByteSliceNoCopy(req.Buffer.DataPtr, rawLength)
+	echoData := api.c.CPointerToGoByteSliceNoCopy(req.EchoBuffer.DataPtr, echoLength)
+	sampleRate := req.Buffer.SampleRate
+	endData := audio.GetAudioDSP().EchoCancellation(rawData, sampleRate, echoData)
+	audioFrameBuffer := &AudioFrameBuffer{
+		DataPtr:           api.c.GoByteSliceToCPointerNoCopy(endData),
+		NumChannels:       req.Buffer.NumChannels,
+		SampleRate:        req.Buffer.SampleRate,
+		SamplesPerChannel: req.Buffer.SamplesPerChannel,
+	}
+
+	res := &pb_audio.AudioFrameEchoCancellationResponse{
+		Buffer: &pb_audio.AudioFrameBufferInfo{
+			DataPtr:           audioFrameBuffer.DataPtr,
+			NumChannels:       audioFrameBuffer.NumChannels,
+			SampleRate:        audioFrameBuffer.SampleRate,
+			SamplesPerChannel: audioFrameBuffer.SamplesPerChannel,
+		},
+	}
+	return res
+}
 func (api *API) CaptureAudioFrame(req *pb_audio.CaptureAudioFrameRequest) *pb_audio.CaptureAudioFrameResponse {
 	asyncId := api.nextAsyncId()
 	audioSource := api.getAudioSource(req.SourceHandle)
@@ -65,11 +97,7 @@ func (api *API) CaptureAudioFrame(req *pb_audio.CaptureAudioFrameRequest) *pb_au
 		sampleCount := buffer.NumChannels * buffer.SamplesPerChannel
 		size := sampleCount * 2
 		data := api.c.CPointerToGoByteSliceNoCopy(req.Buffer.DataPtr, uint64(size))
-		var echoFrameData []byte = nil
-		if req.EchoBuffer != nil {
-			echoFrameData = api.c.CPointerToGoByteSliceNoCopy(req.EchoBuffer.DataPtr, uint64(size))
-		}
-		audioSource.CaptureFrame(data, buffer.NumChannels, buffer.SampleRate, buffer.SamplesPerChannel, echoFrameData)
+		audioSource.CaptureFrame(data, buffer.NumChannels, buffer.SampleRate, buffer.SamplesPerChannel)
 		dispatchEvent(&pb_ffi.FfiEvent{
 			Message: &pb_ffi.FfiEvent_CaptureAudioFrame{
 				CaptureAudioFrame: &pb_audio.CaptureAudioFrameCallback{

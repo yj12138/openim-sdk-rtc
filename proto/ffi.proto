@@ -84,6 +84,9 @@ message FfiRequest {
 
     // Audio Filter Plugin
     LoadAudioFilterPluginRequest load_audio_filter_plugin = 49;
+
+    // Extension
+    AudioFrameEchoCancellationRequest audio_frame_echo_cancellation = 100;
   }
 }
 
@@ -156,6 +159,9 @@ message FfiResponse {
 
     // Audio Filter Plugin
     LoadAudioFilterPluginResponse load_audio_filter_plugin = 48;
+
+    // Extension
+    AudioFrameEchoCancellationResponse audio_frame_echo_cancellation = 100;
   }
 }
 

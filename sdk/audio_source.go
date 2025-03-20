@@ -6,7 +6,6 @@ import (
 	"time"
 
 	pb_audio "github.com/openimsdk/openim-rtc/proto/go/audio_frame"
-	"github.com/openimsdk/openim-rtc/sdk/audio"
 	"github.com/pion/webrtc/v4/pkg/media"
 )
 
@@ -57,13 +56,11 @@ func (s *AudioSource) calcDuration(sampleCount int) time.Duration {
 	return time.Duration((sampleCount * 1e9) / int(s.SampleRate))
 }
 
-func (s *AudioSource) CaptureFrame(data []byte, numChannels, sampleRate, samplesPerChannel uint32, echo []byte) []byte {
-	frameData := audio.GetAudioDSP().AAAProcess(data, sampleRate, echo)
+func (s *AudioSource) CaptureFrame(data []byte, numChannels, sampleRate, samplesPerChannel uint32) {
 	s.dataCache <- AudioSampleData{
 		Duration: s.calcDuration(int(samplesPerChannel) * int(numChannels)),
-		Data:     frameData,
+		Data:     data,
 	}
-	return frameData
 }
 
 func (s *AudioSource) ClearBuffer() {

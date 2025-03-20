@@ -116,13 +116,14 @@ func (c *Context) connect() {
 	context.Speaker.Start()
 	context.MicPhone.CallBack = (func(data []byte, frameCount uint32) {
 		appendRawAudioFrame(data, frameCount)
+		// TODO echo cancle
+		// appendClearAudioFrame(frame, frameCount)
 		if context.audioSource != nil {
 			samplesPreChannel := len(data) / 2 * int(c.MicPhone.Channels)
-			frame := context.audioSource.CaptureFrame(data, c.MicPhone.Channels, c.MicPhone.SampleRate, uint32(samplesPreChannel), context.Speaker.GetCurFrame())
+			context.audioSource.CaptureFrame(data, c.MicPhone.Channels, c.MicPhone.SampleRate, uint32(samplesPreChannel))
 			if err != nil {
 				log.Println(err.Error())
 			}
-			appendClearAudioFrame(frame, frameCount)
 		}
 	})
 }

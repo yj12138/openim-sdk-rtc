@@ -10,7 +10,7 @@ var audioDSPInstance AudioDSP = nil
 
 type AudioDSP interface {
 	Init() error
-	AAAProcess(source []byte, sampleRate uint32, echo []byte) []byte
+	EchoCancellation(source []byte, sampleRate uint32, echo []byte) []byte
 	Resample(source []byte, sourceSampleRate uint32, sourceNumChannels uint32, targetSampleRate uint32, targetChannels uint32) []byte
 	Destory()
 }
@@ -20,7 +20,7 @@ type DefaultAudioDSP struct{}
 func (d *DefaultAudioDSP) Init() error {
 	return nil
 }
-func (d *DefaultAudioDSP) AAAProcess(source []byte, sampleRate uint32, echo []byte) []byte {
+func (d *DefaultAudioDSP) EchoCancellation(source []byte, sampleRate uint32, echo []byte) []byte {
 	return source
 }
 func (d *DefaultAudioDSP) Resample(source []byte, sourceSampleRate uint32, sourceNumChannels uint32, targetSampleRate uint32, targetChannels uint32) []byte {

@@ -59,7 +59,7 @@ func (dsp *SpeexDSP) initState(frameSize uint32, sampleRate uint32, useAEC bool)
 	return nil
 }
 
-func (dsp *SpeexDSP) AAAProcess(source []byte, sampleRate uint32, echo []byte) []byte {
+func (dsp *SpeexDSP) EchoCancellation(source []byte, sampleRate uint32, echo []byte) []byte {
 	frame, err := bytesToInt16(source)
 	if err != nil {
 		log.Println("AAAProcess", err.Error())
@@ -171,5 +171,8 @@ func (dsp *SpeexDSP) Destory() {
 	}
 	if dsp.preState != nil {
 		C.speex_preprocess_state_destroy(dsp.preState)
+	}
+	if dsp.resampler != nil {
+		C.speex_resampler_destroy(dsp.resampler)
 	}
 }

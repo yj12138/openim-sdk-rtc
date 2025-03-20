@@ -245,6 +245,10 @@ func execute(req *pb_ffi.FfiRequest) *pb_ffi.FfiResponse {
 		response.Message = &pb_ffi.FfiResponse_LoadAudioFilterPlugin{
 			LoadAudioFilterPlugin: api.LoadAudioFilterPlugin(v.LoadAudioFilterPlugin),
 		}
+	case *pb_ffi.FfiRequest_AudioFrameEchoCancellation:
+		response.Message = &pb_ffi.FfiResponse_AudioFrameEchoCancellation{
+			AudioFrameEchoCancellation: api.AudioFrameEchoCancellation(v.AudioFrameEchoCancellation),
+		}
 	default:
 	}
 	return response
