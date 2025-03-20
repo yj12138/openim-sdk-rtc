@@ -80,11 +80,14 @@ func (api *API) AudioFrameEchoCancellation(req *pb_audio.AudioFrameEchoCancellat
 	}
 
 	res := &pb_audio.AudioFrameEchoCancellationResponse{
-		Buffer: &pb_audio.AudioFrameBufferInfo{
-			DataPtr:           audioFrameBuffer.DataPtr,
-			NumChannels:       audioFrameBuffer.NumChannels,
-			SampleRate:        audioFrameBuffer.SampleRate,
-			SamplesPerChannel: audioFrameBuffer.SamplesPerChannel,
+		Buffer: &pb_audio.OwnedAudioFrameBuffer{
+			Handle: &pb_handle.FfiOwnedHandle{Id: api.storeObj(audioFrameBuffer)},
+			Info: &pb_audio.AudioFrameBufferInfo{
+				DataPtr:           audioFrameBuffer.DataPtr,
+				NumChannels:       audioFrameBuffer.NumChannels,
+				SampleRate:        audioFrameBuffer.SampleRate,
+				SamplesPerChannel: audioFrameBuffer.SamplesPerChannel,
+			},
 		},
 	}
 	return res

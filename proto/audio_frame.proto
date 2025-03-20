@@ -45,7 +45,7 @@ message AudioFrameEchoCancellationRequest {
   AudioFrameBufferInfo buffer = 1;
   AudioFrameBufferInfo echoBuffer = 2;
 }
-message AudioFrameEchoCancellationResponse { AudioFrameBufferInfo buffer = 1; }
+message AudioFrameEchoCancellationResponse { OwnedAudioFrameBuffer buffer = 1; }
 // Push a frame to an AudioSource
 // The data provided must be available as long as the client receive the
 // callback.
