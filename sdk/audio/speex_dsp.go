@@ -42,7 +42,9 @@ int echo_cancellation(short* mic,short* play,short* out){
     if(!g_echo_state || !g_preprocess_state){
         return 1;
     }
-    speex_echo_cancellation(g_echo_state,(const spx_int16_t*)mic,(const spx_int16_t*)play,(spx_int16_t*)out);
+    // speex_echo_cancellation(g_echo_state,(const spx_int16_t*)mic,(const spx_int16_t*)play,(spx_int16_t*)out);
+    speex_echo_playback(g_echo_state,play);
+    speex_echo_capture(g_echo_state,mic,out);
     speex_preprocess_run(g_preprocess_state,out);
     return 0;
 }
