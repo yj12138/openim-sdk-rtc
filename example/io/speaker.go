@@ -100,6 +100,9 @@ func (m *Speaker) onSendFrames(outputSample, inputSample []byte, framecount uint
 	if err != nil {
 		return
 	}
+	if m.curFrame == nil || len(m.curFrame) != len(outputSample) {
+		m.curFrame = make([]byte, len(outputSample))
+	}
 	copy(m.curFrame, outputSample)
 }
 
@@ -124,7 +127,7 @@ func (m *Speaker) Write(data []byte) {
 	}
 }
 
-func (m *Speaker) GetCurFrame() []byte {
+func (m *Speaker) GetLastFrame() []byte {
 	return m.curFrame
 }
 
@@ -133,8 +136,8 @@ func NewSpeaker(sampleRate uint32, channels uint32) *Speaker {
 		sampleRate:  sampleRate,
 		channels:    channels,
 		resample:    sdk.NewAudioResampler(),
-		curFrame:    make([]byte, 0),
-		audioBuffer: common.NewRingBuffer(int(float32(sampleRate) * float32(channels) * 0.2)),
+		curFrame:    nil,
+		audioBuffer: common.NewRingBuffer(int(float32(sampleRate) * float32(channels) * 0.5)),
 	}
 	speaker.init()
 	return speaker

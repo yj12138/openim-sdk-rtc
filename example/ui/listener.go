@@ -78,7 +78,7 @@ func (l *RoomListener) OnTrackSubscribed(track *webrtc.TrackRemote, publication 
 			if err != nil {
 				break
 			}
-			log.Println("Recv Frame ", track.Codec(), len(rtp.Payload))
+			// log.Println("Recv Frame ", track.Codec(), len(rtp.Payload))
 			context.Speaker.Write(rtp.Payload)
 		}
 	}()

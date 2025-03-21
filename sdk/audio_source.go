@@ -48,7 +48,7 @@ func (s *AudioSource) NextSample(c context.Context) (media.Sample, error) {
 	sampleData := <-s.dataCache
 	sample.Data = sampleData.Data
 	sample.Duration = sampleData.Duration
-	log.Println("Send Sample:", len(sample.Data), sample.Duration)
+	// log.Println("Send Sample:", len(sample.Data), sample.Duration)
 	return sample, nil
 }
 

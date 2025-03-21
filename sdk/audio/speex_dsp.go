@@ -15,8 +15,6 @@ import (
 	"unsafe"
 )
 
-const EchoTail = 4800 // Echo cancellation delay buffer size
-
 type SpeexDSP struct {
 	echoState  *C.SpeexEchoState
 	preState   *C.SpeexPreprocessState
@@ -33,6 +31,9 @@ func (dsp *SpeexDSP) Init() error {
 }
 
 func (dsp *SpeexDSP) initState(frameSize uint32, sampleRate uint32, useAEC bool) error {
+	if dsp.echoState != nil {
+		C.speex_echo_state_destroy(dsp.echoState)
+	}
 	if dsp.preState != nil {
 		C.speex_preprocess_state_destroy(dsp.preState)
 	}
@@ -41,7 +42,9 @@ func (dsp *SpeexDSP) initState(frameSize uint32, sampleRate uint32, useAEC bool)
 		return errors.New("failed to initialize Speex preprocess")
 	}
 	if useAEC {
-		echoState := C.speex_echo_state_init(C.int(frameSize), C.int(EchoTail))
+		filterLength := sampleRate / 1000 * 800
+		log.Println("Filter length", filterLength)
+		echoState := C.speex_echo_state_init(C.int(frameSize), C.int(filterLength))
 		if echoState == nil {
 			C.speex_preprocess_state_destroy(preprocessState)
 			return errors.New("failed to initialize Speex echo canceller")

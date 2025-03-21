@@ -13,6 +13,7 @@ import (
 	_io "github.com/openimsdk/openim-rtc/example/io"
 	pb_audio_frame "github.com/openimsdk/openim-rtc/proto/go/audio_frame"
 	"github.com/openimsdk/openim-rtc/sdk"
+	"github.com/openimsdk/openim-rtc/sdk/audio"
 )
 
 var context *Context
@@ -116,11 +117,16 @@ func (c *Context) connect() {
 	context.Speaker.Start()
 	context.MicPhone.CallBack = (func(data []byte, frameCount uint32) {
 		appendRawAudioFrame(data, frameCount)
-		// TODO echo cancle
-		// appendClearAudioFrame(frame, frameCount)
+		echo := context.Speaker.GetLastFrame()
+		audioFrame := data
+		// log.Println("EchoCancellation ...", len(echo), len(data))
+		if echo != nil && len(echo) == len(data) {
+			// log.Println("audio.GetAudioDSP().EchoCancellation(data, context.MicPhone.SampleRate, echo)")
+			audioFrame = audio.GetAudioDSP().EchoCancellation(data, context.MicPhone.SampleRate, echo)
+		}
 		if context.audioSource != nil {
-			samplesPreChannel := len(data) / 2 * int(c.MicPhone.Channels)
-			context.audioSource.CaptureFrame(data, c.MicPhone.Channels, c.MicPhone.SampleRate, uint32(samplesPreChannel))
+			samplesPreChannel := len(audioFrame) / 2 * int(c.MicPhone.Channels)
+			context.audioSource.CaptureFrame(audioFrame, c.MicPhone.Channels, c.MicPhone.SampleRate, uint32(samplesPreChannel))
 			if err != nil {
 				log.Println(err.Error())
 			}
